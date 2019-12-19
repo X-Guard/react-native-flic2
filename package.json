@@ -1,0 +1,23 @@
+{
+  "name": "react-native-flic2",
+  "version": "0.1.0",
+  "description": "React Native Flic plugin made with the Flic2 SDK (unofficial)",
+  "main": "index.js",
+  "scripts": {
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/X-Guard/react-native-flic2.git"
+  },
+  "keywords": [
+    "Flic",
+    "Flic2",
+    "Shortcut Labs"
+  ],
+  "author": "X-Guard B.V.",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/X-Guard/react-native-flic2/issues"
+  },
+  "homepage": "https://github.com/X-Guard/react-native-flic2#readme"
+}
