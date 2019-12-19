@@ -13,11 +13,23 @@
     "Flic",
     "Flic2",
     "Shortcut Labs"
+    "Button",
+    "react-native"
   ],
   "author": "X-Guard B.V.",
-  "license": "MIT",
   "bugs": {
     "url": "https://github.com/X-Guard/react-native-flic2/issues"
   },
-  "homepage": "https://github.com/X-Guard/react-native-flic2#readme"
+  "homepage": "https://github.com/X-Guard/react-native-flic2#readme",
+  "license": "MIT",
+  "licenseFilename": "LICENSE",
+  "readmeFilename": "README.md",
+  "peerDependencies": {
+    "react": "^16.8.1",
+    "react-native": ">=0.59.0-rc.0 <1.0.x"
+  },
+  "devDependencies": {
+    "react": "^16.8.3",
+    "react-native": "^0.59.10"
+  }
 }
