@@ -1,5 +1,5 @@
 import { NativeModules } from 'react-native';
 
-const { Flic2 } = NativeModules;
+const { Flic2Module } = NativeModules;
 
-export default Flic2;
+export default Flic2Module;

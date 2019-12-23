@@ -12,7 +12,7 @@
 
 def DEFAULT_COMPILE_SDK_VERSION = 28
 def DEFAULT_BUILD_TOOLS_VERSION = '28.0.3'
-def DEFAULT_MIN_SDK_VERSION = 16
+def DEFAULT_MIN_SDK_VERSION = 26
 def DEFAULT_TARGET_SDK_VERSION = 28
 
 def safeExtGet(prop, fallback) {
@@ -73,6 +73,7 @@ repositories {
 dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'  // From node_modules
+    implementation 'io.flic:flic2lib-android:1.+'
 }
 
 def configureReactNativePom(def pom) {
@@ -82,7 +83,7 @@ def configureReactNativePom(def pom) {
         name packageJson.title
         artifactId packageJson.name
         version = packageJson.version
-        group = "com.reactlibrary"
+        group = "nl.xguard.flic2"
         description packageJson.description
         url packageJson.repository.baseUrl
 
@@ -96,8 +97,8 @@ def configureReactNativePom(def pom) {
 
         developers {
             developer {
-                id packageJson.author.username
-                name packageJson.author.name
+                id packageJson.author
+                name packageJson.author
             }
         }
     }
