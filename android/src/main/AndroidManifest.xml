@@ -1,4 +1,39 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.reactlibrary">
+          package="nl.xguard.flic2">
+
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+
+    <application>
+
+        <service
+            android:name="nl.xguard.flic2.service.Flic2Service"
+            android:enabled="true"
+            android:exported="true">
+
+        </service>
+
+        <receiver
+            android:name="nl.xguard.flic2.service.Flic2Service$BootUpReceiver"
+            android:enabled="true"
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </receiver>
+
+        <receiver
+            android:name="nl.xguard.flic2.service.Flic2Service$UpdateReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data
+                    android:path="nl.xguard.flic2"
+                    android:scheme="package" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </receiver>
+    </application>
 
 </manifest>

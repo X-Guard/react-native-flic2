@@ -1,4 +1,4 @@
-package com.reactlibrary;
+package nl.xguard.flic2;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,6 +14,11 @@ public class Flic2Package implements ReactPackage {
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
         return Arrays.<NativeModule>asList(new Flic2Module(reactContext));
+    }
+
+    // Deprecated from RN 0.47
+    public List<Class<? extends JavaScriptModule>> createJSModules() {
+        return Collections.emptyList();
     }
 
     @Override
