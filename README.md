@@ -1,14 +1,32 @@
-README
-======
+# react-native-flic2
+This plugin enables you to connect to a Flic2 button made by Shortcut Labs.
 
-If you want to publish the lib as a maven dependency, follow these steps before publishing a new version to npm:
+This plugin is supported by the Flic2 SDKs
+- Android: https://github.com/50ButtonsEach/flic2lib-android
+- iOS: https://github.com/50ButtonsEach/flic2lib-ios
 
-1. Be sure to have the Android [SDK](https://developer.android.com/studio/index.html) and [NDK](https://developer.android.com/ndk/guides/index.html) installed
-2. Be sure to have a `local.properties` file in this folder that points to the Android SDK and NDK
+## Current implementation
+Currently we have added unstable support for using Flic2 on Android. We are currently working hard on the initial version of iOS support.
+
+## Unstable development
+Until we reach version 1.0.0 stable, the API of this plugin might change every release. We will try our best to keep it consistent but can't promise anything at this point!
+
+## API docs
+The documentation is pending. Sorry!
+
+## Getting started
+
+`$ npm install react-native-flic2 --save`
+
+### Mostly automatic installation
+
+`$ react-native link react-native-flic2`
+
+## Usage
+```javascript
+import Flic2 from 'react-native-flic2';
+Flic2;
 ```
-ndk.dir=/Users/{username}/Library/Android/sdk/ndk-bundle
-sdk.dir=/Users/{username}/Library/Android/sdk
-```
-3. Delete the `maven` folder
-4. Run `./gradlew installArchives`
-5. Verify that latest set of generated files is in the maven folder with the correct version number
+
+## Collaborating
+We are happy to receive PRs! We have not published an NPM package before and are eager to learn!
