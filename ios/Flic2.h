@@ -7,5 +7,5 @@
 #import <React/RCTEventEmitter.h>
 #import <flic2lib/flic2lib.h>
 
-@interface Flic2 () : RCTEventEmitter <FLICButtonDelegate, FLICManagerDelegate, RCTBridgeModule>
+@interface Flic2 : RCTEventEmitter <FLICButtonDelegate, FLICManagerDelegate, RCTBridgeModule>
 @end
