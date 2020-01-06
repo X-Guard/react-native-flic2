@@ -73,7 +73,7 @@ RCT_EXPORT_METHOD(getButtons:(RCTResponseSenderBlock)callback callback:(RCTRespo
 }
 
 RCT_EXPORT_METHOD(connectAllKnownButtons) {
-    [self sendEventMessage: @{@"event": @"connectKnownButtons"}];
+    [self sendEventMessage: @{@"event": @"connectAllKnownButtons"}];
 
     NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
 
@@ -100,7 +100,6 @@ RCT_EXPORT_METHOD(forgetAllButtons:(NSString *) uuid) {
     for (FLICButton *button in buttons) {
 
         [[FLICManager sharedManager] forgetButton:(button) completion:^(NSUUID * _Nonnull uuid, NSError * _Nullable error) {
-                [self sendEventMessage: @{@"event": @"forgotButton"}];
         }];
     }
 }
@@ -112,7 +111,7 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
     for (FLICButton *button in buttons) {
         if (button.uuid == uuid) {
             [[FLICManager sharedManager] forgetButton:(button) completion:^(NSUUID * _Nonnull uuid, NSError * _Nullable error) {
-                    [self sendEventMessage: @{@"event": @"forgotButton"}];
+                [self sendEventMessage: @{@"event": @"forgotButton", @"name": button.name}];
             }];
             break;
         }
