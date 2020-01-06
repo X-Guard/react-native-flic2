@@ -127,12 +127,8 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
             List<Flic2Button> buttons = manager.getButtons();
             WritableArray array = new WritableNativeArray();
             for (Flic2Button button: buttons) {
-                WritableMap map = new WritableNativeMap();
-                map.putString("name", button.getName());
-                map.putString("uuid", button.getUuid());
+                WritableMap map = mReactEvent.getButtonArgs(button);
                 map.putString("serial", button.getSerialNumber());
-                map.putString("address", button.getBdAddr());
-                map.putInt("batteryLevel", button.getLastKnownBatteryLevel().getEstimatedPercentage());
                 array.pushMap(map);
             }
             promise.resolve(array);
@@ -243,23 +239,23 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
     @Override
     public void post(Runnable r) {
-
+//        this.post(r);
     }
 
     @Override
     public void postDelayed(Runnable r, long delayMillis) {
-
+//        this.postDelayed(r, delayMillis);
     }
 
     @Override
     public void removeCallbacks(Runnable r) {
-
+//        this.removeCallbacks(r);
     }
 
     @Override
     public boolean currentThreadIsHandlerThread() {
 
-        return false;
+        return Thread.currentThread() == Looper.getMainLooper().getThread();
     }
 
     @Override

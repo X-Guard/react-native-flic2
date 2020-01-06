@@ -14,19 +14,25 @@ public class ReactEvent {
     private static final String KEY_EVENT = "event";
     private static final String KEY_VALUE = "value";
     private static final String KEY_BUTTON_ID = "uuid";
+    private static final String KEY_BUTTON_NAME = "name";
+    private static final String KEY_BUTTON_BatteryLevel = "batteryLevel";
+    private static final String KEY_BUTTON_Voltage = "voltage";
+    private static final String KEY_BUTTON_ISREADY = "isReady";
+    private static final String KEY_BUTTON_ISUNPAIRED = "isUnpaired";
+    private static final String KEY_BUTTON_PRESSCOUNT = "pressCount";
+    private static final String KEY_BUTTON_FIRMWAREREVISION = "firmwareRevision";
+    private static final String KEY_BUTTON_BLUETOOTHADDRESS = "bluetoothAddress";
 
     public static final String EVENT_MANAGER_INITIALIZED = "initFlic2";
     public static final String EVENT_MANAGER_IS_INITIALIZED = "isInitialized";
 
-    public static final String EVENT_BUTTON_STATUS_DISCONNECTED = "BUTTON_DISCONNECTED";
-    public static final String EVENT_BUTTON_STATUS_CONNECTION_ON_READY = "BUTTON_CONNECTION_READY";
-    public static final String EVENT_BUTTON_STATUS_CONNECTION_STARTED = "BUTTON_CONNECTION_STARTED";
-    public static final String EVENT_BUTTON_STATUS_CONNECTION_COMPLETED = "BUTTON_CONNECTION_COMPLETED";
-    public static final String EVENT_BUTTON_STATUS_CONNECTION_UNPAIRED = "BUTTON_CONNECTION_UNPAIRED";
-    public static final String EVENT_BUTTON_STATUS_UNKNOWN = "BUTTON_CONNECTION_UNKNOWN";
-    public static final String EVENT_BUTTON_STATUS_ON_FAILURE = "BUTTON_FAILURE";
-    public static final String EVENT_BUTTON_GRABBED = "didGrabFlicButton";
-    public static final String EVENT_NO_BUTTON_GRABBED = "didGrabFlicButtonError";
+    public static final String EVENT_BUTTON_STATUS_DISCONNECTED = "buttonDisconnected";
+    public static final String EVENT_BUTTON_STATUS_CONNECTION_ON_READY = "buttonConnectionReady";
+    public static final String EVENT_BUTTON_STATUS_CONNECTION_STARTED = "buttonConnectionStarted";
+    public static final String EVENT_BUTTON_STATUS_CONNECTION_COMPLETED = "buttonConnectionCompleted";
+    public static final String EVENT_BUTTON_STATUS_CONNECTION_UNPAIRED = "buttonConnectionUnpaired";
+    public static final String EVENT_BUTTON_STATUS_UNKNOWN = "buttonConnectionUnknown";
+    public static final String EVENT_BUTTON_STATUS_ON_FAILURE = "buttonConnectionFailure";
     public static final String EVENT_BUTTON_DOWN = "didReceiveButtonDown";
     public static final String EVENT_BUTTON_UP = "didReceiveButtonUp";
     public static final String EVENT_BUTTON_SINGLE_CLICK = "didReceiveButtonClick";
@@ -45,9 +51,8 @@ public class ReactEvent {
 
     public void send(Flic2Button button, String event) {
         Log.d(TAG, "sendEventMessage() called with: button = [" + button + "], event = [" + event + "]");
-        WritableMap args = new WritableNativeMap();
+        WritableMap args = this.getButtonArgs(button);
         args.putString(KEY_EVENT, event);
-        args.putString(KEY_BUTTON_ID, button.getUuid());
 
         mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(EVENT_NAMESPACE, args);
@@ -55,9 +60,8 @@ public class ReactEvent {
 
     public void send(Flic2Button button, String event, Boolean queued, long age) {
         Log.d(TAG, "sendEventMessage() called with: button = [" + button + "], event = [" + event + "]");
-        WritableMap args = new WritableNativeMap();
+        WritableMap args = this.getButtonArgs(button);
         args.putString(KEY_EVENT, event);
-        args.putString(KEY_BUTTON_ID, button.getUuid());
         args.putBoolean("queued", queued);
         args.putString("age", String.valueOf(age));
 
@@ -112,6 +116,21 @@ public class ReactEvent {
 
         mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(EVENT_NAMESPACE, args);
+    }
+
+    public WritableMap getButtonArgs(Flic2Button button) {
+
+        WritableMap args = new WritableNativeMap();
+        args.putString(KEY_BUTTON_ID, button.getUuid());
+        args.putString(KEY_BUTTON_BLUETOOTHADDRESS, button.getBdAddr());
+        args.putString(KEY_BUTTON_NAME, button.getName());
+        args.putInt(KEY_BUTTON_BatteryLevel, button.getLastKnownBatteryLevel().getEstimatedPercentage());
+        args.putDouble(KEY_BUTTON_Voltage, button.getLastKnownBatteryLevel().getVoltage());
+        args.putBoolean(KEY_BUTTON_ISUNPAIRED, button.isUnpaired());
+        args.putInt(KEY_BUTTON_PRESSCOUNT, button.getPressCount());
+        args.putInt(KEY_BUTTON_FIRMWAREREVISION, button.getFirmwareVersion());
+
+        return args;
     }
 
 }

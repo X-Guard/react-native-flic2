@@ -48,12 +48,12 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
     }
     @Override
     public void onButtonClickOrHold(Flic2Button button, boolean wasQueued, boolean lastQueued, long timestamp, boolean isClick, boolean isHold) {
-        Log.d(TAG, "onButtonClickOrHold() called with: button = [" + button + "]");
-        if (isHold) {
-            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_HOLD, wasQueued, timestamp);
-        } else {
-            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_SINGLE_CLICK, wasQueued, timestamp);
-        }
+//        Log.d(TAG, "onButtonClickOrHold() called with: button = [" + button + "]");
+//        if (isHold) {
+//            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_HOLD, wasQueued, timestamp);
+//        } else {
+//            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_SINGLE_CLICK, wasQueued, timestamp);
+//        }
 
     }
 
@@ -71,12 +71,22 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
 
     @Override
     public void onButtonSingleOrDoubleClick(Flic2Button button, boolean wasQueued, boolean lastQueued, long timestamp, boolean isSingleClick, boolean isDoubleClick) {
-
+//        if (isSingleClick) {
+//            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_SINGLE_CLICK, wasQueued, timestamp);
+//        } else {
+//            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_DOUBLE_CLICK, wasQueued, timestamp);
+//        }
     }
 
     @Override
     public void onButtonSingleOrDoubleClickOrHold(Flic2Button button, boolean wasQueued, boolean lastQueued, long timestamp, boolean isSingleClick, boolean isDoubleClick, boolean isHold) {
-
+        if (isSingleClick) {
+            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_SINGLE_CLICK, wasQueued, timestamp);
+        } else if (isHold) {
+            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_HOLD, wasQueued, timestamp);
+        } else {
+            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_DOUBLE_CLICK, wasQueued, timestamp);
+        }
     }
 
     @Override
