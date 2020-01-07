@@ -9,11 +9,12 @@ import com.facebook.react.modules.core.DeviceEventManagerModule;
 import io.flic.flic2libandroid.Flic2Button;
 
 public class ReactEvent {
-    private static final String TAG = "Flic2 event:";
+    private static final String TAG = "Flic2ReactEvent";
     private static final String EVENT_NAMESPACE = "FLIC2";
     private static final String KEY_EVENT = "event";
     private static final String KEY_VALUE = "value";
     private static final String KEY_BUTTON_ID = "uuid";
+    private static final String KEY_BUTTON_SERIAL = "serial";
     private static final String KEY_BUTTON_NAME = "name";
     private static final String KEY_BUTTON_BatteryLevel = "batteryLevel";
     private static final String KEY_BUTTON_Voltage = "voltage";
@@ -22,6 +23,7 @@ public class ReactEvent {
     private static final String KEY_BUTTON_PRESSCOUNT = "pressCount";
     private static final String KEY_BUTTON_FIRMWAREREVISION = "firmwareRevision";
     private static final String KEY_BUTTON_BLUETOOTHADDRESS = "bluetoothAddress";
+    private static final String KEY_BUTTON_READY_TIME = "onReadyTimestamp";
 
     public static final String EVENT_MANAGER_INITIALIZED = "initFlic2";
     public static final String EVENT_MANAGER_IS_INITIALIZED = "isInitialized";
@@ -119,16 +121,20 @@ public class ReactEvent {
     }
 
     public WritableMap getButtonArgs(Flic2Button button) {
-
         WritableMap args = new WritableNativeMap();
         args.putString(KEY_BUTTON_ID, button.getUuid());
+        args.putString(KEY_BUTTON_SERIAL, button.getSerialNumber());
         args.putString(KEY_BUTTON_BLUETOOTHADDRESS, button.getBdAddr());
         args.putString(KEY_BUTTON_NAME, button.getName());
-        args.putInt(KEY_BUTTON_BatteryLevel, button.getLastKnownBatteryLevel().getEstimatedPercentage());
-        args.putDouble(KEY_BUTTON_Voltage, button.getLastKnownBatteryLevel().getVoltage());
         args.putBoolean(KEY_BUTTON_ISUNPAIRED, button.isUnpaired());
         args.putInt(KEY_BUTTON_PRESSCOUNT, button.getPressCount());
         args.putInt(KEY_BUTTON_FIRMWAREREVISION, button.getFirmwareVersion());
+        args.putString(KEY_BUTTON_READY_TIME, String.valueOf(button.getReadyTimestamp()));
+
+        if (button.getLastKnownBatteryLevel() != null) {
+            args.putInt(KEY_BUTTON_BatteryLevel, button.getLastKnownBatteryLevel().getEstimatedPercentage());
+            args.putDouble(KEY_BUTTON_Voltage, button.getLastKnownBatteryLevel().getVoltage());
+        }
 
         return args;
     }

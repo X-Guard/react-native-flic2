@@ -27,6 +27,27 @@ NSString *testNameSpace = @"FLIC2";
     }
 }
 
+- (void) sendEventMessage:(NSString *)event button:(FLICButton *)button queued:(BOOL) queued age:(NSInteger) age {
+    NSLog(@"FLIC2LIB EVENT %@", event);
+    
+    if (hasListeners) {
+        [self sendEventWithName:testNameSpace body: @{
+        @"event": event,
+        @"queued": @(queued),
+        @"age": @(age),
+        @"uuid": button.uuid,
+        @"bluetoothAddress": button.bluetoothAddress,
+        @"name": button.name,
+        @"batteryLevel": @([self batteryVoltageToEstimatedPercentage:button.batterylevel]),
+        @"voltage": @((button.batterylevel * 3.6) / 1024),
+        @"isReady": @(button.isReady),
+        @"isUnpaired": @(button.isUnpaired),
+        @"pressCount": @(button.pressCount),
+        @"firmwareRevision": @(button.firmwareRevision)
+        }];
+    }
+}
+
 - (dispatch_queue_t)methodQueue {
     return dispatch_get_main_queue();
 }
@@ -37,14 +58,34 @@ RCT_EXPORT_MODULE()
     return @[testNameSpace];
 }
 
+-(NSInteger) batteryVoltageToEstimatedPercentage: (NSInteger)voltage {
+    NSInteger mvolt = (NSInteger)(((voltage * 3.6) / 1024) * 1000);
+    NSInteger percentage;
+    if (mvolt >= 3000) {
+        percentage = 100;
+    } else if (mvolt >= 2900) {
+        percentage = 42 + (mvolt - 2900) * 58 / 100;
+    } else if (mvolt >= 2740) {
+        percentage = 18 + (mvolt - 2740) * 24 / 160;
+    } else if (mvolt >= 2440) {
+        percentage = 6 + (mvolt - 2440) * 12 / 300;
+    } else if (mvolt >= 2100) {
+        percentage = (mvolt - 2100) * 6 / 340;
+    } else {
+        percentage = 0;
+    }
+    return percentage;
+}
+
 -(NSDictionary *) convertButtonToDict: (FLICButton *) button
 {
         NSLog(@"FLIC2LIB convertButtonToDict %@", button.name);
+    
     return @{
              @"uuid": button.uuid,
              @"bluetoothAddress": button.bluetoothAddress,
              @"name": button.name,
-             @"batteryLevel": @(button.batterylevel),
+             @"batteryLevel": @([self batteryVoltageToEstimatedPercentage:button.batterylevel]),
              @"voltage": @((button.batterylevel * 3.6) / 1024),
              @"isReady": @(button.isReady),
              @"isUnpaired": @(button.isUnpaired),
@@ -78,8 +119,9 @@ RCT_EXPORT_METHOD(connectAllKnownButtons) {
     NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
 
     for (FLICButton *button in buttons) {
-        NSLog(@"Connect button: %@", button);
+        NSLog(@"Flic2 Connect button: %@", button.name);
         button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
+        [button disconnect];
         [button connect];
     }
 }
@@ -93,64 +135,66 @@ RCT_EXPORT_METHOD(stopScanning) {
     [self stopScan];
 }
 
-RCT_EXPORT_METHOD(forgetAllButtons:(NSString *) uuid) {
-
+RCT_EXPORT_METHOD(forgetAllButtons) {
     NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
 
     for (FLICButton *button in buttons) {
-
+        [button disconnect];
         [[FLICManager sharedManager] forgetButton:(button) completion:^(NSUUID * _Nonnull uuid, NSError * _Nullable error) {
         }];
     }
 }
 
 RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
-
     NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
 
     for (FLICButton *button in buttons) {
-        if (button.uuid == uuid) {
+        if ([button.uuid isEqualToString:uuid]) {
+            [button disconnect];
             [[FLICManager sharedManager] forgetButton:(button) completion:^(NSUUID * _Nonnull uuid, NSError * _Nullable error) {
-                [self sendEventMessage: @{@"event": @"forgotButton", @"name": button.name}];
+                [self sendEventMessage: @{@"event": @"forgetButton"}];
             }];
             break;
         }
     }
 }
 
-- (IBAction)stopScan {
+- (void)stopScan {
 
     [[FLICManager sharedManager] stopScan];
     [self sendEventMessage: @{@"event": @"stopScan"}];
 }
 
-- (IBAction)scanForButton;
+- (void)scanForButton;
 {
-    [self sendEventMessage: @{@"event": @"scanForButton"}];
+    [self sendEventMessage: @{@"event": @"startScan"}];
+        NSLog(@"A Flic2 scanForButton");
     [[FLICManager sharedManager] scanForButtonsWithStateChangeHandler:^(FLICButtonScannerStatusEvent event) {
+        
+        NSLog(@"A Flic2 scanForButtonsWithStateChangeHandler %ld", (long)event);
         // You can use these events to update your UI.
         switch (event)
         {
             case FLICButtonScannerStatusEventDiscovered:
-                NSLog(@"A Flic was discovered.");
+                NSLog(@"A Flic2 was discovered.");
                 break;
             case FLICButtonScannerStatusEventConnected:
-                NSLog(@"A Flic is being verified.");
+                NSLog(@"A Flic2 is being verified.");
                 break;
             case FLICButtonScannerStatusEventVerified:
-                NSLog(@"The Flic was verified successfully.");
+                NSLog(@"The Flic2 was verified successfully.");
                 break;
             case FLICButtonScannerStatusEventVerificationFailed:
-                NSLog(@"The Flic verification failed.");
+                NSLog(@"The Flic2 verification failed.");
                 break;
             default:
                 break;
         }
     } completion:^(FLICButton *button, NSError *error) {
-        NSLog(@"Scanner completed with error: %@", error);
+        NSLog(@"Flic2 Scanner completed with error: %@", error);
         if (!error)
         {
-            NSLog(@"Successfully verified: %@, %@, %@", button.name, button.bluetoothAddress, button.serialNumber);
+            NSLog(@"Flic2 Successfully verified: %@, %@, %@", button.name, button.bluetoothAddress, button.serialNumber);
             // Listen to single click only.
             button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
             [button connect];
@@ -163,14 +207,13 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
     // The mnager was restored and can now be used.
     for (FLICButton *button in manager.buttons)
     {
-        NSLog(@"Did restore Flic: %@", button.name);
-        button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
-        [button connect];
+        NSLog(@"Did restore Flic2: %@", button.name);
+
     }
 }
 
 - (void)manager:(nonnull FLICManager *)manager didUpdateBluetoothState:(CBManagerState)state {
-    NSLog(@"Update bleutooth state: %ld", (long)state);
+    NSLog(@"Flic2 Update bluetooth state: %ld", (long)state);
     [self sendEventMessage: @{@"event": @"didUpdateBluetoothState", @"state": @((long)state)}];
 }
 
@@ -179,103 +222,78 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
 
 - (void)buttonDidConnect:(FLICButton *)button;
 {
-    NSLog(@"Did connect Flic: %@", button.name);
+    NSLog(@"Did connect Flic2: %@", button.name);
     [self sendEventMessage: @{
-        @"event": @"flicButtonDidConnect",
-        @"button": @[[self convertButtonToDict: button]],
+        @"event": @"buttonConnectionCompleted",
+        @"name": button.name,
     }];
 }
 
 - (void)button:(FLICButton *)button didDisconnectWithError:(NSError *)error;
 {
-    NSLog(@"Did disconnect Flic: %@", button.name);
+    NSLog(@"Did disconnect Flic2: %@", error);
     [self sendEventMessage: @{
-        @"event": @"didDisconnectWithError",
-        @"button": @[[self convertButtonToDict: button]],
-        @"error": error
+        @"event": @"buttonDisconnected",
+        @"name": button.name,
+//        @"error": error
     }];
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonDown:(BOOL)queued age:(NSInteger)age;
 {
-    NSLog(@"Flic: %@ was clicked down", button.name);
-    [self sendEventMessage: @{
-        @"event": @"didReceiveButtonDown",
-        @"button": @[[self convertButtonToDict: button]],
-        @"queued": @(queued),
-        @"age": @(age)
-    }];
+    NSLog(@"Flic2: %@ was clicked down", button.name);
+    [self sendEventMessage: (@"didReceiveButtonDown") button:(button) queued:(queued) age:(age)];
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonUp:(BOOL)queued age:(NSInteger)age;
 {
-    NSLog(@"Flic: %@ was clicked up", button.name);
-    [self sendEventMessage: @{
-        @"event": @"didReceiveButtonUp",
-        @"button": @[[self convertButtonToDict: button]],
-        @"queued": @(queued),
-        @"age": @(age)
-    }];
+    NSLog(@"Flic2: %@ was clicked up", button.name);
+    [self sendEventMessage: (@"didReceiveButtonUp") button:(button) queued:(queued) age:(age)];
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonClick:(BOOL)queued age:(NSInteger)age;
 {
-    NSLog(@"Flic: %@ was clicked", button.name);
-    [self sendEventMessage: @{
-        @"event": @"didReceiveButtonClick",
-        @"button": @[[self convertButtonToDict: button]],
-        @"queued": @(queued),
-        @"age": @(age)
-    }];
+    NSLog(@"Flic2: %@ was clicked", button.name);
+    [self sendEventMessage: (@"didReceiveButtonClick") button:(button) queued:(queued) age:(age)];
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonDoubleClick:(BOOL)queued age:(NSInteger)age;
 {
-    NSLog(@"Flic: %@ was clicked double", button.name);
-    [self sendEventMessage: @{
-        @"event": @"didReceiveButtonDoubleClick",
-        @"button": @[[self convertButtonToDict: button]],
-        @"queued": @(queued),
-        @"age": @(age)
-    }];
+    NSLog(@"Flic2: %@ was clicked double", button.name);
+    [self sendEventMessage: (@"didReceiveButtonDoubleClick") button:(button) queued:(queued) age:(age)];
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonHold:(BOOL)queued age:(NSInteger)age;
 {
-    NSLog(@"Flic: %@ was hold", button.name);
-    [self sendEventMessage: @{
-        @"event": @"didReceiveButtonHold",
-        @"button": @[[self convertButtonToDict: button]],
-        @"queued": @(queued),
-        @"age": @(age)
-    }];
+    NSLog(@"Flic2: %@ was hold", button.name);
+    [self sendEventMessage: (@"didReceiveButtonHold") button:(button) queued:(queued) age:(age)];
 }
 
 - (void)button:(FLICButton *)button didFailToConnectWithError:(NSError * _Nullable)error;
 {
-    NSLog(@"Did fail to connect Flic: %@", button.name);
+    NSLog(@"Did fail to connect Flic2: %@", error);
     [self sendEventMessage: @{
-        @"event": @"didFailToConnectWithError",
-        @"button": @[[self convertButtonToDict: button]],
-        @"error": error
+        @"event": @"buttonConnectionFailure",
+        @"name": button.name,
+//        @"error": error
     }];
 }
 
 - (void)button:(FLICButton *)button didUnpairWithError:(NSError * _Nullable)error;
 {
-    NSLog(@"Did unpair with error Flic: %@", button.name);
+    NSLog(@"Did unpair with error Flic2: %@", error);
     [self sendEventMessage: @{
-        @"event": @"didUnpairWithError",
-        @"button": @[[self convertButtonToDict: button]],
-        @"error": error
+        @"event": @"buttonConnectionUnpaired",
+        @"name": button.name,
+//        @"error": error
     }];
 }
 
 - (void)buttonIsReady:(nonnull FLICButton *)button {
-     NSLog(@"Flic: %@ is ready", button.name);
+     NSLog(@"Flic2: %@ is ready", button.name);
     [self sendEventMessage: @{
-        @"event": @"isReady",
-        @"button": @[[self convertButtonToDict: button]],
+        @"event": @"buttonConnectionReady",
+        @"name": button.name,
     }];
 }
 

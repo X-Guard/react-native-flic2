@@ -6,12 +6,6 @@
 
     <application>
 
-        <service
-            android:name="nl.xguard.flic2.service.Flic2Service"
-            android:enabled="true"
-            android:exported="true">
-
-        </service>
 
         <receiver
             android:name="nl.xguard.flic2.service.Flic2Service$BootUpReceiver"

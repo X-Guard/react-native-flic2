@@ -33,7 +33,7 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
     }
     @Override
     public void onFailure(Flic2Button button, int errorCode, int subCode) {
-        Log.d(TAG, "onFailure() called with: button = [" + button + "]");
+        Log.d(TAG, "onFailure() called with: button = [" + button + "]" + " error: " + errorCode);
         mReactEvent.send(button, ReactEvent.EVENT_BUTTON_STATUS_ON_FAILURE);
     }
     @Override
@@ -65,7 +65,7 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
             mReactEvent.send(button, ReactEvent.EVENT_BUTTON_DOWN, wasQueued, timestamp);
         }
         if (isUp) {
-            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_UP);
+            mReactEvent.send(button, ReactEvent.EVENT_BUTTON_UP, wasQueued, timestamp);
         }
     }
 

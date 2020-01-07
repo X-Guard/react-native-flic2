@@ -13,6 +13,8 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import nl.xguard.flic2.R;
+import nl.xguard.flic2.communication.ReactEvent;
+
 import java.util.Objects;
 
 
