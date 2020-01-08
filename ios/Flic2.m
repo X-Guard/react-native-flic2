@@ -27,6 +27,33 @@ NSString *testNameSpace = @"FLIC2";
     }
 }
 
+- (void) sendEventScanMessage:(FLICButton *)button errorCode:(NSError *)error {
+    NSLog(@"FLIC2LIB EVENT %@", @"scanResult");
+    NSInteger errorCode;
+    if(!error) {
+        errorCode = 0;
+    } else {
+        errorCode = error.code;
+    }
+    if (hasListeners) {
+        [self sendEventWithName:@"scanResult" body: @{
+            @"error": @(errorCode == 0 ? false : true),
+            @"result": @([self getCorrectScanResultCode:errorCode]),
+            @"button": !button ?@{
+                @"uuid": button.uuid,
+                @"bluetoothAddress": button.bluetoothAddress,
+                @"name": button.name,
+                @"batteryLevel": @([self batteryVoltageToEstimatedPercentage:button.batterylevel]),
+                @"voltage": @((button.batterylevel * 3.6) / 1024),
+                @"isReady": @(button.isReady),
+                @"isUnpaired": @(button.isUnpaired),
+                @"pressCount": @(button.pressCount),
+                @"firmwareRevision": @(button.firmwareRevision)
+            } : NULL
+        }];
+    }
+}
+
 - (void) sendEventMessage:(NSString *)event button:(FLICButton *)button queued:(BOOL) queued age:(NSInteger) age {
     NSLog(@"FLIC2LIB EVENT %@", event);
     
@@ -56,6 +83,76 @@ RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[testNameSpace];
+}
+
+-(NSInteger) getCorrectScanResultCode: (NSInteger) code {
+
+    switch (code) {
+        case FLICButtonScannerErrorCodeBluetoothNotActivated:
+            return 2;
+            break;
+        case FLICButtonScannerErrorCodeUnknown:
+            return 3;
+            break;
+        case FLICButtonScannerErrorCodeNoPublicButtonDiscovered:
+            return 4;
+            break;
+        case FLICButtonScannerErrorCodeAlreadyConnectedToAnotherDevice:
+            return 5;
+            break;
+        case FLICButtonScannerErrorCodeConnectionTimeout:
+            return 6;
+            break;
+        case FLICButtonScannerErrorCodeInvalidVerifier:
+            return 7;
+            break;
+        case FLICButtonScannerErrorCodeBLEPairingFailedPreviousPairingAlreadyExisting:
+            return 8;
+            break;
+        case FLICButtonScannerErrorCodeBLEPairingFailedUserCanceled:
+            return 9;
+            break;
+        case FLICButtonScannerErrorCodeBLEPairingFailedUnknownReason:
+            return 10;
+            break;
+        case FLICButtonScannerErrorCodeAppCredentialsDontMatch:
+            return 11;
+            break;
+        case FLICButtonScannerErrorCodeUserCanceled:
+            return 12;
+            break;
+        case FLICButtonScannerErrorCodeInvalidBluetoothAddress:
+            return 13;
+            break;
+        case FLICButtonScannerErrorCodeGenuineCheckFailed:
+            return 14;
+            break;
+        case FLICButtonScannerErrorCodeTooManyApps:
+            return 15;
+            break;
+        case FLICButtonScannerErrorCodeCouldNotSetBluetoothNotify:
+            return 16;
+            break;
+        case FLICButtonScannerErrorCodeCouldNotDiscoverBluetoothServices:
+            return 17;
+            break;
+        case FLICButtonScannerErrorCodeButtonDisconnectedDuringVerification:
+            return 18;
+            break;
+        case FLICButtonScannerErrorCodeFailedToEstablish:
+            return 19;
+            break;
+        case FLICButtonScannerErrorCodeConnectionLimitReached:
+            return 20;
+            break;
+        case FLICButtonScannerErrorCodeNotInPublicMode:
+            return 21;
+            break;
+        default:
+            return 3;
+            break;
+    }
+
 }
 
 -(NSInteger) batteryVoltageToEstimatedPercentage: (NSInteger)voltage {
@@ -192,6 +289,10 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
             // Listen to single click only.
             button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
             [button connect];
+            
+            [self sendEventScanMessage: (button) errorCode:(0)];
+        } else {
+            [self sendEventScanMessage: (button) errorCode:(error)];
         }
     }];
 }

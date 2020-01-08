@@ -1,15 +1,12 @@
 package nl.xguard.flic2;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
@@ -31,7 +28,7 @@ import io.flic.flic2libandroid.Flic2ScanCallback;
 import io.flic.flic2libandroid.HandlerInterface;
 import io.flic.flic2libandroid.LoggerInterface;
 
-public class Flic2Module extends ReactContextBaseJavaModule implements HandlerInterface, LoggerInterface {
+public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterface, LoggerInterface {
 
     private static final String TAG = "Flic2Module";
     private ReactApplicationContext mreactContext;
@@ -41,12 +38,12 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
     @Override
     public String getName() {
-        return Flic2Module.class.getSimpleName();
+        return Flic2.class.getSimpleName();
     }
 
 
     @ReactMethod
-    public Flic2Module(ReactApplicationContext reactContext) {
+    public Flic2(ReactApplicationContext reactContext) {
         super(reactContext);
         Log.d(TAG, "onCreate()");
 
