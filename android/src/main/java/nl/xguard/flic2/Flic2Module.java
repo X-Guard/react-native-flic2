@@ -12,14 +12,13 @@ import android.os.Looper;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
-import com.facebook.react.bridge.Promise;
+import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
-import com.facebook.react.bridge.WritableNativeMap;
 import nl.xguard.flic2.callback.flic2ButtonCallback;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.service.Flic2Service;
@@ -70,19 +69,16 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
         mReactEvent.send(ReactEvent.EVENT_MANAGER_IS_INITIALIZED);
 
-        connectAllKnownButtons();
     }
 
 
     @ReactMethod
     @TargetApi(23)
     public void startService() {
-
+        Log.d(TAG, "startService()");
         Boolean isRunning = isServiceRunning(getReactApplicationContext(), Flic2Service.class);
 
         if (!isRunning) {
-
-            Log.d(TAG, "startService()");
 
             Intent intent = new Intent(getReactApplicationContext(), Flic2Service.class);
 
@@ -98,16 +94,19 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
     }
 
-
-
     public void listenToButtonWithToast(Flic2Button button) {
+        Log.d(TAG, "connectAllKnownButtons()");
+
         button.addListener(new flic2ButtonCallback(mreactContext));
     }
 
     @ReactMethod
     @TargetApi(23)
     public void connectAllKnownButtons() {
+        Log.d(TAG, "connectAllKnownButtons()");
+
         for (Flic2Button button : manager.getButtons()) {
+            button.disconnectOrAbortPendingConnection();
             button.connect();
             listenToButtonWithToast(button);
         }
@@ -116,28 +115,27 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
     @ReactMethod
     @TargetApi(23)
     public void stopScanning() {
+        Log.d(TAG, "stopScanning()");
+
         manager.stopScan();
         isScanning = false;
     }
 
     @ReactMethod
     @TargetApi(23)
-    public void getButtons(Promise promise) {
+    public void getButtons(Callback successCallback, Callback errorCallback) {
+        Log.d(TAG, "getButtons()");
+
         try {
             List<Flic2Button> buttons = manager.getButtons();
             WritableArray array = new WritableNativeArray();
             for (Flic2Button button: buttons) {
-                WritableMap map = new WritableNativeMap();
-                map.putString("name", button.getName());
-                map.putString("uuid", button.getUuid());
-                map.putString("serial", button.getSerialNumber());
-                map.putString("address", button.getBdAddr());
-                map.putInt("batteryLevel", button.getLastKnownBatteryLevel().getEstimatedPercentage());
+                WritableMap map = mReactEvent.getButtonArgs(button);
                 array.pushMap(map);
             }
-            promise.resolve(array);
+            successCallback.invoke(array);
         }  catch (Exception e) {
-            promise.reject("Error getting buttons", e.getMessage());
+            errorCallback.invoke("Error getting buttons", e.getMessage());
         }
 
     }
@@ -145,7 +143,7 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
     @ReactMethod
     @TargetApi(23)
     public void forgetButton(String uuid) {
-
+        Log.d(TAG, "forgetButton()");
         List<Flic2Button> buttons = manager.getButtons();
 
         for (Flic2Button button: buttons) {
@@ -154,6 +152,7 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
             if (String.valueOf(uuid).equals(button.getUuid()))
             {
+                button.disconnectOrAbortPendingConnection();
                 manager.forgetButton(button);
                 return;
             }
@@ -171,6 +170,7 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
         List<Flic2Button> buttons = manager.getButtons();
 
         for (Flic2Button button: buttons) {
+            button.disconnectOrAbortPendingConnection();
             manager.forgetButton(button);
         }
 
@@ -178,14 +178,8 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
     @ReactMethod
     @TargetApi(23)
-    public void isScanning(Promise promise) {
-        promise.resolve(this.isScanning);
-    }
-
-
-    @ReactMethod
-    @TargetApi(23)
     public void startScan() {
+        
         if (!isScanning) {
             int permissionCheck = ContextCompat.checkSelfPermission(mreactContext, Manifest.permission.ACCESS_FINE_LOCATION);
             if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
@@ -232,6 +226,7 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
     }
 
     private boolean isServiceRunning(Context context, Class<?> serviceClass) {
+        Log.d(TAG, "isServiceRunning()");
         ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
             if (serviceClass.getName().equals(service.service.getClassName())) {
@@ -243,23 +238,31 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
     @Override
     public void post(Runnable r) {
-
+        Log.d(TAG, "post()");
+        this.post(r);
     }
 
     @Override
     public void postDelayed(Runnable r, long delayMillis) {
-
+        Log.d(TAG, "postDelayed() " + delayMillis);
+        this.postDelayed(r, delayMillis);
     }
 
     @Override
     public void removeCallbacks(Runnable r) {
-
+        Log.d(TAG, "removeCallbacks()");
+        this.removeCallbacks(r);
     }
 
     @Override
     public boolean currentThreadIsHandlerThread() {
 
-        return false;
+        if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
+            Log.d(TAG, "currentThreadIsHandlerThread() true");
+        } else {
+            Log.d(TAG, "currentThreadIsHandlerThread() false");
+        }
+        return Thread.currentThread() == Looper.getMainLooper().getThread();
     }
 
     @Override
