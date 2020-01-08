@@ -1,15 +1,12 @@
 package nl.xguard.flic2;
 
-import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.facebook.react.bridge.Callback;
@@ -31,7 +28,7 @@ import io.flic.flic2libandroid.Flic2ScanCallback;
 import io.flic.flic2libandroid.HandlerInterface;
 import io.flic.flic2libandroid.LoggerInterface;
 
-public class Flic2Module extends ReactContextBaseJavaModule implements HandlerInterface, LoggerInterface {
+public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterface, LoggerInterface {
 
     private static final String TAG = "Flic2Module";
     private ReactApplicationContext mreactContext;
@@ -41,12 +38,12 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
     @Override
     public String getName() {
-        return Flic2Module.class.getSimpleName();
+        return Flic2.class.getSimpleName();
     }
 
 
     @ReactMethod
-    public Flic2Module(ReactApplicationContext reactContext) {
+    public Flic2(ReactApplicationContext reactContext) {
         super(reactContext);
         Log.d(TAG, "onCreate()");
 
@@ -94,8 +91,8 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
     }
 
-    public void listenToButtonWithToast(Flic2Button button) {
-        Log.d(TAG, "connectAllKnownButtons()");
+    public void listenToButton(Flic2Button button) {
+        Log.d(TAG, "listenToButton()");
 
         button.addListener(new flic2ButtonCallback(mreactContext));
     }
@@ -108,13 +105,13 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
         for (Flic2Button button : manager.getButtons()) {
             button.disconnectOrAbortPendingConnection();
             button.connect();
-            listenToButtonWithToast(button);
+            listenToButton(button);
         }
     }
 
     @ReactMethod
     @TargetApi(23)
-    public void stopScanning() {
+    public void stopScan() {
         Log.d(TAG, "stopScanning()");
 
         manager.stopScan();
@@ -180,12 +177,12 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
     @TargetApi(23)
     public void startScan() {
         
-        if (!isScanning) {
-            int permissionCheck = ContextCompat.checkSelfPermission(mreactContext, Manifest.permission.ACCESS_FINE_LOCATION);
-            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "scanNewButton() No permission");
-                return;
-            }
+//        if (!isScanning) {
+//            int permissionCheck = ContextCompat.checkSelfPermission(mreactContext, Manifest.permission.ACCESS_FINE_LOCATION);
+//            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+//                Log.d(TAG, "scanNewButton() No permission");
+//                return;
+//            }
 
             Log.d(TAG, "startScan() start scan");
 
@@ -213,16 +210,16 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
                 public void onComplete(int result, int subCode, Flic2Button button) {
                     isScanning = false;
 
-
                     if (result == Flic2ScanCallback.RESULT_SUCCESS) {
-                        Log.d(TAG, "startScan() Scan wizard success!");
-                        listenToButtonWithToast(button);
+                        listenToButton(button);
+                        mReactEvent.sendScanMessage(false, result, button);
                     } else {
-                        Log.d(TAG, "startScan() Scan wizard failed with code " + Flic2Manager.errorCodeToString(result));
+                        mReactEvent.sendScanMessage(true, result, button);
                     }
+
                 }
             });
-        }
+//        }
     }
 
     private boolean isServiceRunning(Context context, Class<?> serviceClass) {

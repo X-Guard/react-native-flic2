@@ -42,6 +42,7 @@ public class ReactEvent {
     public static final String EVENT_BUTTON_HOLD = "didReceiveButtonHold";
     public static final String EVENT_BUTTON_REMOVED = "removeAllButtons";
     public static final String EVENT_BUTTON_BATTERY_LEVEL = "batteryLevel";
+    public static final String EVENT_SCAN_RESULT = "scanResult";
 
 
     private ReactContext mReactContext;
@@ -118,6 +119,19 @@ public class ReactEvent {
 
         mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(EVENT_NAMESPACE, args);
+    }
+
+
+    public void sendScanMessage(Boolean error,int code, Flic2Button button) {
+        Log.d(TAG, "sendScanMessage() called with: event = [" + EVENT_SCAN_RESULT + "]");
+        WritableMap args = new WritableNativeMap();
+        WritableMap buttonMap = this.getButtonArgs(button);
+        args.putBoolean("error", error);
+        args.putInt("result", code);
+        args.putMap("button", buttonMap);
+
+        mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(EVENT_SCAN_RESULT, args);
     }
 
     public WritableMap getButtonArgs(Flic2Button button) {
