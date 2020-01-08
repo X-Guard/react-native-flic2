@@ -106,11 +106,17 @@ RCT_EXPORT_METHOD(getButtons:(RCTResponseSenderBlock)callback callback:(RCTRespo
     NSMutableArray *buttonArray = [[NSMutableArray alloc] init];
     NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
 
-    for (FLICButton *button in buttons) {
-      [buttonArray addObject: [self convertButtonToDict: button]];
-    }
+    @try {
 
-    callback(@[buttonArray]);
+       for (FLICButton *button in buttons) {
+          [buttonArray addObject: [self convertButtonToDict: button]];
+       }
+
+       successCallBack(@[buttonArray]);
+    }
+    @catch (NSException *exception) {
+       errorCallback(@[exception.reason]);
+    }
 }
 
 RCT_EXPORT_METHOD(connectAllKnownButtons) {
