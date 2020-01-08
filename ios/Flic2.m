@@ -9,8 +9,6 @@
     return YES;
 }
 
-NSString *testNameSpace = @"FLIC2";
-
 - (void) startObserving {
     hasListeners = YES;
 }
@@ -23,7 +21,7 @@ NSString *testNameSpace = @"FLIC2";
     NSLog(@"FLIC2LIB EVENT %@", body);
     
     if (hasListeners) {
-        [self sendEventWithName:testNameSpace body: body];
+        [self sendEventWithName:@"FLIC2" body: body];
     }
 }
 
@@ -39,7 +37,7 @@ NSString *testNameSpace = @"FLIC2";
         [self sendEventWithName:@"scanResult" body: @{
             @"error": @(errorCode == 0 ? false : true),
             @"result": @([self getCorrectScanResultCode:errorCode]),
-            @"button": !button ?@{
+            @"button": !button ? @{
                 @"uuid": button.uuid,
                 @"bluetoothAddress": button.bluetoothAddress,
                 @"name": button.name,
@@ -49,7 +47,7 @@ NSString *testNameSpace = @"FLIC2";
                 @"isUnpaired": @(button.isUnpaired),
                 @"pressCount": @(button.pressCount),
                 @"firmwareRevision": @(button.firmwareRevision)
-            } : NULL
+            } : [NSNull null],
         }];
     }
 }
@@ -58,8 +56,7 @@ NSString *testNameSpace = @"FLIC2";
     NSLog(@"FLIC2LIB EVENT %@", event);
     
     if (hasListeners) {
-        [self sendEventWithName:testNameSpace body: @{
-        @"event": event,
+        [self sendEventWithName:event body: @{
         @"queued": @(queued),
         @"age": @(age),
         @"uuid": button.uuid,
@@ -82,7 +79,16 @@ NSString *testNameSpace = @"FLIC2";
 RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
-    return @[testNameSpace];
+    return @[
+        @"FLIC2",
+        @"scanResult",
+        @"didReceiveButtonEvent",
+        @"didReceiveButtonDown",
+        @"didReceiveButtonUp",
+        @"didReceiveButtonClick",
+        @"didReceiveButtonDoubleClick",
+        @"didReceiveButtonHold",
+    ];
 }
 
 -(NSInteger) getCorrectScanResultCode: (NSInteger) code {
