@@ -25,30 +25,29 @@
     }
 }
 
-- (void) sendEventScanMessage:(FLICButton *)button errorCode:(NSError *)error {
-    NSLog(@"FLIC2LIB EVENT %@", @"scanResult");
-    NSInteger errorCode;
-    if(!error) {
-        errorCode = 0;
+- (void) sendEventScanMessage:(FLICButton *)button errorCode:(NSInteger) error {
+
+    Boolean errorBool;
+    if(error == 0) {
+        errorBool = false;
     } else {
-        errorCode = error.code;
+        errorBool = true;
     }
+    NSLog(@"FLIC2LIB EVENT error code %ld", (long)[self getCorrectScanResultCode:error]);
     if (hasListeners) {
-        [self sendEventWithName:@"scanResult" body: @{
-            @"error": @(errorCode == 0 ? false : true),
-            @"result": @([self getCorrectScanResultCode:errorCode]),
-            @"button": !button ? @{
-                @"uuid": button.uuid,
-                @"bluetoothAddress": button.bluetoothAddress,
-                @"name": button.name,
-                @"batteryLevel": @([self batteryVoltageToEstimatedPercentage:button.batterylevel]),
-                @"voltage": @((button.batterylevel * 3.6) / 1024),
-                @"isReady": @(button.isReady),
-                @"isUnpaired": @(button.isUnpaired),
-                @"pressCount": @(button.pressCount),
-                @"firmwareRevision": @(button.firmwareRevision)
-            } : [NSNull null],
-        }];
+        if (button != nil) {
+            [self sendEventWithName:@"scanResult" body: @{
+                @"error": @(errorBool),
+                @"result": @([self getCorrectScanResultCode:error]),
+                @"button": [self convertButtonToDictForScan:button]
+            }];
+        } else {
+            [self sendEventWithName:@"scanResult" body: @{
+                @"error": @(errorBool),
+                @"result": @([self getCorrectScanResultCode:error]),
+            }];
+        }
+
     }
 }
 
@@ -70,6 +69,29 @@
         @"firmwareRevision": @(button.firmwareRevision)
         }];
     }
+}
+
+-(NSDictionary *) convertButtonToDictForScan: (FLICButton *) button
+{
+        NSLog(@"FLIC2LIB convertButtonToDictForScan %@", button);
+    if (button != nil) {
+        NSLog(@"FLIC2LIB convertButtonToDictForScan %d", !button);
+        return @{
+                 @"uuid": button.uuid,
+                 @"bluetoothAddress": button.bluetoothAddress,
+                 @"name": button.name,
+                 @"batteryLevel": @([self batteryVoltageToEstimatedPercentage:button.batterylevel]),
+                 @"voltage": @((button.batterylevel * 3.6) / 1024),
+                 @"isReady": @(button.isReady),
+                 @"isUnpaired": @(button.isUnpaired),
+                 @"pressCount": @(button.pressCount),
+                 @"firmwareRevision": @(button.firmwareRevision)
+                 };
+    } else {
+                NSLog(@"FLIC2LIB convertButtonToDictForScan return nil");
+        return false;
+    }
+
 }
 
 - (dispatch_queue_t)methodQueue {
@@ -298,7 +320,7 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
             
             [self sendEventScanMessage: (button) errorCode:(0)];
         } else {
-            [self sendEventScanMessage: (button) errorCode:(error)];
+            [self sendEventScanMessage: (button) errorCode:(error.code)];
         }
     }];
 }
@@ -331,7 +353,7 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
 
 - (void)button:(FLICButton *)button didDisconnectWithError:(NSError *)error;
 {
-    NSLog(@"Did disconnect Flic2: %@", error);
+    NSLog(@"Did disconnect Flic2: %@", button.name);
     [self sendEventMessage: @{
         @"event": @"buttonDisconnected",
         @"name": button.name,
@@ -371,21 +393,21 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
 
 - (void)button:(FLICButton *)button didFailToConnectWithError:(NSError * _Nullable)error;
 {
-    NSLog(@"Did fail to connect Flic2: %@", error);
+    NSLog(@"Did fail to connect Flic2: %@", button.name);
     [self sendEventMessage: @{
         @"event": @"buttonConnectionFailure",
         @"name": button.name,
-        @"error": error
+//        @"error": error
     }];
 }
 
 - (void)button:(FLICButton *)button didUnpairWithError:(NSError * _Nullable)error;
 {
-    NSLog(@"Did unpair with error Flic2: %@", error);
+    NSLog(@"Did unpair with error Flic2: %@", button.name);
     [self sendEventMessage: @{
         @"event": @"buttonConnectionUnpaired",
         @"name": button.name,
-        @"error": error
+//        @"error": error
     }];
 }
 
