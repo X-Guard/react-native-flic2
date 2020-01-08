@@ -69,7 +69,6 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
         mReactEvent.send(ReactEvent.EVENT_MANAGER_IS_INITIALIZED);
 
-        connectAllKnownButtons();
     }
 
 
@@ -80,8 +79,6 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
         Boolean isRunning = isServiceRunning(getReactApplicationContext(), Flic2Service.class);
 
         if (!isRunning) {
-
-            Log.d(TAG, "startService()");
 
             Intent intent = new Intent(getReactApplicationContext(), Flic2Service.class);
 
@@ -97,10 +94,9 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
 
     }
 
-
-
     public void listenToButtonWithToast(Flic2Button button) {
         Log.d(TAG, "connectAllKnownButtons()");
+
         button.addListener(new flic2ButtonCallback(mreactContext));
     }
 
@@ -108,6 +104,7 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
     @TargetApi(23)
     public void connectAllKnownButtons() {
         Log.d(TAG, "connectAllKnownButtons()");
+
         for (Flic2Button button : manager.getButtons()) {
             button.disconnectOrAbortPendingConnection();
             button.connect();
@@ -119,6 +116,7 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
     @TargetApi(23)
     public void stopScanning() {
         Log.d(TAG, "stopScanning()");
+
         manager.stopScan();
         isScanning = false;
     }
@@ -127,6 +125,7 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
     @TargetApi(23)
     public void getButtons(Callback successCallback, Callback errorCallback) {
         Log.d(TAG, "getButtons()");
+
         try {
             List<Flic2Button> buttons = manager.getButtons();
             WritableArray array = new WritableNativeArray();
@@ -180,6 +179,7 @@ public class Flic2Module extends ReactContextBaseJavaModule implements HandlerIn
     @ReactMethod
     @TargetApi(23)
     public void startScan() {
+        
         if (!isScanning) {
             int permissionCheck = ContextCompat.checkSelfPermission(mreactContext, Manifest.permission.ACCESS_FINE_LOCATION);
             if (permissionCheck != PackageManager.PERMISSION_GRANTED) {

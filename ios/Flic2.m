@@ -204,11 +204,10 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
 
 - (void)managerDidRestoreState:(FLICManager *)manager;
 {
-    // The mnager was restored and can now be used.
+    // The mager was restored and can now be used.
     for (FLICButton *button in manager.buttons)
     {
         NSLog(@"Did restore Flic2: %@", button.name);
-
     }
 }
 
@@ -235,7 +234,7 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
     [self sendEventMessage: @{
         @"event": @"buttonDisconnected",
         @"name": button.name,
-//        @"error": error
+        @"error": error
     }];
 }
 
@@ -275,7 +274,7 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
     [self sendEventMessage: @{
         @"event": @"buttonConnectionFailure",
         @"name": button.name,
-//        @"error": error
+        @"error": error
     }];
 }
 
@@ -285,7 +284,7 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
     [self sendEventMessage: @{
         @"event": @"buttonConnectionUnpaired",
         @"name": button.name,
-//        @"error": error
+        @"error": error
     }];
 }
 

@@ -26,26 +26,31 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
         Log.d(TAG, "onDisconnect() called with: button = [" + button + "]");
         mReactEvent.send(button, ReactEvent.EVENT_BUTTON_STATUS_DISCONNECTED);
     }
+    
     @Override
     public void onConnect(Flic2Button button) {
         Log.d(TAG, "onConnect() called with: button = [" + button + "]");
         mReactEvent.send(button, ReactEvent.EVENT_BUTTON_STATUS_CONNECTION_COMPLETED);
     }
+
     @Override
     public void onFailure(Flic2Button button, int errorCode, int subCode) {
         Log.d(TAG, "onFailure() called with: button = [" + button + "]" + " error: " + errorCode);
         mReactEvent.send(button, ReactEvent.EVENT_BUTTON_STATUS_ON_FAILURE);
     }
+
     @Override
     public void onReady(Flic2Button button, long timestamp) {
         Log.d(TAG, "onReady() called with: button = [" + button + "]");
         mReactEvent.send(button, ReactEvent.EVENT_BUTTON_STATUS_CONNECTION_ON_READY);
     }
+
     @Override
     public void onUnpaired(Flic2Button button) {
         Log.d(TAG, "onUnpaired() called with: button = [" + button + "]");
         mReactEvent.send(button, ReactEvent.EVENT_BUTTON_STATUS_CONNECTION_UNPAIRED);
     }
+
     @Override
     public void onButtonClickOrHold(Flic2Button button, boolean wasQueued, boolean lastQueued, long timestamp, boolean isClick, boolean isHold) {
 //        Log.d(TAG, "onButtonClickOrHold() called with: button = [" + button + "]");
