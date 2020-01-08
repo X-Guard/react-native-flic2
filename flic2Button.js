@@ -121,3 +121,5 @@ class Flic2Button extends EventEmitter {
   }
 
 }
+
+export default Flic2Button
