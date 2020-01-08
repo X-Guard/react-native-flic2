@@ -1,5 +1,5 @@
 // get the native module
-import { NativeModules, NativeEventEmitter } from 'react-native';
+import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 
 // event emitter
 import EventEmitter from 'EventEmitter';
@@ -44,6 +44,27 @@ class Flic2 extends EventEmitter {
   }
 
   /**
+   * Starts an Android service.
+   * 
+   * @version 1.0.0
+   * @returns {boolean} Returns boolean true when finished.
+   */
+  startService() {
+
+    // android only
+    if(Platform.OS === 'android') {
+
+      // proxy
+      Flic2Module.startService();
+
+    }
+
+    // done
+    return true;
+  
+  }
+
+  /**
    * Get a Flic2Button object by UUID.
    * 
    * @version 1.0.0
@@ -62,7 +83,7 @@ class Flic2 extends EventEmitter {
         // check
         if(button.getUuid() === uuid) {
 
-          return button;
+          return resolve(button);
 
         }
 
@@ -233,7 +254,6 @@ class Flic2 extends EventEmitter {
   }
 
   forgetAllButtons() {
-
 
     
   }
