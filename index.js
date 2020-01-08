@@ -107,7 +107,42 @@ class Flic2 extends EventEmitter {
     return new Promise((resolve, reject) => {
 
       // proxy
-      Flic2Module.getButtons(resolve, reject);
+      Flic2Module.getButtons((buttons) => {
+
+        // mutate
+        const exportButtons = [];
+        for(const button of buttons){
+
+          // button uuid
+          const buttonUuid = button.uuid;
+
+          // check if we have the button object in memory
+          if (typeof this.knownButtons[buttonUuid] !== 'undefined'){
+
+            // update
+            const knownButton = this.knownButtons[buttonUuid];
+            knownButton.setData(button);
+
+            // add
+            exportButtons.push(knownButton);
+
+          } else {
+
+            // create it
+            this.knownButtons[buttonUuid] = new Flic2Button(eventData.button);
+
+            // add
+            exportButtons.push(this.knownButtons[buttonUuid]);
+
+          }
+
+
+        }
+
+        // export all known buttons
+        return resolve(exportButtons);
+
+      }, reject);
 
     });    
   }
