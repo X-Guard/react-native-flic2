@@ -8,7 +8,7 @@ import EventEmitter from 'react-native/Libraries/vendor/emitter/EventEmitter';
 import Flic2Button from './flic2Button.js';
 
 // we only care about flic 2 here
-const Flic2Module = NativeModules.Flic2;
+const { Flic2Module } = NativeModules;
 
 /**
  * React Native Flic 2
