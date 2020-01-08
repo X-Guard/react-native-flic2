@@ -2,13 +2,13 @@
 import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 
 // event emitter
-import EventEmitter from 'EventEmitter';
+import EventEmitter from 'react-native/Libraries/vendor/emitter/EventEmitter';
 
 // local imports
-import Flic2Button from './Flic2Button.js';
+import Flic2Button from './flic2Button.js';
 
 // we only care about flic 2 here
-const { Flic2Module } = NativeModules;
+const Flic2Module = NativeModules.Flic2;
 
 /**
  * React Native Flic 2
@@ -25,6 +25,8 @@ class Flic2 extends EventEmitter {
    * @version 1.0.0
    */
   constructor() {
+
+    console.log({ NativeModules, Flic2Module })
 
     // extended class initialisation
     super();
