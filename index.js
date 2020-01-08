@@ -29,11 +29,11 @@ class Flic2 extends EventEmitter {
     // extended class initialisation
     super();
 
-  	// start the native context
-  	Flic2Module.startup();
+    // start the native context
+    Flic2Module.startup();
 
-  	// listen to events
-  	this.nativeEvents = new NativeEventEmitter(Flic2Module);
+    // listen to events
+    this.nativeEvents = new NativeEventEmitter(Flic2Module);
 
     // button click events
     this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEvent);
@@ -77,7 +77,7 @@ class Flic2 extends EventEmitter {
    * @version 1.0.0
    * @returns {Promise} Promise represents an array of Flic2Button objects.
    */
-	getButtons() {
+  getButtons() {
     return new Promise((resolve, reject) => {
 
       // proxy
@@ -195,7 +195,7 @@ class Flic2 extends EventEmitter {
 
 
 
-	connectAllKnownButtons() {
+  connectAllKnownButtons() {
 
     // pass to native module
     Flic2Module.connectAllKnownButtons();
@@ -232,7 +232,7 @@ class Flic2 extends EventEmitter {
     });
   }
 
-	forgetAllButtons() {
+  forgetAllButtons() {
 
 
     
