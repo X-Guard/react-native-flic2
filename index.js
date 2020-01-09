@@ -34,6 +34,11 @@ const SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH                                   = 
 const SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED                              = 20;
 const SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE                                    = 21;
 
+const BUTTON_TRIGGER_MODE_CLICK_AND_HOLD                                      = 0; 
+const BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK                              = 1; 
+const BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK_AND_HOLD                     = 2; 
+const BUTTON_TRIGGER_MODE_CLICK                                               = 3; 
+
 /**
  * React Native Flic 2
  * Exposes the Flic2Module functions to the React Native context.
@@ -82,6 +87,10 @@ class Flic2 extends EventEmitter {
       SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH: SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH,
       SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED: SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED,
       SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE: SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE,
+      BUTTON_TRIGGER_MODE_CLICK_AND_HOLD: BUTTON_TRIGGER_MODE_CLICK_AND_HOLD,
+      BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK: BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK,
+      BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK_AND_HOLD: BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK_AND_HOLD,
+      BUTTON_TRIGGER_MODE_CLICK: BUTTON_TRIGGER_MODE_CLICK,
     };
 
     // proxy
@@ -363,6 +372,15 @@ class Flic2 extends EventEmitter {
 
     // pass to native module
     Flic2Module.forgetAllButtons();
+  }
+
+  setMode(uuid, mode) {
+    return new Promise(resolve => {
+
+      // pass to native module
+      Flic2Module.setMode(uuid, mode, resolve);
+
+    });
   }
 
 }

@@ -78,6 +78,13 @@ class Flic2Button extends EventEmitter {
 
   }
 
+  setMode(mode){
+
+    // proxy call to parent
+    return Flic2.setMode(this.uuid, mode);
+
+  }
+
   getUuid(){
 
     return this.uuid;

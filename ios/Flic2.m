@@ -321,6 +321,30 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid callback:(RCTResponseSenderBloc
 
 }
 
+RCT_EXPORT_METHOD(setMode:(NSString *)uuid mode:(NSInteger) mode  callback:(RCTResponseSenderBlock) successCallBack) {
+    NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
+
+    for (FLICButton *button in buttons) {
+        
+        if ([button.uuid isEqualToString:uuid]) {
+            
+            if(FLICButtonTriggerModeClick == mode) {
+               button.triggerMode = FLICButtonTriggerModeClick;
+            } else if(FLICButtonTriggerModeClickAndHold == mode) {
+               button.triggerMode = FLICButtonTriggerModeClickAndHold;
+            } else if(FLICButtonTriggerModeClickAndDoubleClick == mode) {
+               button.triggerMode = FLICButtonTriggerModeClickAndDoubleClick;
+            } else {
+               button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
+            }
+
+            successCallBack(@[]);
+            break;
+        }
+    }
+
+}
+
 - (void)stopScan {
 
     [[FLICManager sharedManager] stopScan];
