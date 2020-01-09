@@ -75,17 +75,17 @@ const SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE                                    = 
 // Scan result:
 Flic2.addEventListener('sanResult', ((int) result, (Flic2Button) button) => {
 
-	if (result === Flic2.constants.SCAN_RESULT_SUCCESS) {
+  if (result === Flic2.constants.SCAN_RESULT_SUCCESS) {
 
-		doSomethingWithButton(button);
+    doSomethingWithButton(button);
 
-	} else 
-	if(result === Flic2.constants.SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE) {
+  } else 
+  if(result === Flic2.constants.SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE) {
 
-		alert('This button is already connected to another device');
+    alert('This button is already connected to another device');
 
-	}
-	// ... etc
+  }
+  // ... etc
 
 });
 
@@ -98,8 +98,8 @@ Flic2.addEventListener('sanResult', ((int) result, (Flic2Button) button) => {
 // didReceiveButtonHold
 Flic2.addEventListener('didReceiveButtonHold', ((object) eventData) => {
 
-	// eventData:
-	// { int age, bool queued, Flic2Button button }
+  // eventData:
+  // { int age, bool queued, Flic2Button button }
 
 });
 ```
