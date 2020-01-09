@@ -352,9 +352,17 @@ class Flic2 extends EventEmitter {
     });
   }
 
+  disconnectAllKnownButtons() {
+
+    // pass to native module
+    Flic2Module.disconnectAllKnownButtons();
+    
+  }
+
   forgetAllButtons() {
 
-    
+    // pass to native module
+    Flic2Module.forgetAllButtons();
   }
 
 }

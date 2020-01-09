@@ -238,6 +238,19 @@ RCT_EXPORT_METHOD(getButtons:(RCTResponseSenderBlock)callback callback:(RCTRespo
 
 }
 
+RCT_EXPORT_METHOD(connectButton:(NSString *) uuid callback:(RCTResponseSenderBlock) successCallBack) {
+    NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
+
+    for (FLICButton *button in buttons) {
+        if ([button.uuid isEqualToString:uuid]) {
+            [button connect];
+            successCallBack(@[]);
+            break;
+        }
+    }
+
+}
+
 RCT_EXPORT_METHOD(connectAllKnownButtons) {
 
     NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
@@ -248,6 +261,29 @@ RCT_EXPORT_METHOD(connectAllKnownButtons) {
         [button disconnect];
         [button connect];
     }
+}
+
+RCT_EXPORT_METHOD(disconnectAllKnownButtons) {
+
+    NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
+
+    for (FLICButton *button in buttons) {
+        NSLog(@"Flic2 diconnect button: %@", button.name);
+        [button disconnect];
+    }
+}
+
+RCT_EXPORT_METHOD(disconnectButton:(NSString *) uuid callback:(RCTResponseSenderBlock) successCallBack) {
+    NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
+
+    for (FLICButton *button in buttons) {
+        if ([button.uuid isEqualToString:uuid]) {
+            [button disconnect];
+            successCallBack(@[]);
+            break;
+        }
+    }
+
 }
 
 RCT_EXPORT_METHOD(startScan) {
