@@ -307,6 +307,7 @@ class Flic2 extends EventEmitter {
       event: eventData.event,
       queued: eventData.queued,
       age: eventData.age,
+      error: eventData.error,
       button: this.knownButtons[buttonUuid],
     });
 
