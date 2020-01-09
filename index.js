@@ -14,7 +14,7 @@ const Flic2Module = NativeModules.Flic2;
 const SCAN_RESULT_SUCCESS                                                     = 0;
 const SCAN_RESULT_ERROR_ALREADY_RUNNING                                       = 1;
 const SCAN_RESULT_ERROR_BLUETOOTH_NOT_ACTIVATED                               = 2;
-const SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_UNKNOWN_REASON                     = 3;
+const SCAN_RESULT_ERROR_UNKNOWN                                               = 3;
 const SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED                           = 4;
 const SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE                   = 5;
 const SCAN_RESULT_ERROR_CONNECTION_TIMEOUT                                    = 6;
@@ -23,7 +23,7 @@ const SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING  = 
 const SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_USER_CANCELED                      = 9;
 const SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_UNKNOWN_REASON                     = 10;
 const SCAN_RESULT_ERROR_APP_CREDENTIALS_DONT_MATCH                            = 11;
-const SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_USER_CANCELED                      = 12;
+const SCAN_RESULT_ERROR_USER_CANCELED                                         = 12;
 const SCAN_RESULT_ERROR_INVALID_BLUETOOTH_ADDRESS                             = 13;
 const SCAN_RESULT_ERROR_GENUINE_CHECK_FAILED                                  = 14;
 const SCAN_RESULT_ERROR_TOO_MANY_APPS                                         = 15;
@@ -42,28 +42,6 @@ const SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE                                    = 
  */
 class Flic2 extends EventEmitter {
 
-  static get SCAN_RESULT_ERROR_ALREADY_RUNNING()                                      { return SCAN_RESULT_ERROR_ALREADY_RUNNING; }
-  static get SCAN_RESULT_ERROR_BLUETOOTH_NOT_ACTIVATED()                              { return SCAN_RESULT_ERROR_BLUETOOTH_NOT_ACTIVATED; }
-  static get SCAN_RESULT_ERROR_UNKNOWN()                                              { return SCAN_RESULT_ERROR_UNKNOWN; }
-  static get SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED()                          { return SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED; }
-  static get SCAN_RESULT_ERROR_CONNECTION_TIMEOUT()                                   { return SCAN_RESULT_ERROR_CONNECTION_TIMEOUT; }
-  static get SCAN_RESULT_ERROR_INVALID_VERIFIER()                                     { return SCAN_RESULT_ERROR_INVALID_VERIFIER; }
-  static get SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_USER_CANCELED()                     { return SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_USER_CANCELED; }
-  static get SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_UNKNOWN_REASON()                    { return SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_UNKNOWN_REASON; }
-  static get SCAN_RESULT_ERROR_APP_CREDENTIALS_DONT_MATCH()                           { return SCAN_RESULT_ERROR_APP_CREDENTIALS_DONT_MATCH; }
-  static get SCAN_RESULT_ERROR_USER_CANCELED()                                        { return SCAN_RESULT_ERROR_USER_CANCELED; }
-  static get SCAN_RESULT_ERROR_INVALID_BLUETOOTH_ADDRESS()                            { return SCAN_RESULT_ERROR_INVALID_BLUETOOTH_ADDRESS; }
-  static get SCAN_RESULT_ERROR_GENUINE_CHECK_FAILED()                                 { return SCAN_RESULT_ERROR_GENUINE_CHECK_FAILED; }
-  static get SCAN_RESULT_ERROR_TOO_MANY_APPS()                                        { return SCAN_RESULT_ERROR_TOO_MANY_APPS; }
-  static get SCAN_RESULT_ERROR_COULD_NOT_SET_BLUETOOTH_NOTIFY()                       { return SCAN_RESULT_ERROR_COULD_NOT_SET_BLUETOOTH_NOTIFY; }
-  static get SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH()                                  { return SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH; }
-  static get SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED()                             { return SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED; }
-  static get SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE()                                   { return SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE; }
-  static get SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE()                  { return SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE; }
-  static get SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING() { return SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING; }
-  static get SCAN_RESULT_ERROR_COULD_NOT_DISCOVER_BLUETOOTH_SERVICES()                { return SCAN_RESULT_ERROR_COULD_NOT_DISCOVER_BLUETOOTH_SERVICES; }
-  static get SCAN_RESULT_ERROR_BUTTON_DISCONNECTED_DURING_VERIFICATION()              { return SCAN_RESULT_ERROR_BUTTON_DISCONNECTED_DURING_VERIFICATION; }
-
   /**
    * Constructor.
    * 
@@ -80,14 +58,41 @@ class Flic2 extends EventEmitter {
     // start the native context
     Flic2Module.startup();
 
+    // define constants
+    this.constants = {
+      SCAN_RESULT_SUCCESS: SCAN_RESULT_SUCCESS,
+      SCAN_RESULT_ERROR_ALREADY_RUNNING: SCAN_RESULT_ERROR_ALREADY_RUNNING,
+      SCAN_RESULT_ERROR_BLUETOOTH_NOT_ACTIVATED: SCAN_RESULT_ERROR_BLUETOOTH_NOT_ACTIVATED,
+      SCAN_RESULT_ERROR_UNKNOWN: SCAN_RESULT_ERROR_UNKNOWN,
+      SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED: SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED,
+      SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE: SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE,
+      SCAN_RESULT_ERROR_CONNECTION_TIMEOUT: SCAN_RESULT_ERROR_CONNECTION_TIMEOUT,
+      SCAN_RESULT_ERROR_INVALID_VERIFIER: SCAN_RESULT_ERROR_INVALID_VERIFIER,
+      SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING: SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING,
+      SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_USER_CANCELED: SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_USER_CANCELED,
+      SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_UNKNOWN_REASON: SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_UNKNOWN_REASON,
+      SCAN_RESULT_ERROR_APP_CREDENTIALS_DONT_MATCH: SCAN_RESULT_ERROR_APP_CREDENTIALS_DONT_MATCH,
+      SCAN_RESULT_ERROR_USER_CANCELED: SCAN_RESULT_ERROR_USER_CANCELED,
+      SCAN_RESULT_ERROR_INVALID_BLUETOOTH_ADDRESS: SCAN_RESULT_ERROR_INVALID_BLUETOOTH_ADDRESS,
+      SCAN_RESULT_ERROR_GENUINE_CHECK_FAILED: SCAN_RESULT_ERROR_GENUINE_CHECK_FAILED,
+      SCAN_RESULT_ERROR_TOO_MANY_APPS: SCAN_RESULT_ERROR_TOO_MANY_APPS,
+      SCAN_RESULT_ERROR_COULD_NOT_SET_BLUETOOTH_NOTIFY: SCAN_RESULT_ERROR_COULD_NOT_SET_BLUETOOTH_NOTIFY,
+      SCAN_RESULT_ERROR_COULD_NOT_DISCOVER_BLUETOOTH_SERVICES: SCAN_RESULT_ERROR_COULD_NOT_DISCOVER_BLUETOOTH_SERVICES,
+      SCAN_RESULT_ERROR_BUTTON_DISCONNECTED_DURING_VERIFICATION: SCAN_RESULT_ERROR_BUTTON_DISCONNECTED_DURING_VERIFICATION,
+      SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH: SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH,
+      SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED: SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED,
+      SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE: SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE,
+    };
+
     // proxy
     this.onScanResultFunction = this.onScanResult.bind(this);
+    this.didReceiveButtonEventFunction = this.didReceiveButtonEvent.bind(this);
 
     // listen to events
     this.nativeEvents = new NativeEventEmitter(Flic2Module);
 
     // button click events
-    this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEvent);
+    this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEventFunction);
 
     // known buttons
     this.knownButtons = {};
@@ -150,6 +155,7 @@ class Flic2 extends EventEmitter {
    * @returns {Promise} Promise represents an array of Flic2Button objects.
    */
   getButtons() {
+    console.log('flic2 get buttons');
     return new Promise((resolve, reject) => {
 
       // proxy
@@ -240,7 +246,7 @@ class Flic2 extends EventEmitter {
    */
   onScanResult({ error, result, button }){
 
-    console.log('onscanresult',button)
+    console.log('onscanresult',error, result, button);
     // remove listener
     this.nativeEvents.removeListener('scanResult', this.onScanResultFunction);
 
@@ -281,14 +287,13 @@ class Flic2 extends EventEmitter {
 
       // update
       const knownButton = this.knownButtons[buttonUuid];
-      knownButton.setData(event.button);
+      knownButton.setData(eventData.button);
 
       // proxy to button for individual listen events
       knownButton.didReceiveButtonEvent(eventData);
 
     } else {
 
-      console.log('didreceivebuttonevent', eventData)
       // create it
       this.knownButtons[buttonUuid] = new Flic2Button(eventData.button);
 
