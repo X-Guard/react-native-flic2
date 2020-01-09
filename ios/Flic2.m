@@ -55,18 +55,11 @@
     NSLog(@"FLIC2LIB EVENT %@", event);
     
     if (hasListeners) {
-        [self sendEventWithName:event body: @{
+        [self sendEventWithName:@"didReceiveButtonEvent" body: @{
+        @"event": event,
         @"queued": @(queued),
         @"age": @(age),
-        @"uuid": button.uuid,
-        @"bluetoothAddress": button.bluetoothAddress,
-        @"name": button.name,
-        @"batteryLevel": @([self batteryVoltageToEstimatedPercentage:button.batterylevel]),
-        @"voltage": @((button.batterylevel * 3.6) / 1024),
-        @"isReady": @(button.isReady),
-        @"isUnpaired": @(button.isUnpaired),
-        @"pressCount": @(button.pressCount),
-        @"firmwareRevision": @(button.firmwareRevision)
+        @"button": [self convertButtonToDictForScan:button]
         }];
     }
 }
@@ -230,6 +223,13 @@ RCT_EXPORT_METHOD(startup) {
 RCT_EXPORT_METHOD(getButtons:(RCTResponseSenderBlock)callback callback:(RCTResponseSenderBlock)calback) {
     NSMutableArray *buttonArray = [[NSMutableArray alloc] init];
     NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
+    
+    for (FLICButton *button in buttons) {
+      [buttonArray addObject: [self convertButtonToDict: button]];
+    }
+ 
+    callback(@[buttonArray]);
+
 }
 
 RCT_EXPORT_METHOD(connectAllKnownButtons) {
@@ -264,7 +264,7 @@ RCT_EXPORT_METHOD(forgetAllButtons) {
     }
 }
 
-RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
+RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid callback:(RCTResponseSenderBlock) successCallBack) {
     NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
 
     for (FLICButton *button in buttons) {
@@ -272,10 +272,12 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
             [button disconnect];
             [[FLICManager sharedManager] forgetButton:(button) completion:^(NSUUID * _Nonnull uuid, NSError * _Nullable error) {
                 [self sendEventMessage: @{@"event": @"forgetButton"}];
+                successCallBack(@[]);
             }];
             break;
         }
     }
+
 }
 
 - (void)stopScan {
@@ -394,6 +396,7 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid) {
 - (void)button:(FLICButton *)button didFailToConnectWithError:(NSError * _Nullable)error;
 {
     NSLog(@"Did fail to connect Flic2: %@", button.name);
+//    [self sendEventMessage: (@"didReceiveButtonHold") button:(button) queued:(queued) age:(age)];
     [self sendEventMessage: @{
         @"event": @"buttonConnectionFailure",
         @"name": button.name,

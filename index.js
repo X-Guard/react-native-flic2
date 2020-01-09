@@ -86,12 +86,13 @@ class Flic2 extends EventEmitter {
 
     // proxy
     this.onScanResultFunction = this.onScanResult.bind(this);
+    this.didReceiveButtonEventFunction = this.didReceiveButtonEvent.bind(this);
 
     // listen to events
     this.nativeEvents = new NativeEventEmitter(Flic2Module);
 
     // button click events
-    this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEvent);
+    this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEventFunction);
 
     // known buttons
     this.knownButtons = {};
@@ -154,6 +155,7 @@ class Flic2 extends EventEmitter {
    * @returns {Promise} Promise represents an array of Flic2Button objects.
    */
   getButtons() {
+    console.log('flic2 get buttons');
     return new Promise((resolve, reject) => {
 
       // proxy
@@ -244,7 +246,7 @@ class Flic2 extends EventEmitter {
    */
   onScanResult({ error, result, button }){
 
-    console.log('onscanresult',button)
+    console.log('onscanresult',error, result, button);
     // remove listener
     this.nativeEvents.removeListener('scanResult', this.onScanResultFunction);
 
@@ -285,14 +287,13 @@ class Flic2 extends EventEmitter {
 
       // update
       const knownButton = this.knownButtons[buttonUuid];
-      knownButton.setData(event.button);
+      knownButton.setData(eventData.button);
 
       // proxy to button for individual listen events
       knownButton.didReceiveButtonEvent(eventData);
 
     } else {
 
-      console.log('didreceivebuttonevent', eventData)
       // create it
       this.knownButtons[buttonUuid] = new Flic2Button(eventData.button);
 
