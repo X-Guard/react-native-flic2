@@ -47,6 +47,61 @@ Flic2Button.getVoltage(); // get the estimated battery voltage
 Flic2Button.getPressCount(); // get button count since last reset
 Flic2Button.getFirmwareRevision(); // get current hardware version
 Flic2Button.addEventListener(event, fn); // listen for button events for this particular button. Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
+
+// constants
+const SCAN_RESULT_SUCCESS                                                     = 0;
+const SCAN_RESULT_ERROR_ALREADY_RUNNING                                       = 1;
+const SCAN_RESULT_ERROR_BLUETOOTH_NOT_ACTIVATED                               = 2;
+const SCAN_RESULT_ERROR_UNKNOWN                                               = 3;
+const SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED                           = 4;
+const SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE                   = 5;
+const SCAN_RESULT_ERROR_CONNECTION_TIMEOUT                                    = 6;
+const SCAN_RESULT_ERROR_INVALID_VERIFIER                                      = 7;
+const SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING  = 8;
+const SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_USER_CANCELED                      = 9;
+const SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_UNKNOWN_REASON                     = 10;
+const SCAN_RESULT_ERROR_APP_CREDENTIALS_DONT_MATCH                            = 11;
+const SCAN_RESULT_ERROR_USER_CANCELED                                         = 12;
+const SCAN_RESULT_ERROR_INVALID_BLUETOOTH_ADDRESS                             = 13;
+const SCAN_RESULT_ERROR_GENUINE_CHECK_FAILED                                  = 14;
+const SCAN_RESULT_ERROR_TOO_MANY_APPS                                         = 15;
+const SCAN_RESULT_ERROR_COULD_NOT_SET_BLUETOOTH_NOTIFY                        = 16;
+const SCAN_RESULT_ERROR_COULD_NOT_DISCOVER_BLUETOOTH_SERVICES                 = 17;
+const SCAN_RESULT_ERROR_BUTTON_DISCONNECTED_DURING_VERIFICATION               = 18;
+const SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH                                   = 19;
+const SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED                              = 20;
+const SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE                                    = 21;
+
+// Scan result:
+Flic2.addEventListener('sanResult', ((int) result, (Flic2Button) button) => {
+
+	if (result === Flic2.constants.SCAN_RESULT_SUCCESS) {
+
+		doSomethingWithButton(button);
+
+	} else 
+	if(result === Flic2.constants.SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE) {
+
+		alert('This button is already connected to another device');
+
+	}
+	// ... etc
+
+});
+
+// Button events:
+// 
+// didReceiveButtonDown
+// didReceiveButtonUp
+// didReceiveButtonClick
+// didReceiveButtonDoubleClick
+// didReceiveButtonHold
+Flic2.addEventListener('didReceiveButtonHold', ((object) eventData) => {
+
+	// eventData:
+	// { int age, bool queued, Flic2Button button }
+
+});
 ```
 
 ## Collaborating
