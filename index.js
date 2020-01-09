@@ -109,10 +109,11 @@ class Flic2 extends EventEmitter {
       // proxy
       Flic2Module.getButtons((buttons) => {
 
+        console.log(buttons);
         // mutate
         const exportButtons = [];
         for(const button of buttons){
-
+          console.log(button);
           // button uuid
           const buttonUuid = button.uuid;
 
@@ -129,7 +130,7 @@ class Flic2 extends EventEmitter {
           } else {
 
             // create it
-            this.knownButtons[buttonUuid] = new Flic2Button(eventData.button);
+            this.knownButtons[buttonUuid] = new Flic2Button(button);
 
             // add
             exportButtons.push(this.knownButtons[buttonUuid]);
@@ -193,6 +194,7 @@ class Flic2 extends EventEmitter {
    */
   onScanResult({ error, result, button }){
 
+    console.log('onscanresult',button)
     // remove listener
     this.nativeEvents.removeListener('scanResult', this.onScanResultFunction);
 
@@ -240,6 +242,7 @@ class Flic2 extends EventEmitter {
 
     } else {
 
+      console.log('didreceivebuttonevent', eventData)
       // create it
       this.knownButtons[buttonUuid] = new Flic2Button(eventData.button);
 
