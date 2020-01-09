@@ -37,6 +37,8 @@ class Flic2Button extends EventEmitter {
     this.voltage = buttonData.voltage; 
     this.pressCount = buttonData.pressCount; 
     this.firmwareRevision = buttonData.firmwareRevision;
+    this.isReady = !!buttonData.isReady;
+    this.isUnpaired = !!buttonData.isUnpaired;
 
   }
 
@@ -124,6 +126,18 @@ class Flic2Button extends EventEmitter {
   getFirmwareRevision(){
 
     return this.firmwareRevision;
+
+  }
+
+  isReady(){
+
+    return this.isReady;
+
+  }
+
+  isUnpaired(){
+
+    return this.isUnpaired;
 
   }
 
