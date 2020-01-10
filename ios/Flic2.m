@@ -292,7 +292,7 @@ RCT_EXPORT_METHOD(startScan) {
 }
 
 RCT_EXPORT_METHOD(stopScan) {
-    [self stopScan];
+    [self stopScanForButton];
 }
 
 RCT_EXPORT_METHOD(forgetAllButtons) {
@@ -357,7 +357,7 @@ RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCT
     }
 }
 
-- (void)stopScan {
+- (void)stopScanForButton {
 
     [[FLICManager sharedManager] stopScan];
 }
