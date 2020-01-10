@@ -38,7 +38,7 @@ public class Flic2Service extends Service {
             notificationManager.createNotificationChannel(mChannel);
         }
 
-        Notification notification = new Notification.Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
+        Notification notification = new NotificationCompat.Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
                 .setContentTitle("Flic2")
                 .setContentText("Flic2")
                 .setSmallIcon(R.mipmap.ic_launcher)
