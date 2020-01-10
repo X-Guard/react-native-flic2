@@ -10,7 +10,7 @@ import io.flic.flic2libandroid.Flic2Button;
 
 public class ReactEvent {
     private static final String TAG = "Flic2ReactEvent";
-    private static final String EVENT_NAMESPACE = "FLIC2";
+    private static final String EVENT_NAMESPACE = "didReceiveButtonEvent";
     private static final String KEY_EVENT = "event";
     private static final String KEY_VALUE = "value";
     private static final String KEY_BUTTON_ID = "uuid";
@@ -23,7 +23,7 @@ public class ReactEvent {
     private static final String KEY_BUTTON_PRESSCOUNT = "pressCount";
     private static final String KEY_BUTTON_FIRMWAREREVISION = "firmwareRevision";
     private static final String KEY_BUTTON_BLUETOOTHADDRESS = "bluetoothAddress";
-    private static final String KEY_BUTTON_READY_TIME = "onReadyTimestamp";
+    private static final String KEY_BUTTON_READY_TIME = "isReadyTimeStamp";
 
     public static final String EVENT_MANAGER_INITIALIZED = "initFlic2";
     public static final String EVENT_MANAGER_IS_INITIALIZED = "isInitialized";
@@ -54,8 +54,11 @@ public class ReactEvent {
 
     public void send(Flic2Button button, String event) {
         Log.d(TAG, "sendEventMessage() called with: button = [" + button + "], event = [" + event + "]");
-        WritableMap args = this.getButtonArgs(button);
+        WritableMap args = new WritableNativeMap();
+        WritableMap buttonMap = this.getButtonArgs(button);
         args.putString(KEY_EVENT, event);
+        args.putMap("button", buttonMap);
+
 
         mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(EVENT_NAMESPACE, args);
@@ -63,8 +66,10 @@ public class ReactEvent {
 
     public void send(Flic2Button button, String event, Boolean queued, long age) {
         Log.d(TAG, "sendEventMessage() called with: button = [" + button + "], event = [" + event + "]");
-        WritableMap args = this.getButtonArgs(button);
+        WritableMap args = new WritableNativeMap();
+        WritableMap buttonMap = this.getButtonArgs(button);
         args.putString(KEY_EVENT, event);
+        args.putMap("button", buttonMap);
         args.putBoolean("queued", queued);
         args.putString("age", String.valueOf(age));
 
@@ -144,6 +149,12 @@ public class ReactEvent {
         args.putInt(KEY_BUTTON_PRESSCOUNT, button.getPressCount());
         args.putInt(KEY_BUTTON_FIRMWAREREVISION, button.getFirmwareVersion());
         args.putString(KEY_BUTTON_READY_TIME, String.valueOf(button.getReadyTimestamp()));
+
+        if (button.getConnectionState() == Flic2Button.CONNECTION_STATE_CONNECTED_READY) {
+          args.putBoolean(KEY_BUTTON_ISREADY, true);
+        } else {
+          args.putBoolean(KEY_BUTTON_ISREADY, false);
+        }
 
         if (button.getLastKnownBatteryLevel() != null) {
             args.putInt(KEY_BUTTON_BatteryLevel, button.getLastKnownBatteryLevel().getEstimatedPercentage());

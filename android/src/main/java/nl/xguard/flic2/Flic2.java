@@ -35,6 +35,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
     private Flic2Manager manager;
     private ReactEvent mReactEvent;
     private boolean isScanning;
+    private boolean managerIsReady;
 
     @Override
     public String getName() {
@@ -47,6 +48,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
         super(reactContext);
         Log.d(TAG, "onCreate()");
 
+        managerIsReady = false;
         mreactContext = reactContext;
         mReactEvent = new ReactEvent(mreactContext);
 
@@ -63,6 +65,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
         Flic2Manager.init(mreactContext, new Handler(Looper.getMainLooper()));
 
         manager = Flic2Manager.getInstance();
+
+        managerIsReady = true;
 
         mReactEvent.send(ReactEvent.EVENT_MANAGER_IS_INITIALIZED);
 
@@ -108,6 +112,62 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
             listenToButton(button);
         }
     }
+
+  @ReactMethod
+  @TargetApi(23)
+  public void connectButton(String uuid, Callback successCallback) {
+    Log.d(TAG, "connectButton()");
+    List<Flic2Button> buttons = manager.getButtons();
+
+    for (Flic2Button button: buttons) {
+
+      Log.d(TAG, "connectButton() uuid: " + uuid +" " + button.getUuid());
+
+      if (String.valueOf(uuid).equals(button.getUuid()))
+      {
+        button.disconnectOrAbortPendingConnection();
+        button.connect();
+        listenToButton(button);
+        successCallback.invoke();
+        return;
+      }
+    }
+
+    Log.d(TAG, "connectButton() no button found " + uuid);
+
+  }
+
+  @ReactMethod
+  @TargetApi(23)
+  public void disconnectButton(String uuid, Callback successCallback) {
+    Log.d(TAG, "disconnectButton()");
+    List<Flic2Button> buttons = manager.getButtons();
+
+    for (Flic2Button button: buttons) {
+
+      Log.d(TAG, "disconnectButton() uuid: " + uuid +" " + button.getUuid());
+
+      if (String.valueOf(uuid).equals(button.getUuid()))
+      {
+        button.disconnectOrAbortPendingConnection();
+        successCallback.invoke();
+        return;
+      }
+    }
+
+    Log.d(TAG, "disconnectButton() no button found " + uuid);
+
+  }
+
+  @ReactMethod
+  @TargetApi(23)
+  public void disconnectAllKnownButtons() {
+    Log.d(TAG, "disconnectAllKnownButtons()");
+
+    for (Flic2Button button : manager.getButtons()) {
+      button.disconnectOrAbortPendingConnection();
+    }
+  }
 
     @ReactMethod
     @TargetApi(23)
