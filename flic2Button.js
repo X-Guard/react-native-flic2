@@ -25,6 +25,13 @@ class Flic2Button extends EventEmitter {
     // initialise
     this.setData(buttonData);
 
+    // initial isReady
+    this.isReady = false;
+
+    // listen for ready
+    this.addListener('didReceiveConnectionReady', this.setReady.bind(this, true));
+    this.addListener('buttonDisconnected', this.setReady.bind(this, false));
+
   }
 
   setData(buttonData) {
@@ -34,11 +41,17 @@ class Flic2Button extends EventEmitter {
     this.bluetoothAddress = buttonData.bluetoothAddress; 
     this.name = buttonData.name; 
     this.batteryLevel = buttonData.batteryLevel; 
-    this.voltage = buttonData.voltage; 
+    this.voltage = buttonData.voltage;
     this.pressCount = buttonData.pressCount; 
     this.firmwareRevision = buttonData.firmwareRevision;
-    this.isReady = !!buttonData.isReady;
     this.isUnpaired = !!buttonData.isUnpaired;
+
+  }
+
+  setReady(isReady) {
+
+    // initialise
+    this.isReady = !!isReady;
 
   }
 
