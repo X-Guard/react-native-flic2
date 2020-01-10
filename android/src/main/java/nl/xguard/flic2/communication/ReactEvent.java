@@ -148,7 +148,7 @@ public class ReactEvent {
         args.putString(KEY_BUTTON_BLUETOOTHADDRESS, button.getBdAddr());
         args.putString(KEY_BUTTON_NAME, button.getName());
         args.putBoolean(KEY_BUTTON_ISUNPAIRED, button.isUnpaired());
-        args.putInt(KEY_BUTTON_PRESSCOUNT, button.getPressCount());
+        args.putInt(KEY_BUTTON_PRESSCOUNT, button.getPressCount() / 2);
         args.putInt(KEY_BUTTON_FIRMWAREREVISION, button.getFirmwareVersion());
         args.putString(KEY_BUTTON_READY_TIME, String.valueOf(button.getReadyTimestamp()));
 
