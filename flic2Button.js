@@ -46,6 +46,15 @@ class Flic2Button extends EventEmitter {
     this.firmwareRevision = buttonData.firmwareRevision;
     this.isUnpaired = !!buttonData.isUnpaired;
 
+    // check unpaired
+    if (this.isUnpaired === true) {
+
+      // the session is no longer valid
+      // Flic docs tell us to forget the button
+      this.forget();
+
+    }
+
   }
 
   setReady(isReady) {
