@@ -34,7 +34,7 @@ Flic2.startService();                    // enable background capabilities throu
 Flic2.getButtons();                      // array of Flic2Button instances
 Flic2.getButton(uuid);                   // get a button by uuid, returns a Flic2Button instance
 Flic2.addEventListener(event, fn);       // listen for button events (all buttons). Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
-
+Flic2.setMode(uuid, mode)                // change the button trigger mode by uuid. Use the constants to change the mode (see example below).
                                          // Flic2Button instance definition
 Flic2Button.connecct()                   // connect this button
 Flic2Button.disconnect();                // disconnect this button
@@ -47,6 +47,7 @@ Flic2Button.getVoltage();                // get the estimated battery voltage
 Flic2Button.getPressCount();             // get button count since last reset
 Flic2Button.getFirmwareRevision();       // get current hardware version
 Flic2Button.addEventListener(event, fn); // listen for button events for this particular button. Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
+Flic2Button.setMode(mode);               // change the button trigger for this particular button. Use the constants to change the mode (see example below).
 
 // Constants
 //
@@ -76,6 +77,13 @@ SCAN_RESULT_ERROR_BUTTON_DISCONNECTED_DURING_VERIFICATION               = 18;
 SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH                                   = 19;
 SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED                              = 20;
 SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE                                    = 21;
+
+// These constants can be used to change the mode of the buttons
+// These constants are available through Flic2.constants
+BUTTON_TRIGGER_MODE_CLICK_AND_HOLD                                      = 0; 
+BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK                              = 1; 
+BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK_AND_HOLD                     = 2; 
+BUTTON_TRIGGER_MODE_CLICK                                               = 3; 
 
 // Scan result:
 Flic2.addEventListener('sanResult', ((int) result, (Flic2Button) button) => {
@@ -107,6 +115,161 @@ Flic2.addEventListener('didReceiveButtonHold', ((object) eventData) => {
   // { int age, bool queued, Flic2Button button }
 
 });
+
+```
+
+# Example component
+```javascript
+import React, { Component } from 'react';
+import { View, FlatList, TouchableOpacity, Text } from 'react-native';
+import Flic2 from 'react-native-flic2';
+
+export default class App extends Component {
+
+  constructor(props) {
+
+    // man
+    super(props);
+
+    // init state
+    this.state = {
+      buttons: [],
+      scanning: false,
+    };
+
+    // bindings
+    this.didReceiveButtonClickFunction = this.didReceiveButtonClick.bind(this);
+    this.onScanResultFunction = this.onScanResult.bind(this);
+
+    // get the buttons
+    this.getButtons();
+
+  }
+
+  componentDidMount() {
+
+    // listen for all button events
+    Flic2.addListener('didReceiveButtonClick', this.didReceiveButtonClickFunction);
+    Flic2.addListener('scanResult', this.onScanResultFunction);
+
+  }
+
+  componentWillUnmount() {
+
+    // listen for all button events
+    Flic2.removeListener('buttonEvent', this.handleButtonEventFunction);
+    Flic2.removeListener('scanResult', this.onScanResultFunction);
+
+  }
+
+  async getButtons() {
+
+    // async calls for init
+    this.setState({
+      buttons: await Flic2.getButtons(), 
+    });
+
+  }
+
+  async forgetAllButtons() {
+
+    await Flic2.forgetAllButtons();
+    this.getButtons();
+
+  }
+
+  async startScan() {
+
+    this.setState({
+      scanning: true,
+    });
+
+    Flic2.startScan();
+
+  }
+
+  forgetButton(button) {
+
+    button.forget();
+    this.getButtons();
+
+  }
+
+  async onScanResult(data) {
+
+    this.setState({
+      scanning: false,
+    });
+
+    // check
+    if (data.error === false) {
+
+      alert('The button has been added');
+
+    } else {
+
+      if (data.result === Flic2.constants.SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE) {
+
+        alert('This button is already connected to another device');
+
+      } else 
+      if (data.result === Flic2.constants.SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED) {
+
+        alert('No buttons found');
+
+      } else {
+
+        alert(`Could not connect\n\nError code: ${data.result}`);
+
+      }
+
+
+    }
+
+  }
+
+  async handleButtonEvent(eventData) {
+
+    // update list
+    await this.getButtons();
+
+    // do something with the click like showing a notification
+
+  }
+
+  /**
+   * Render function.
+   * 
+   * @returns {Object} - Renders the info.
+   * @version 4.5.0
+   */
+  render() {
+
+    return (
+      <View>
+
+        <TouchableOpacity onPress={this.startScan.bind(this)}><View><Text>Start scan</Text></View></TouchableOpacity>
+        <TouchableOpacity onPress={this.forgetAllButtons.bind(this)}><View><Text>Forget all buttons</Text></View></TouchableOpacity>
+        <View>
+
+          <FlatList
+            data={this.state.buttons}
+            renderItem={row => {
+
+              // define button
+              const button = row.item;
+
+              return <Text>{button.name}</Text>;
+
+            }}
+          />
+
+        </View>
+
+      </View>
+    );
+  }
+}
 ```
 
 ## Collaborating
