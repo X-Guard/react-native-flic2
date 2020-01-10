@@ -374,11 +374,30 @@ class Flic2 extends EventEmitter {
     Flic2Module.forgetAllButtons();
   }
 
-  setMode(uuid, mode) {
+  setName(uuid, name) {
     return new Promise(resolve => {
 
       // pass to native module
-      Flic2Module.setMode(uuid, mode, resolve);
+      Flic2Module.setName(uuid, name, resolve);
+
+    });
+  }
+
+  setMode(uuid, mode) {
+    return new Promise(resolve => {
+
+      // ios only
+      if(Platform.OS === 'ios') {
+
+        // pass to native module
+        Flic2Module.setMode(uuid, mode, resolve);
+
+      } else {
+
+        resolve();
+
+      }
+
 
     });
   }
