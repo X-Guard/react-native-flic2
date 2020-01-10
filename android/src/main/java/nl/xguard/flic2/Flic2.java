@@ -131,6 +131,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
       }
     }
 
+      successCallback.invoke();
+
     Log.d(TAG, "connectButton() no button found " + uuid);
 
   }
@@ -152,6 +154,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
         return;
       }
     }
+
+    successCallback.invoke();
 
     Log.d(TAG, "disconnectButton() no button found " + uuid);
 
@@ -185,6 +189,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
         return;
       }
     }
+
+    successCallback.invoke();
 
     Log.d(TAG, "setName() no button found " + uuid);
 
@@ -220,7 +226,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
 
     @ReactMethod
     @TargetApi(23)
-    public void forgetButton(String uuid) {
+    public void forgetButton(String uuid, Callback successCallback) {
         Log.d(TAG, "forgetButton()");
         List<Flic2Button> buttons = manager.getButtons();
 
@@ -232,9 +238,12 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
             {
                 button.disconnectOrAbortPendingConnection();
                 manager.forgetButton(button);
+                successCallback.invoke();
                 return;
             }
         }
+
+        successCallback.invoke();
 
         Log.d(TAG, "forgetButton() no button found " + uuid);
 

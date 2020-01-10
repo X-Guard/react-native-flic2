@@ -250,6 +250,8 @@ RCT_EXPORT_METHOD(connectButton:(NSString *) uuid callback:(RCTResponseSenderBlo
             break;
         }
     }
+    
+    successCallBack(@[]);
 
 }
 
@@ -285,6 +287,8 @@ RCT_EXPORT_METHOD(disconnectButton:(NSString *) uuid callback:(RCTResponseSender
             break;
         }
     }
+    
+    successCallBack(@[]);
 
 }
 
@@ -320,6 +324,8 @@ RCT_EXPORT_METHOD(forgetButton:(NSString *) uuid callback:(RCTResponseSenderBloc
             break;
         }
     }
+    
+    successCallBack(@[]);
 
 }
 
@@ -344,6 +350,8 @@ RCT_EXPORT_METHOD(setMode:(NSString *)uuid mode:(NSInteger) mode  callback:(RCTR
             break;
         }
     }
+    
+    successCallBack(@[]);
 
 }
 
@@ -357,6 +365,7 @@ RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCT
             break;
         }
     }
+    successCallBack(@[]);
 }
 
 - (void)stopScanForButton {
