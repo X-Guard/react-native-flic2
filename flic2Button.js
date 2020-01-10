@@ -26,11 +26,11 @@ class Flic2Button extends EventEmitter {
     this.setData(buttonData);
 
     // initial isReady
-    this.isReady = false;
+    // this.isReady = false;
 
     // listen for ready
-    this.addListener('didReceiveConnectionReady', this.setReady.bind(this, true));
-    this.addListener('buttonDisconnected', this.setReady.bind(this, false));
+    // this.addListener('didReceiveConnectionReady', this.setReady.bind(this, true));
+    // this.addListener('buttonDisconnected', this.setReady.bind(this, false));
 
   }
 
@@ -45,6 +45,7 @@ class Flic2Button extends EventEmitter {
     this.pressCount = buttonData.pressCount; 
     this.firmwareRevision = buttonData.firmwareRevision;
     this.isUnpaired = !!buttonData.isUnpaired;
+    this.isReady = !!buttonData.isReady;
 
     // check unpaired
     if (this.isUnpaired === true) {
@@ -57,12 +58,12 @@ class Flic2Button extends EventEmitter {
 
   }
 
-  setReady(isReady) {
+  // setReady(isReady) {
 
-    // initialise
-    this.isReady = !!isReady;
+  //   // initialise
+  //   this.isReady = !!isReady;
 
-  }
+  // }
 
   /**
    * Event: did receive button event.
