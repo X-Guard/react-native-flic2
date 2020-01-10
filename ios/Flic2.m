@@ -92,7 +92,8 @@
                  @"isReady": @(button.isReady),
                  @"isUnpaired": @(button.isUnpaired),
                  @"pressCount": @(button.pressCount),
-                 @"firmwareRevision": @(button.firmwareRevision)
+                 @"firmwareRevision": @(button.firmwareRevision),
+                 @"serial": button.serialNumber
                  };
     } else {
         return false;
@@ -215,7 +216,8 @@ RCT_EXPORT_MODULE()
              @"isReady": @(button.isReady),
              @"isUnpaired": @(button.isUnpaired),
              @"pressCount": @(button.pressCount),
-             @"firmwareRevision": @(button.firmwareRevision)
+             @"firmwareRevision": @(button.firmwareRevision),
+             @"serial": button.serialNumber
              };
 }
 

@@ -46,6 +46,7 @@ class Flic2Button extends EventEmitter {
     this.firmwareRevision = buttonData.firmwareRevision;
     this.isUnpaired = !!buttonData.isUnpaired;
     this.isReady = !!buttonData.isReady;
+    this.serialNumber = buttonData.serial;
 
     // check unpaired
     if (this.isUnpaired === true) {
