@@ -345,6 +345,18 @@ RCT_EXPORT_METHOD(setMode:(NSString *)uuid mode:(NSInteger) mode  callback:(RCTR
 
 }
 
+RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCTResponseSenderBlock) successCallBack) {
+    NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
+
+    for (FLICButton *button in buttons) {
+        if ([button.uuid isEqualToString:uuid]) {
+            button.nickname = name;
+            successCallBack(@[]);
+            break;
+        }
+    }
+}
+
 - (void)stopScan {
 
     [[FLICManager sharedManager] stopScan];
