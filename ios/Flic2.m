@@ -291,7 +291,7 @@ RCT_EXPORT_METHOD(startScan) {
     [self scanForButton];
 }
 
-RCT_EXPORT_METHOD(stopScanning) {
+RCT_EXPORT_METHOD(stopScan) {
     [self stopScan];
 }
 
