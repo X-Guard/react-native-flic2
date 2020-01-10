@@ -42,6 +42,8 @@ public class ReactEvent {
     public static final String EVENT_BUTTON_HOLD = "didReceiveButtonHold";
     public static final String EVENT_BUTTON_REMOVED = "removeAllButtons";
     public static final String EVENT_BUTTON_BATTERY_LEVEL = "batteryLevel";
+    public static final String EVENT_BUTTON_NEW_NAME = "didReceiveNewName";
+    public static final String EVENT_BUTTON_NEW_FIRMWARE = "didReceiveNewFirmware";
     public static final String EVENT_SCAN_RESULT = "scanResult";
 
 

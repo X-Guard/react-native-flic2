@@ -96,12 +96,12 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
 
     @Override
     public void onFirmwareVersionUpdated(Flic2Button button, int newVersion) {
-
+        mReactEvent.send(button, ReactEvent.EVENT_BUTTON_NEW_FIRMWARE);
     }
 
     @Override
     public void onNameUpdated(Flic2Button button, String newName) {
-
+        mReactEvent.send(button, ReactEvent.EVENT_BUTTON_NEW_NAME);
     }
 
     @Override

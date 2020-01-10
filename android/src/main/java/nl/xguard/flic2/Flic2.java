@@ -169,6 +169,29 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
     }
   }
 
+  @ReactMethod
+  @TargetApi(23)
+  public void setName(String uuid, String name, Callback successCallback) {
+    Log.d(TAG, "setName()");
+    List<Flic2Button> buttons = manager.getButtons();
+
+    for (Flic2Button button: buttons) {
+
+      Log.d(TAG, "setName() uuid: " + uuid +" " + button.getUuid());
+
+      if (String.valueOf(uuid).equals(button.getUuid()))
+      {
+
+        button.setName(name);
+        successCallback.invoke();
+        return;
+      }
+    }
+
+    Log.d(TAG, "setName() no button found " + uuid);
+
+  }
+
     @ReactMethod
     @TargetApi(23)
     public void stopScan() {
