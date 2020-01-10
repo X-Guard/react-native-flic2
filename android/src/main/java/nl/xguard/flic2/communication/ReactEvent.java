@@ -132,10 +132,14 @@ public class ReactEvent {
     public void sendScanMessage(Boolean error,int code, Flic2Button button) {
         Log.d(TAG, "sendScanMessage() called with: event = [" + EVENT_SCAN_RESULT + "]");
         WritableMap args = new WritableNativeMap();
-        WritableMap buttonMap = this.getButtonArgs(button);
+
         args.putBoolean("error", error);
         args.putInt("result", code);
-        args.putMap("button", buttonMap);
+
+        if (button != null) {
+            WritableMap buttonMap = this.getButtonArgs(button);
+            args.putMap("button", buttonMap);
+        }
 
         mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(EVENT_SCAN_RESULT, args);
