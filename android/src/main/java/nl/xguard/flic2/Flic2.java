@@ -68,8 +68,6 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
 
         managerIsReady = true;
 
-        mReactEvent.send(ReactEvent.EVENT_MANAGER_IS_INITIALIZED);
-
     }
 
 
