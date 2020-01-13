@@ -1,4 +1,5 @@
 
+
 ## License for React Native Flic 2 module
 MIT License
 
@@ -23,7 +24,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## License for the documentation and source code of flic2lib-ios
-````
+```
 Creative Commons Legal Code
 
 CC0 1.0 Universal
