@@ -72,35 +72,35 @@ class Flic2Button extends EventEmitter {
 
   connect(){
 
-    return Flic2.connectButton(this.uuid);
+    return Flic2.buttonConnect(this.uuid);
 
   }
 
   disconnect(){
 
     // proxy call to parent
-    return Flic2.disconnectButton(this.uuid);
+    return Flic2.buttonDisconnect(this.uuid);
 
   }
 
   forget(){
 
     // proxy call to parent
-    return Flic2.forgetButton(this.uuid);
+    return Flic2.buttonForget(this.uuid);
 
   }
 
   setMode(mode){
 
     // proxy call to parent
-    return Flic2.setMode(this.uuid, mode);
+    return Flic2.buttonSetMode(this.uuid, mode);
 
   }
 
   setName(name){
 
     // proxy call to parent
-    return Flic2.setName(this.uuid, name);
+    return Flic2.buttonSetName(this.uuid, name);
 
   }
 

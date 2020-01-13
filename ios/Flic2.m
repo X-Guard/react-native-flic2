@@ -263,7 +263,6 @@ RCT_EXPORT_METHOD(connectAllKnownButtons) {
     for (FLICButton *button in buttons) {
         NSLog(@"Flic2 Connect button: %@", button.name);
         button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
-        [button disconnect];
         [button connect];
     }
 }
