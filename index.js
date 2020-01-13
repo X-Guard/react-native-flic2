@@ -55,8 +55,6 @@ class Flic2 extends EventEmitter {
    */
   constructor() {
 
-    console.log({ NativeModules, Flic2Module })
-
     // extended class initialisation
     super();
 
@@ -164,17 +162,16 @@ class Flic2 extends EventEmitter {
    * @returns {Promise} Promise represents an array of Flic2Button objects.
    */
   getButtons() {
-    console.log('flic2 get buttons');
+
     return new Promise((resolve, reject) => {
 
       // proxy
       Flic2Module.getButtons((buttons) => {
 
-        console.log(buttons);
         // mutate
         const exportButtons = [];
         for(const button of buttons){
-          console.log(button);
+
           // button uuid
           const buttonUuid = button.uuid;
 
@@ -255,7 +252,6 @@ class Flic2 extends EventEmitter {
    */
   onScanResult({ error, result, button }){
 
-    console.log('onscanresult',error, result, button);
     // remove listener
     this.nativeEvents.removeListener('scanResult', this.onScanResultFunction);
 

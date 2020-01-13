@@ -7,13 +7,6 @@ This plugin is supported by the Flic2 SDKs
 - Android: https://github.com/50ButtonsEach/flic2lib-android
 - iOS: https://github.com/50ButtonsEach/flic2lib-ios
 
-## Timeline
-In december we added the foundation for this plugin. We are now working to create a consistent API across iOS and Android with support for the most popular use cases. 
-
-Current implementation state: INSTABLE
-
-Most functions do not work yet. The first testable version of this module should be released before February.
-
 ## Getting started
 
 `$ npm install react-native-flic2 --save`
@@ -29,13 +22,21 @@ import Flic2 from 'react-native-flic2';
 // Flic2 Module
 Flic2.startScan();                       // start a scan
 Flic2.stopScan();                        // stop a scan
-Flic2.connectAllKnownButtons();          // connect to known buttons
 Flic2.startService();                    // enable background capabilities through a service on Android, ignored by iOS
+Flic2.addEventListener(event, fn);       // listen for button events (all buttons). Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
+Flic2.connectAllKnownButtons();          // connect to known buttons
+Flic2.connectButton(uuid);               // connect to a button with this uuid
+Flic2.forgetButton(uuid);                // disconnect and forget the button
+Flic2.forgetAllButtons();                // disconnect and forget all known buttons
+Flic2.disconnectButton(uuid);            // disconnect a button with this uuid
+Flic2.disconnectAllKnownButtons();       // disconnect all known buttons
 Flic2.getButtons();                      // array of Flic2Button instances
 Flic2.getButton(uuid);                   // get a button by uuid, returns a Flic2Button instance
-Flic2.addEventListener(event, fn);       // listen for button events (all buttons). Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
-Flic2.setMode(uuid, mode)                // change the button trigger mode by uuid. Use the constants to change the mode (see example below).
-                                         // Flic2Button instance definition
+Flic2.setMode(uuid, mode);               // change the button trigger mode by uuid. Use the constants to change the mode (see example below).
+Flic2.setName(uuid, name);               // change the nickname by uuid
+
+// Flic2Button instance definition
+Flic2Button.addEventListener(event, fn); // listen for button events for this particular button. Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
 Flic2Button.connecct()                   // connect this button
 Flic2Button.disconnect();                // disconnect this button
 Flic2Button.forget();                    // removes the button completely
@@ -46,8 +47,10 @@ Flic2Button.getBatteryLevel();           // get the estimated battery level
 Flic2Button.getVoltage();                // get the estimated battery voltage
 Flic2Button.getPressCount();             // get button count since last reset
 Flic2Button.getFirmwareRevision();       // get current hardware version
-Flic2Button.addEventListener(event, fn); // listen for button events for this particular button. Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
+Flic2Button.getIsReady();                // get the ready state of the button
+Flic2Button.getIsUnpaired();             // get the unpaired state of the button
 Flic2Button.setMode(mode);               // change the button trigger for this particular button. Use the constants to change the mode (see example below).
+Flic2Button.setName(name);               // sets the nickname of the button
 
 // Constants
 //
@@ -117,12 +120,26 @@ Flic2.addEventListener('didReceiveButtonHold', ((object) eventData) => {
 });
 
 ```
+You can install and test this example at https://github.com/X-Guard/react-native-flic2-example
 
 # Example component
 ```javascript
+// react and react native imports
 import React, { Component } from 'react';
-import { View, FlatList, TouchableOpacity, Text } from 'react-native';
+import { View, FlatList, TouchableOpacity, Text, StyleSheet, StatusBar, Platform, Vibration } from 'react-native';
+
+// the Flic2 module
 import Flic2 from 'react-native-flic2';
+
+// icons
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faPause, faPlay, faTrash, faEdit, faBatterryEmpty, faBatteryQuarter, faBatteryHalf, faBatteryThreeQuarter, faBatteryFull } from '@fortawesome/free-solid-svg-icons';
+
+// plugins to make it more fancy
+import prompt from 'react-native-prompt-android';
+import { request as requestPermission, PERMISSIONS } from 'react-native-permissions';
+import * as Animatable from 'react-native-animatable';
+import Toast from 'react-native-root-toast';
 
 export default class App extends Component {
 
@@ -141,6 +158,13 @@ export default class App extends Component {
     this.didReceiveButtonClickFunction = this.didReceiveButtonClick.bind(this);
     this.onScanResultFunction = this.onScanResult.bind(this);
 
+    // connect to all known buttons
+    Flic2.connectAllKnownButtons();
+
+    // start android service
+    // don't worry, this function is ignored on iOS
+    Flic2.startService();
+
     // get the buttons
     this.getButtons();
 
@@ -148,7 +172,7 @@ export default class App extends Component {
 
   componentDidMount() {
 
-    // listen for all button events
+    // listen bindings
     Flic2.addListener('didReceiveButtonClick', this.didReceiveButtonClickFunction);
     Flic2.addListener('scanResult', this.onScanResultFunction);
 
@@ -156,7 +180,7 @@ export default class App extends Component {
 
   componentWillUnmount() {
 
-    // listen for all button events
+    // remove bindings
     Flic2.removeListener('buttonEvent', this.handleButtonEventFunction);
     Flic2.removeListener('scanResult', this.onScanResultFunction);
 
@@ -166,7 +190,7 @@ export default class App extends Component {
 
     // async calls for init
     this.setState({
-      buttons: await Flic2.getButtons(), 
+      buttons: await Flic2.getButtons(),
     });
 
   }
@@ -180,22 +204,97 @@ export default class App extends Component {
 
   async startScan() {
 
+    // check os
+    if (Platform.OS === 'android') {
+
+      // on android we need the permission ACCESS_FINE_LOCATION first
+      // we are just going to assume the permission is granted after calling this
+      // in your real application, please create an actual permission check here
+      await requestPermission(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
+
+    }
+
+    // set to scanning
     this.setState({
       scanning: true,
     });
 
+    // go!
     Flic2.startScan();
+
+  }
+
+  stopScan() {
+
+    this.setState({
+      scanning: false,
+    });
+
+    Flic2.stopScan();
+
+  }
+
+  connectButton(button) {
+
+    // connect it
+    button.connect(button);
+
+    // update our button list
+    this.getButtons();
+
+  }
+
+  disconnectButton(button) {
+
+    // disconnect it
+    button.disconnect(button);
+
+    // update our button list
+    this.getButtons();
 
   }
 
   forgetButton(button) {
 
+    // forget it
     button.forget();
+
+    // update our button list
     this.getButtons();
 
   }
 
-  async onScanResult(data) {
+  editButtonName(button) {
+
+    // use the prompt to change the name
+    prompt(
+      'Edit Flic nickname',
+      'Choose a name you will recognize',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'OK',
+          onPress: value => {
+
+            // save
+            button.setName(value);
+
+            // get new buttons
+            this.getButtons();
+
+          },
+        },
+      ],
+      {
+          type: 'plain-text',
+          cancelable: true,
+          defaultValue: button.getName(),
+      }
+    );
+
+  }
+
+  onScanResult(data) {
 
     this.setState({
       scanning: false,
@@ -205,6 +304,7 @@ export default class App extends Component {
     if (data.error === false) {
 
       alert('The button has been added');
+      this.getButtons();
 
     } else {
 
@@ -212,7 +312,7 @@ export default class App extends Component {
 
         alert('This button is already connected to another device');
 
-      } else 
+      } else
       if (data.result === Flic2.constants.SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED) {
 
         alert('No buttons found');
@@ -228,41 +328,114 @@ export default class App extends Component {
 
   }
 
-  async handleButtonEvent(eventData) {
+  didReceiveButtonClick(eventData) {
+
+    console.log('Received click event', eventData);
 
     // update list
-    await this.getButtons();
+    this.getButtons();
 
     // do something with the click like showing a notification
+    Toast.show(`Button ${eventData.button.getName()} has been pressed ${eventData.button.getPressCount()} times`);
+
+    // wobble
+    // we do this extensive check because when you develop the app with live reload, the _logoRef will break.
+    if (typeof this._logoRef !== 'undefined' && this._logoRef !== null && typeof this._logoRef.wobble === 'function') {
+
+      // wobble wobble
+      this._logoRef.wobble();
+
+    }
+
+    // vibrate
+    Vibration.vibrate(200);
 
   }
 
-  /**
-   * Render function.
-   * 
-   * @returns {Object} - Renders the info.
-   * @version 4.5.0
-   */
+  getBatteryIcon(batteryPercentage) {
+
+    if (batteryPercentage > 90) {
+
+      return faBatteryFull;
+
+    } else
+    if (batteryPercentage > 75) {
+
+      return faBatteryThreeQuarter;
+
+    } else
+    if (batteryPercentage > 40) {
+
+      return faBatteryHalf;
+
+    } else
+    if (batteryPercentage > 15) {
+
+      return faBatteryQuarter;
+
+    } else {
+
+      return faBatterryEmpty;
+
+    }
+
+  }
+
+
   render() {
 
     return (
-      <View>
+      <View style={style.container}>
+        <StatusBar barStyle="light-content" />
 
-        <TouchableOpacity onPress={this.startScan.bind(this)}><View><Text>Start scan</Text></View></TouchableOpacity>
-        <TouchableOpacity onPress={this.forgetAllButtons.bind(this)}><View><Text>Forget all buttons</Text></View></TouchableOpacity>
-        <View>
+        {/* eslint-disable-next-line */}
+        <Animatable.Image ref={ image => this._logoRef = image } style={style.logo} useNativeDriver={true} source={require('./images/flic-logo.png')} />
 
-          <FlatList
-            data={this.state.buttons}
-            renderItem={row => {
+        {/* Scan button */}
+        {this.state.scanning === false ?
+          <TouchableOpacity onPress={this.startScan.bind(this)}>
+            <View style={style.button}><Text style={style.buttonText}>Start scan</Text></View>
+          </TouchableOpacity>
+          :
+          <TouchableOpacity onPress={this.stopScan.bind(this)}>
+            <View style={style.button}><Text style={style.buttonText}>Scanning... (click to cancel)</Text></View>
+          </TouchableOpacity> }
 
-              // define button
-              const button = row.item;
+        <TouchableOpacity onPress={this.forgetAllButtons.bind(this)}>
+          <View style={style.button}><Text style={style.buttonText}>Forget all buttons</Text></View>
+        </TouchableOpacity>
 
-              return <Text>{button.name}</Text>;
+        <View style={style.buttonContainer}>
 
-            }}
-          />
+          <Text style={style.heading}>Button list:</Text>
+
+          {this.state.buttons.length > 0 ?
+            <FlatList
+              data={this.state.buttons}
+              keyExtractor={item => item.uuid}
+              renderItem={row => {
+
+                // define button
+                const button = row.item;
+
+                // eslint-disable-next-line react-native/no-inline-styles
+                return <View style={[style.listItem, { borderColor: button.getIsReady() ? '#006e1a' : '#b00000'}]}>
+                  <FontAwesomeIcon style={style.icon} icon={this.getBatteryIcon(button.getBatteryLevel())} size={16} />
+                  <Text style={style.pressCount}>{button.getPressCount()}</Text>
+                  <Text style={style.listItemText}>{button.getName()}</Text>
+                  <View style={style.icons}>
+                    {button.getIsReady() === true ?
+                      <TouchableOpacity onPress={this.disconnectButton.bind(this, button)}><FontAwesomeIcon icon={faPause} size={16} /></TouchableOpacity>
+                      :
+                      <TouchableOpacity onPress={this.connectButton.bind(this, button)}><FontAwesomeIcon icon={faPlay} size={16} /></TouchableOpacity>
+                    }
+                    <TouchableOpacity onPress={this.forgetButton.bind(this, button)}><FontAwesomeIcon icon={faTrash} size={16} /></TouchableOpacity>
+                    <TouchableOpacity onPress={this.editButtonName.bind(this, button)}><FontAwesomeIcon icon={faEdit} size={16} /></TouchableOpacity>
+                  </View>
+                </View>;
+
+              }}
+            /> : <Text>There are no buttons paired to this app. Click 'start scan' and hold your flic button to add a new button.</Text>}
 
         </View>
 
@@ -270,6 +443,90 @@ export default class App extends Component {
     );
   }
 }
+
+
+// define stylesheet
+const style = StyleSheet.create({
+
+  // container
+  container: {
+    paddingTop: 20,
+    padding: 10,
+    backgroundColor: '#45454d',
+    flex: 1,
+  },
+
+  // logo
+  logo: {
+    width: 100,
+    alignSelf: 'center',
+    resizeMode: 'contain',
+  },
+
+  // button
+  button: {
+    padding: 10,
+    borderRadius: 10,
+    backgroundColor: '#ff0089',
+    marginTop: 15,
+  },
+  buttonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 20,
+  },
+
+  // button container
+  buttonContainer: {
+    padding: 10,
+    backgroundColor: 'rgba(255, 255, 255, 1)',
+    borderRadius: 10,
+    marginTop: 20,
+  },
+
+  // heading
+  heading: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+
+  // list item
+  listItem: {
+    padding: 20,
+    paddingLeft: 15,
+    paddingRight: 15,
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    borderRadius: 10,
+    marginBottom: 10,
+    backgroundColor: '#f3f9ff',
+    borderWidth: 2,
+  },
+  listItemText: {
+    flex: 1,
+  },
+  pressCount: {
+    width: 25,
+    color: 'rgba(40, 40, 40, 0.5)',
+    fontSize: 10,
+  },
+
+  // icons
+  icons: {
+    width: 70,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+  },
+  icon: {
+    marginRight: 7,
+  },
+
+});
 ```
 
 ## Collaborating
