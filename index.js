@@ -334,7 +334,7 @@ class Flic2 extends EventEmitter {
     
   }
 
-  connectButton(uuid){
+  buttonConnect(uuid){
     return new Promise(resolve => {
 
       // pass to native module
@@ -343,7 +343,7 @@ class Flic2 extends EventEmitter {
     });
   }
 
-  forgetButton(uuid) {
+  buttonForget(uuid) {
     return new Promise(resolve => {
 
       // remove from known list
@@ -355,7 +355,7 @@ class Flic2 extends EventEmitter {
     });
   }
 
-  disconnectButton(uuid) {
+  buttonDisconnect(uuid) {
     return new Promise(resolve => {
 
       // pass to native module
@@ -377,7 +377,7 @@ class Flic2 extends EventEmitter {
     Flic2Module.forgetAllButtons();
   }
 
-  setName(uuid, name) {
+  buttonSetName(uuid, name) {
     return new Promise(resolve => {
 
       // pass to native module
@@ -386,7 +386,7 @@ class Flic2 extends EventEmitter {
     });
   }
 
-  setMode(uuid, mode) {
+  buttonSetMode(uuid, mode) {
     return new Promise(resolve => {
 
       // ios only
