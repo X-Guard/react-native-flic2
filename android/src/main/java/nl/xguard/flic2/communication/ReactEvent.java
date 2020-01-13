@@ -88,6 +88,13 @@ public class ReactEvent {
                 .emit(EVENT_NAMESPACE, args);
     }
 
+    public void sendEvent(String event) {
+        Log.d(TAG, "sendEventMessage() called with: event = [" + event + "]");
+
+        mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(event, null);
+    }
+
     private void send(String event, String value, String keyValue) {
         Log.d(TAG, "sendEventMessage() called with an string: event = [" + event + "], value = [" + value + "]");
         WritableMap args = new WritableNativeMap();

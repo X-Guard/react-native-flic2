@@ -62,11 +62,11 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
 
         Log.d(TAG, "startup()");
 
-        Flic2Manager.init(mreactContext, new Handler(Looper.getMainLooper()));
-
-        manager = Flic2Manager.getInstance();
+        manager =Flic2Manager.initAndGetInstance(mreactContext, new Handler(Looper.getMainLooper()));
 
         managerIsReady = true;
+
+        mReactEvent.sendEvent("managerInitialized");
 
     }
 

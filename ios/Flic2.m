@@ -109,6 +109,7 @@ RCT_EXPORT_MODULE()
 
 - (NSArray<NSString *> *)supportedEvents {
     return @[
+        @"managerInitialized",
         @"scanResult",
         @"didReceiveButtonEvent",
     ];
@@ -262,7 +263,6 @@ RCT_EXPORT_METHOD(connectAllKnownButtons) {
     for (FLICButton *button in buttons) {
         NSLog(@"Flic2 Connect button: %@", button.name);
         button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
-        [button disconnect];
         [button connect];
     }
 }
@@ -415,6 +415,9 @@ RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCT
 
 - (void)managerDidRestoreState:(FLICManager *)manager;
 {
+    
+    [self sendEventWithName:@"managerInitialized" body: @{}];
+    
     // The mager was restored and can now be used.
     for (FLICButton *button in manager.buttons)
     {

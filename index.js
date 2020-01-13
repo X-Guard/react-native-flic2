@@ -94,16 +94,23 @@ class Flic2 extends EventEmitter {
     // proxy
     this.onScanResultFunction = this.onScanResult.bind(this);
     this.didReceiveButtonEventFunction = this.didReceiveButtonEvent.bind(this);
+    this.onInitializedFunction = this.onInitialized.bind(this);
 
     // listen to events
     this.nativeEvents = new NativeEventEmitter(Flic2Module);
 
     // button click events
     this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEventFunction);
-
+    this.nativeEvents.addListener('managerInitialized', this.onInitializedFunction);
+    
     // known buttons
     this.knownButtons = {};
 
+  }
+
+  onInitialized() {
+    // emit
+    this.emit('managerInitialized');
   }
 
   /**
@@ -327,7 +334,7 @@ class Flic2 extends EventEmitter {
     
   }
 
-  connectButton(uuid){
+  buttonConnect(uuid){
     return new Promise(resolve => {
 
       // pass to native module
@@ -336,7 +343,7 @@ class Flic2 extends EventEmitter {
     });
   }
 
-  forgetButton(uuid) {
+  buttonForget(uuid) {
     return new Promise(resolve => {
 
       // remove from known list
@@ -348,7 +355,7 @@ class Flic2 extends EventEmitter {
     });
   }
 
-  disconnectButton(uuid) {
+  buttonDisconnect(uuid) {
     return new Promise(resolve => {
 
       // pass to native module
@@ -370,7 +377,7 @@ class Flic2 extends EventEmitter {
     Flic2Module.forgetAllButtons();
   }
 
-  setName(uuid, name) {
+  buttonSetName(uuid, name) {
     return new Promise(resolve => {
 
       // pass to native module
@@ -379,7 +386,7 @@ class Flic2 extends EventEmitter {
     });
   }
 
-  setMode(uuid, mode) {
+  buttonSetMode(uuid, mode) {
     return new Promise(resolve => {
 
       // ios only

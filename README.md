@@ -25,19 +25,19 @@ Flic2.stopScan();                        // stop a scan
 Flic2.startService();                    // enable background capabilities through a service on Android, ignored by iOS
 Flic2.addEventListener(event, fn);       // listen for button events (all buttons). Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
 Flic2.connectAllKnownButtons();          // connect to known buttons
-Flic2.connectButton(uuid);               // connect to a button with this uuid
-Flic2.forgetButton(uuid);                // disconnect and forget the button
+Flic2.buttonConnect(uuid);               // connect to a button with this uuid
+Flic2.buttonForget(uuid);                // disconnect and forget the button
 Flic2.forgetAllButtons();                // disconnect and forget all known buttons
-Flic2.disconnectButton(uuid);            // disconnect a button with this uuid
+Flic2.buttonDisconnect(uuid);            // disconnect a button with this uuid
 Flic2.disconnectAllKnownButtons();       // disconnect all known buttons
 Flic2.getButtons();                      // array of Flic2Button instances
 Flic2.getButton(uuid);                   // get a button by uuid, returns a Flic2Button instance
-Flic2.setMode(uuid, mode);               // change the button trigger mode by uuid. Use the constants to change the mode (see example below).
-Flic2.setName(uuid, name);               // change the nickname by uuid
+Flic2.buttonSetMode(uuid, mode);         // change the button trigger mode by uuid. Use the constants to change the mode (see example below).
+Flic2.buttonSetName(uuid, name);         // change the nickname by uuid
 
 // Flic2Button instance definition
 Flic2Button.addEventListener(event, fn); // listen for button events for this particular button. Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
-Flic2Button.connecct()                   // connect this button
+Flic2Button.connect()                   // connect this button
 Flic2Button.disconnect();                // disconnect this button
 Flic2Button.forget();                    // removes the button completely
 Flic2Button.getUuid();                   // get the button uuid
@@ -133,7 +133,7 @@ import Flic2 from 'react-native-flic2';
 
 // icons
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faPause, faPlay, faTrash, faEdit, faBatterryEmpty, faBatteryQuarter, faBatteryHalf, faBatteryThreeQuarter, faBatteryFull } from '@fortawesome/free-solid-svg-icons';
+import { faPause, faPlay, faTrash, faEdit, faBatteryEmpty, faBatteryQuarter, faBatteryHalf, faBatteryThreeQuarters, faBatteryFull } from '@fortawesome/free-solid-svg-icons';
 
 // plugins to make it more fancy
 import prompt from 'react-native-prompt-android';
@@ -361,7 +361,7 @@ export default class App extends Component {
     } else
     if (batteryPercentage > 75) {
 
-      return faBatteryThreeQuarter;
+      return faBatteryThreeQuarters;
 
     } else
     if (batteryPercentage > 40) {
@@ -375,7 +375,7 @@ export default class App extends Component {
 
     } else {
 
-      return faBatterryEmpty;
+      return faBatteryEmpty;
 
     }
 
