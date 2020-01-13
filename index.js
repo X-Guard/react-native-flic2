@@ -94,16 +94,23 @@ class Flic2 extends EventEmitter {
     // proxy
     this.onScanResultFunction = this.onScanResult.bind(this);
     this.didReceiveButtonEventFunction = this.didReceiveButtonEvent.bind(this);
+    this.onInitializedFunction = this.onInitialized.bind(this);
 
     // listen to events
     this.nativeEvents = new NativeEventEmitter(Flic2Module);
 
     // button click events
     this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEventFunction);
-
+    this.nativeEvents.addListener('managerInitialized', this.onInitializedFunction);
+    
     // known buttons
     this.knownButtons = {};
 
+  }
+
+  onInitialized() {
+    // emit
+    this.emit('managerInitialized');
   }
 
   /**
