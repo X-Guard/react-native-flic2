@@ -23,6 +23,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 ## License for the documentation and source code of flic2lib-ios
+````
 Creative Commons Legal Code
 
 CC0 1.0 Universal
@@ -144,11 +145,13 @@ express Statement of Purpose.
  d. Affirmer understands and acknowledges that Creative Commons is not a
     party to this document and has no duty or obligation with respect to
     this CC0 or use of the Work.
+```
 
 [License copied on January 13th, 2020 from github.com](https://github.com/50ButtonsEach/flic2lib-ios/blob/master/LICENCE%20%28for%20the%20documentation%20and%20source%20code%29.txt)
 
 
 ## License for the flic2lib binary
+```
 Copyright (c) 2019 Shortcut Labs AB
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software, to deal in the software with the rights to use, copy, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the software is furnished to do so, subject to the following condition:
@@ -158,8 +161,10 @@ Licensee shall not modify, reverse engineer, disassemble, decompile or otherwise
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 [License copied on January 13th, 2020 from github.com](https://github.com/50ButtonsEach/flic2lib-ios/blob/master/LICENCE%20(for%20the%20flic2lib%20binary).txt)
+```
 
 ## License for flic2lib-android
+```
 Copyright (c) 2019 Shortcut Labs AB
 
 The software is supplied "as is", without warranty of any kind,
@@ -186,5 +191,6 @@ subject to the following restrictions:
 
  3. This Copyright notice may not be removed or altered from any
     source or altered source distribution.
+```
 
 [License copied on January 13th, 2020 from github.com](https://github.com/50ButtonsEach/flic2lib-android/blob/master/License.txt)
