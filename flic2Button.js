@@ -13,7 +13,7 @@ class Flic2Button extends EventEmitter {
 
   /**
    * Constructor.
-   * 
+   *
    * @class
    * @version 1.0.0
    */
@@ -31,11 +31,11 @@ class Flic2Button extends EventEmitter {
 
     // initialise
     this.uuid = buttonData.uuid;
-    this.bluetoothAddress = buttonData.bluetoothAddress; 
-    this.name = buttonData.name; 
-    this.batteryLevel = buttonData.batteryLevel; 
+    this.bluetoothAddress = buttonData.bluetoothAddress;
+    this.name = buttonData.name;
+    this.batteryLevel = buttonData.batteryLevel;
     this.voltage = buttonData.voltage;
-    this.pressCount = buttonData.pressCount; 
+    this.pressCount = buttonData.pressCount;
     this.firmwareRevision = buttonData.firmwareRevision;
     this.isUnpaired = !!buttonData.isUnpaired;
     this.isReady = !!buttonData.isReady;
@@ -55,7 +55,7 @@ class Flic2Button extends EventEmitter {
   /**
    * Event: did receive button event.
    * Emits the event we received from the button.
-   * 
+   *
    * @version 1.0.0
    */
   didReceiveButtonEvent(eventData){
@@ -161,3 +161,4 @@ class Flic2Button extends EventEmitter {
 }
 
 export default Flic2Button
+;

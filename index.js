@@ -34,10 +34,10 @@ const SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH                                   = 
 const SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED                              = 20;
 const SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE                                    = 21;
 
-const BUTTON_TRIGGER_MODE_CLICK_AND_HOLD                                      = 0; 
-const BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK                              = 1; 
-const BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK_AND_HOLD                     = 2; 
-const BUTTON_TRIGGER_MODE_CLICK                                               = 3; 
+const BUTTON_TRIGGER_MODE_CLICK_AND_HOLD                                      = 0;
+const BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK                              = 1;
+const BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK_AND_HOLD                     = 2;
+const BUTTON_TRIGGER_MODE_CLICK                                               = 3;
 
 /**
  * React Native Flic 2
@@ -49,7 +49,7 @@ class Flic2 extends EventEmitter {
 
   /**
    * Constructor.
-   * 
+   *
    * @class
    * @version 1.0.0
    */
@@ -58,8 +58,7 @@ class Flic2 extends EventEmitter {
     // extended class initialisation
     super();
 
-    // start the native context
-    Flic2Module.startup();
+    this.isInitialized = false;
 
     // define constants
     this.constants = {
@@ -102,27 +101,37 @@ class Flic2 extends EventEmitter {
     // button click events
     this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEventFunction);
     this.nativeEvents.addListener('managerInitialized', this.onInitializedFunction);
-    
+
+    // start the native context
+    Flic2Module.startup();
+
     // known buttons
     this.knownButtons = {};
 
   }
 
   onInitialized() {
+
+    this.isInitialized = true;
+
     // emit
     this.emit('managerInitialized');
   }
 
+  isInitialized() {
+    return this.isInitialized;
+  }
+
   /**
    * Starts an Android service.
-   * 
+   *
    * @version 1.0.0
    * @returns {boolean} Returns boolean true when finished.
    */
   startService() {
 
     // android only
-    if(Platform.OS === 'android') {
+    if (Platform.OS === 'android') {
 
       // proxy
       Flic2Module.startService();
@@ -131,12 +140,12 @@ class Flic2 extends EventEmitter {
 
     // done
     return true;
-  
+
   }
 
   /**
    * Get a Flic2Button object by UUID.
-   * 
+   *
    * @version 1.0.0
    * @returns {Promise} Promise represents the Flic2Button object.
    */
@@ -148,10 +157,10 @@ class Flic2 extends EventEmitter {
 
       // since the list of Flic buttons will never be huge
       // we do not bother with not using a loop here to find the button
-      for(const button of buttons) {
+      for (const button of buttons) {
 
         // check
-        if(button.getUuid() === uuid) {
+        if (button.getUuid() === uuid) {
 
           return resolve(button);
 
@@ -164,7 +173,7 @@ class Flic2 extends EventEmitter {
 
   /**
    * Get an array of Flic2 Buttons.
-   * 
+   *
    * @version 1.0.0
    * @returns {Promise} Promise represents an array of Flic2Button objects.
    */
@@ -177,7 +186,7 @@ class Flic2 extends EventEmitter {
 
         // mutate
         const exportButtons = [];
-        for(const button of buttons){
+        for (const button of buttons){
 
           // button uuid
           const buttonUuid = button.uuid;
@@ -210,12 +219,12 @@ class Flic2 extends EventEmitter {
 
       }, reject);
 
-    });    
+    });
   }
 
   /**
    * Starts a scan to find a button.
-   * 
+   *
    * @version 1.0.0
    * @returns {boolean} Returns boolean true when finished.
    */
@@ -229,12 +238,12 @@ class Flic2 extends EventEmitter {
 
     // done
     return true;
-  
+
   }
 
   /**
    * Stops the scan and removes the scanResult listener.
-   * 
+   *
    * @version 1.0.0
    * @returns {boolean} Returns boolean true when finished.
    */
@@ -248,13 +257,13 @@ class Flic2 extends EventEmitter {
 
     // done
     return true;
-  
+
   }
 
   /**
    * Event: scan result.
    * Emits a scanResult event to the react native application with a Flic2Button object attached.
-   * 
+   *
    * @version 1.0.0
    */
   onScanResult({ error, result, button }){
@@ -264,7 +273,7 @@ class Flic2 extends EventEmitter {
 
     // check if error
     let ButtonObject;
-    if(error === false) {
+    if (error === false) {
 
       // create button object
       ButtonObject = new Flic2Button(button);
@@ -286,7 +295,7 @@ class Flic2 extends EventEmitter {
   /**
    * Event: did receive button event.
    * Emits the event we received from the button.
-   * 
+   *
    * @version 1.0.0
    */
   didReceiveButtonEvent(eventData){
@@ -331,7 +340,7 @@ class Flic2 extends EventEmitter {
 
     // pass to native module
     Flic2Module.connectAllKnownButtons();
-    
+
   }
 
   buttonConnect(uuid){
@@ -368,7 +377,7 @@ class Flic2 extends EventEmitter {
 
     // pass to native module
     Flic2Module.disconnectAllKnownButtons();
-    
+
   }
 
   forgetAllButtons() {
@@ -390,7 +399,7 @@ class Flic2 extends EventEmitter {
     return new Promise(resolve => {
 
       // ios only
-      if(Platform.OS === 'ios') {
+      if (Platform.OS === 'ios') {
 
         // pass to native module
         Flic2Module.setMode(uuid, mode, resolve);
