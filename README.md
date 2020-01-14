@@ -20,6 +20,7 @@ This plugin is supported by the Flic2 SDKs
 import Flic2 from 'react-native-flic2';
 
 // Flic2 Module
+Flic2.isInitialized()                    // returns a boolean if the manager is initialized or not
 Flic2.startScan();                       // start a scan
 Flic2.stopScan();                        // stop a scan
 Flic2.startService();                    // enable background capabilities through a service on Android, ignored by iOS
