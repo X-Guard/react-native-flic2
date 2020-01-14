@@ -121,9 +121,10 @@ Flic2.addEventListener('didReceiveButtonHold', ((object) eventData) => {
 });
 
 ```
-You can install and test this example at https://github.com/X-Guard/react-native-flic2-example
 
 # Example component
+You can install and test this example at https://github.com/X-Guard/react-native-flic2-example
+
 ```javascript
 // react and react native imports
 import React, { Component } from 'react';
