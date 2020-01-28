@@ -100,7 +100,7 @@
         return @{
                  @"uuid": button.uuid,
                  @"bluetoothAddress": button.bluetoothAddress,
-                 @"name": button.name,
+                 @"name": button.nickname == nil ? button.name : button.nickname,
                  @"batteryLevel": [self batteryVoltageToEstimatedPercentage:button.batteryVoltage],
                  @"voltage": @(button.batteryVoltage),
                  @"isReady": @(button.isReady),
@@ -217,7 +217,7 @@ RCT_EXPORT_MODULE()
     return @{
              @"uuid": button.uuid,
              @"bluetoothAddress": button.bluetoothAddress,
-             @"name": button.nickname,
+             @"name": button.nickname == nil ? button.name : button.nickname,
              @"batteryLevel": [self batteryVoltageToEstimatedPercentage:button.batteryVoltage],
              @"voltage": @(button.batteryVoltage),
              @"isReady": @(button.isReady),
