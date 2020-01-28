@@ -158,6 +158,12 @@ class Flic2Button extends EventEmitter {
 
   }
 
+  getSerialNumber(){
+
+    return this.serialNumber;
+
+  }
+
 }
 
 export default Flic2Button
