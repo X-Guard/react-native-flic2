@@ -44,7 +44,7 @@ Flic2Button.forget();                    // removes the button completely
 Flic2Button.getUuid();                   // get the button uuid
 Flic2Button.getBluetoothAddress();       // get the button bluetooth address
 Flic2Button.getName();                   // get the button nickname
-Flic2Button.getBatteryLevel();           // get the battery state ("Ok", "Not ok")
+Flic2Button.getBatteryLevelIsOk();       // get the battery state (true, false),  True = battery is ok, False = battery should be changed soon
 Flic2Button.getVoltage();                // get the estimated battery voltage
 Flic2Button.getPressCount();             // get button count since last reset
 Flic2Button.getFirmwareRevision();       // get current hardware version

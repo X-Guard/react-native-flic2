@@ -42,7 +42,7 @@ public class ReactEvent {
     public static final String EVENT_BUTTON_DOUBLE_CLICK = "didReceiveButtonDoubleClick";
     public static final String EVENT_BUTTON_HOLD = "didReceiveButtonHold";
     public static final String EVENT_BUTTON_REMOVED = "removeAllButtons";
-    public static final String EVENT_BUTTON_BATTERY_LEVEL = "batteryLevel";
+    public static final String EVENT_BUTTON_BATTERY_LEVEL = "batteryLevelIsOk";
     public static final String EVENT_BUTTON_NEW_NAME = "didReceiveNewName";
     public static final String EVENT_BUTTON_NEW_FIRMWARE = "didReceiveNewFirmware";
     public static final String EVENT_SCAN_RESULT = "scanResult";
@@ -185,7 +185,7 @@ public class ReactEvent {
 
         if (level != null) {
             float voltage = level.getVoltage();
-            args.putString(KEY_BUTTON_BatteryLevel, (voltage * 1000) > 2650 ? "Ok" : "Not ok");
+            args.putBoolean(KEY_BUTTON_BatteryLevel, (voltage * 1000) > 2650 ? true : false);
             args.putDouble(KEY_BUTTON_Voltage, voltage);
         }
 

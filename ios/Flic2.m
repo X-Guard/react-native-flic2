@@ -94,14 +94,14 @@
 
 -(NSDictionary *) convertButtonToDictForScan: (FLICButton *) button
 {
-    NSLog(@"FLIC2LIB convertButtonToDictForScan %@ %@ %@ %@ %f %@ %u %@ %@", button.name, button.uuid, button.bluetoothAddress, button.nickname, button.batteryVoltage,@(button.pressCount),button.firmwareRevision, button.serialNumber, [self batteryVoltageToEstimatedPercentage:button.batteryVoltage]);
+    NSLog(@"FLIC2LIB convertButtonToDictForScan %@ %@ %@ %@ %f %@ %u %@ %@", button.name, button.uuid, button.bluetoothAddress, button.nickname, button.batteryVoltage,@(button.pressCount),button.firmwareRevision, button.serialNumber, @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]));
     
     if (button != nil) {
         return @{
                  @"uuid": button.uuid,
                  @"bluetoothAddress": button.bluetoothAddress,
                  @"name": button.nickname == nil ? button.name : button.nickname,
-                 @"batteryLevel": [self batteryVoltageToEstimatedPercentage:button.batteryVoltage],
+                 @"batteryLevelIsOk": @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]),
                  @"voltage": @(button.batteryVoltage),
                  @"isReady": @(button.isReady),
                  @"isUnpaired": @(button.isUnpaired),
@@ -199,26 +199,25 @@ RCT_EXPORT_MODULE()
 
 }
 
--(NSString *) batteryVoltageToEstimatedPercentage: (float)voltage {
+-(BOOL) batteryVoltageToEstimatedPercentage: (float)voltage {
     float mvolt = (float)(voltage * 1000);
-    NSString *percentage;
+
     if (mvolt >= 2650) {
-        percentage = @"Ok";
+        return true;
     } else {
-        percentage = @"Not ok";
+        return false;
     }
-    return percentage;
 }
 
 -(NSDictionary *) convertButtonToDict: (FLICButton *) button
 {
-    NSLog(@"FLIC2LIB convertButtonToDict %@ %@ %@ %@ %f %@ %u %@ %@", button.name, button.uuid, button.bluetoothAddress, button.nickname, button.batteryVoltage,@(button.pressCount),button.firmwareRevision, button.serialNumber, [self batteryVoltageToEstimatedPercentage:button.batteryVoltage]);
+    NSLog(@"FLIC2LIB convertButtonToDict %@ %@ %@ %@ %f %@ %u %@ %@", button.name, button.uuid, button.bluetoothAddress, button.nickname, button.batteryVoltage,@(button.pressCount),button.firmwareRevision, button.serialNumber, @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]));
     
     return @{
              @"uuid": button.uuid,
              @"bluetoothAddress": button.bluetoothAddress,
              @"name": button.nickname == nil ? button.name : button.nickname,
-             @"batteryLevel": [self batteryVoltageToEstimatedPercentage:button.batteryVoltage],
+             @"batteryLevelIsOk": @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]),
              @"voltage": @(button.batteryVoltage),
              @"isReady": @(button.isReady),
              @"isUnpaired": @(button.isUnpaired),
@@ -241,7 +240,7 @@ RCT_EXPORT_METHOD(getButtons:(RCTResponseSenderBlock)callback callback:(RCTRespo
    NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
    
    for (FLICButton *button in buttons) {
-           NSLog(@"FLIC2LIB getButtons %@ %@ %@ %@ %f %@ %u %@ %@", button.name, button.uuid, button.bluetoothAddress, button.nickname, button.batteryVoltage,@(button.pressCount),button.firmwareRevision, button.serialNumber, [self batteryVoltageToEstimatedPercentage:button.batteryVoltage]);
+           NSLog(@"FLIC2LIB getButtons %@ %@ %@ %@ %f %@ %u %@ %@", button.name, button.uuid, button.bluetoothAddress, button.nickname, button.batteryVoltage,@(button.pressCount),button.firmwareRevision, button.serialNumber, @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]));
      [buttonArray addObject: [self convertButtonToDict: button]];
    }
    

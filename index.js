@@ -267,7 +267,7 @@ class Flic2 extends EventEmitter {
    * @version 1.0.0
    */
   onScanResult({ event, error, result, button }){
-    // console.log('index scan result', event, error, result, button);
+
     // check if error
     let ButtonObject;
     if (event === 'completion') {
@@ -303,7 +303,7 @@ class Flic2 extends EventEmitter {
    * @version 1.0.0
    */
   didReceiveButtonEvent(eventData){
-    // console.log('butten event result', eventData);
+
     // button uuid
     const buttonUuid = eventData.button.uuid;
 
