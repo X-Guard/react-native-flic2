@@ -6,6 +6,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 
+import io.flic.flic2libandroid.BatteryLevel;
 import io.flic.flic2libandroid.Flic2Button;
 
 public class ReactEvent {
@@ -73,7 +74,8 @@ public class ReactEvent {
         args.putString(KEY_EVENT, event);
         args.putMap("button", buttonMap);
         args.putBoolean("queued", queued);
-        args.putString("age", String.valueOf(age));
+        args.putDouble("age", queued ? (button.getReadyTimestamp() - age) / 1000 : 0);
+
 
         mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(EVENT_NAMESPACE, args);
@@ -136,10 +138,10 @@ public class ReactEvent {
     }
 
 
-    public void sendScanMessage(Boolean error,int code, Flic2Button button) {
+    public void sendScanMessage(String event,Boolean error,int code, Flic2Button button) {
         Log.d(TAG, "sendScanMessage() called with: event = [" + EVENT_SCAN_RESULT + "]");
         WritableMap args = new WritableNativeMap();
-
+        args.putString(KEY_EVENT, event);
         args.putBoolean("error", error);
         args.putInt("result", code);
 
@@ -147,6 +149,16 @@ public class ReactEvent {
             WritableMap buttonMap = this.getButtonArgs(button);
             args.putMap("button", buttonMap);
         }
+
+        mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                .emit(EVENT_SCAN_RESULT, args);
+    }
+
+    public void sendScanStatusMessage(String event) {
+        Log.d(TAG, "sendScanMessage() called with: event = [" + EVENT_SCAN_RESULT + "]");
+        WritableMap args = new WritableNativeMap();
+
+        args.putString(KEY_EVENT, event);
 
         mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(EVENT_SCAN_RESULT, args);
@@ -169,9 +181,12 @@ public class ReactEvent {
           args.putBoolean(KEY_BUTTON_ISREADY, false);
         }
 
-        if (button.getLastKnownBatteryLevel() != null) {
-            args.putInt(KEY_BUTTON_BatteryLevel, button.getLastKnownBatteryLevel().getEstimatedPercentage());
-            args.putDouble(KEY_BUTTON_Voltage, button.getLastKnownBatteryLevel().getVoltage());
+        BatteryLevel level = button.getLastKnownBatteryLevel();
+
+        if (level != null) {
+            float voltage = level.getVoltage();
+            args.putString(KEY_BUTTON_BatteryLevel, (voltage * 1000) > 2650 ? "Ok" : "Not ok");
+            args.putDouble(KEY_BUTTON_Voltage, voltage);
         }
 
         return args;
