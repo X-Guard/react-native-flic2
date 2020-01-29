@@ -33,7 +33,7 @@ class Flic2Button extends EventEmitter {
     this.uuid = buttonData.uuid;
     this.bluetoothAddress = buttonData.bluetoothAddress;
     this.name = buttonData.name;
-    this.batteryLevel = buttonData.batteryLevel;
+    this.batteryLevelIsOk = buttonData.batteryLevelIsOk;
     this.voltage = buttonData.voltage;
     this.pressCount = buttonData.pressCount;
     this.firmwareRevision = buttonData.firmwareRevision;
@@ -122,9 +122,9 @@ class Flic2Button extends EventEmitter {
 
   }
 
-  getBatteryLevel(){
+  getBatteryLevelIsOk(){
 
-    return this.batteryLevel;
+    return this.batteryLevelIsOk;
 
   }
 
@@ -155,6 +155,12 @@ class Flic2Button extends EventEmitter {
   getIsUnpaired(){
 
     return this.isUnpaired;
+
+  }
+
+  getSerialNumber(){
+
+    return this.serialNumber;
 
   }
 

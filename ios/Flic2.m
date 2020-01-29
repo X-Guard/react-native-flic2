@@ -17,8 +17,8 @@
     hasListeners = NO;
 }
 
-- (void) sendEventScanMessage:(FLICButton *)button errorCode:(NSInteger) error {
-
+- (void) sendEventScanMessage:(FLICButton *)button event:(NSString *) event errorCode:(NSInteger) error {
+    NSLog(@"FLIC2LIB sendEventScanMessage %@", event);
     Boolean errorBool;
     if(error == 0) {
         errorBool = false;
@@ -29,17 +29,30 @@
     if (hasListeners) {
         if (button != nil) {
             [self sendEventWithName:@"scanResult" body: @{
+                @"event": event,
                 @"error": @(errorBool),
                 @"result": @([self getCorrectScanResultCode:error]),
                 @"button": [self convertButtonToDictForScan:button]
             }];
         } else {
             [self sendEventWithName:@"scanResult" body: @{
+                @"event": event,
                 @"error": @(errorBool),
                 @"result": @([self getCorrectScanResultCode:error]),
             }];
         }
 
+    }
+}
+
+- (void) sendEventScanStatusMessage:(NSString *)event  {
+    NSLog(@"FLIC2LIB sendEventScanStatusMessage %@", event);
+    if (hasListeners) {
+
+        [self sendEventWithName:@"scanResult" body: @{
+            @"event": event,
+        }];
+        
     }
 }
 
@@ -81,14 +94,15 @@
 
 -(NSDictionary *) convertButtonToDictForScan: (FLICButton *) button
 {
-        NSLog(@"FLIC2LIB convertButtonToDictForScan %@", button);
+    NSLog(@"FLIC2LIB convertButtonToDictForScan %@ %@ %@ %@ %f %@ %u %@ %@", button.name, button.uuid, button.bluetoothAddress, button.nickname, button.batteryVoltage,@(button.pressCount),button.firmwareRevision, button.serialNumber, @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]));
+    
     if (button != nil) {
         return @{
                  @"uuid": button.uuid,
                  @"bluetoothAddress": button.bluetoothAddress,
-                 @"name": button.name,
-                 @"batteryLevel": @([self batteryVoltageToEstimatedPercentage:button.batterylevel]),
-                 @"voltage": @((button.batterylevel * 3.6) / 1024),
+                 @"name": button.nickname == nil ? button.name : button.nickname,
+                 @"batteryLevelIsOk": @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]),
+                 @"voltage": @(button.batteryVoltage),
                  @"isReady": @(button.isReady),
                  @"isUnpaired": @(button.isUnpaired),
                  @"pressCount": @(button.pressCount),
@@ -185,35 +199,26 @@ RCT_EXPORT_MODULE()
 
 }
 
--(NSInteger) batteryVoltageToEstimatedPercentage: (NSInteger)voltage {
-    NSInteger mvolt = (NSInteger)(((voltage * 3.6) / 1024) * 1000);
-    NSInteger percentage;
-    if (mvolt >= 3000) {
-        percentage = 100;
-    } else if (mvolt >= 2900) {
-        percentage = 42 + (mvolt - 2900) * 58 / 100;
-    } else if (mvolt >= 2740) {
-        percentage = 18 + (mvolt - 2740) * 24 / 160;
-    } else if (mvolt >= 2440) {
-        percentage = 6 + (mvolt - 2440) * 12 / 300;
-    } else if (mvolt >= 2100) {
-        percentage = (mvolt - 2100) * 6 / 340;
+-(BOOL) batteryVoltageToEstimatedPercentage: (float)voltage {
+    float mvolt = (float)(voltage * 1000);
+
+    if (mvolt >= 2650) {
+        return true;
     } else {
-        percentage = 0;
+        return false;
     }
-    return percentage;
 }
 
 -(NSDictionary *) convertButtonToDict: (FLICButton *) button
 {
-        NSLog(@"FLIC2LIB convertButtonToDict %@", button.name);
+    NSLog(@"FLIC2LIB convertButtonToDict %@ %@ %@ %@ %f %@ %u %@ %@", button.name, button.uuid, button.bluetoothAddress, button.nickname, button.batteryVoltage,@(button.pressCount),button.firmwareRevision, button.serialNumber, @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]));
     
     return @{
              @"uuid": button.uuid,
              @"bluetoothAddress": button.bluetoothAddress,
-             @"name": button.name,
-             @"batteryLevel": @([self batteryVoltageToEstimatedPercentage:button.batterylevel]),
-             @"voltage": @((button.batterylevel * 3.6) / 1024),
+             @"name": button.nickname == nil ? button.name : button.nickname,
+             @"batteryLevelIsOk": @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]),
+             @"voltage": @(button.batteryVoltage),
              @"isReady": @(button.isReady),
              @"isUnpaired": @(button.isUnpaired),
              @"pressCount": @(button.pressCount),
@@ -230,15 +235,17 @@ RCT_EXPORT_METHOD(startup) {
 }
 
 RCT_EXPORT_METHOD(getButtons:(RCTResponseSenderBlock)callback callback:(RCTResponseSenderBlock)calback) {
-    NSMutableArray *buttonArray = [[NSMutableArray alloc] init];
-    NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
     
-    for (FLICButton *button in buttons) {
-      [buttonArray addObject: [self convertButtonToDict: button]];
-    }
- 
-    callback(@[buttonArray]);
-
+   NSMutableArray *buttonArray = [[NSMutableArray alloc] init];
+   NSArray<FLICButton *> *buttons = [FLICManager sharedManager].buttons;
+   
+   for (FLICButton *button in buttons) {
+           NSLog(@"FLIC2LIB getButtons %@ %@ %@ %@ %f %@ %u %@ %@", button.name, button.uuid, button.bluetoothAddress, button.nickname, button.batteryVoltage,@(button.pressCount),button.firmwareRevision, button.serialNumber, @([self batteryVoltageToEstimatedPercentage:button.batteryVoltage]));
+     [buttonArray addObject: [self convertButtonToDict: button]];
+   }
+   
+   callback(@[buttonArray]);
+   
 }
 
 RCT_EXPORT_METHOD(connectButton:(NSString *) uuid callback:(RCTResponseSenderBlock) successCallBack) {
@@ -384,15 +391,19 @@ RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCT
         {
             case FLICButtonScannerStatusEventDiscovered:
                 NSLog(@"A Flic2 was discovered.");
+                [self sendEventScanStatusMessage: (@"discovered")];
                 break;
             case FLICButtonScannerStatusEventConnected:
-                NSLog(@"A Flic2 is being verified.");
+                NSLog(@"A Flic2 is being connected.");
+                [self sendEventScanStatusMessage: (@"connected")];
                 break;
             case FLICButtonScannerStatusEventVerified:
                 NSLog(@"The Flic2 was verified successfully.");
+                [self sendEventScanStatusMessage: (@"verified")];
                 break;
             case FLICButtonScannerStatusEventVerificationFailed:
                 NSLog(@"The Flic2 verification failed.");
+                [self sendEventScanStatusMessage: (@"failed")];
                 break;
             default:
                 break;
@@ -406,9 +417,9 @@ RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCT
             button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
             [button connect];
             
-            [self sendEventScanMessage: (button) errorCode:(0)];
+            [self sendEventScanMessage: (button) event:(@"completion") errorCode:(0)];
         } else {
-            [self sendEventScanMessage: (button) errorCode:(error.code)];
+            [self sendEventScanMessage: (button) event:(@"completion") errorCode:(error.code)];
         }
     }];
 }
@@ -425,8 +436,8 @@ RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCT
     }
 }
 
-- (void)manager:(nonnull FLICManager *)manager didUpdateBluetoothState:(CBManagerState)state {
-    NSLog(@"Flic2 Update bluetooth state: %ld", (long)state);
+- (void)manager:(nonnull FLICManager *)manager didUpdateState:(FLICManagerState)state {
+    NSLog(@"Did update manager: %ld", (long)state);
 }
 
 

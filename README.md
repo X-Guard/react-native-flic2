@@ -43,15 +43,17 @@ Flic2Button.disconnect();                // disconnect this button
 Flic2Button.forget();                    // removes the button completely
 Flic2Button.getUuid();                   // get the button uuid
 Flic2Button.getBluetoothAddress();       // get the button bluetooth address
-Flic2Button.getName();                   // get the internal button name
-Flic2Button.getBatteryLevel();           // get the estimated battery level
+Flic2Button.getName();                   // get the button nickname
+Flic2Button.getBatteryLevelIsOk();       // get the battery state (true, false),  True = battery is ok, False = battery should be changed soon
 Flic2Button.getVoltage();                // get the estimated battery voltage
 Flic2Button.getPressCount();             // get button count since last reset
 Flic2Button.getFirmwareRevision();       // get current hardware version
+Flic2Button.getSerialNumber();           // get the serial number of the button
 Flic2Button.getIsReady();                // get the ready state of the button
 Flic2Button.getIsUnpaired();             // get the unpaired state of the button
 Flic2Button.setMode(mode);               // change the button trigger for this particular button. Use the constants to change the mode (see example below).
 Flic2Button.setName(name);               // sets the nickname of the button
+
 
 // Constants
 //
@@ -90,7 +92,7 @@ BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK_AND_HOLD                     = 2;
 BUTTON_TRIGGER_MODE_CLICK                                               = 3; 
 
 // Scan result:
-Flic2.addEventListener('sanResult', ((int) result, (Flic2Button) button) => {
+Flic2.addEventListener('scanResult', ((int) result, (Flic2Button) button) => {
 
   if (result === Flic2.constants.SCAN_RESULT_SUCCESS) {
 

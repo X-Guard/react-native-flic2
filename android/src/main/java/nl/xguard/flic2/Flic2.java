@@ -28,12 +28,13 @@ import io.flic.flic2libandroid.Flic2ScanCallback;
 import io.flic.flic2libandroid.HandlerInterface;
 import io.flic.flic2libandroid.LoggerInterface;
 
-public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterface, LoggerInterface {
+public class Flic2 extends ReactContextBaseJavaModule {
 
     private static final String TAG = "Flic2Module";
     private ReactApplicationContext mreactContext;
     private Flic2Manager manager;
     private ReactEvent mReactEvent;
+    private Handler handler;
     private boolean isScanning;
     private boolean managerIsReady;
 
@@ -51,8 +52,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
         managerIsReady = false;
         mreactContext = reactContext;
         mReactEvent = new ReactEvent(mreactContext);
-
-        Looper.prepare();
+        handler = new Handler(mreactContext.getMainLooper());
 
     }
 
@@ -62,7 +62,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
 
         Log.d(TAG, "startup()");
 
-        manager =Flic2Manager.initAndGetInstance(mreactContext, new Handler(Looper.getMainLooper()));
+        manager = Flic2Manager.initAndGetInstance(mreactContext, handler);
 
         managerIsReady = true;
 
@@ -283,17 +283,20 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
                 public void onDiscoveredAlreadyPairedButton(Flic2Button button) {
 
                     Log.d(TAG, "startScan() already paired button");
+                    mReactEvent.sendScanStatusMessage("alreadyPaired");
                 }
 
                 @Override
                 public void onDiscovered(String bdAddr) {
 
                     Log.d(TAG, "startScan() Found Flic2, now connecting...");
+                    mReactEvent.sendScanStatusMessage("discovered");
                 }
 
                 @Override
                 public void onConnected() {
                     Log.d(TAG, "startScan() Connected. Now pairing...");
+                    mReactEvent.sendScanStatusMessage("connected");
                 }
 
                 @Override
@@ -302,9 +305,9 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
 
                     if (result == Flic2ScanCallback.RESULT_SUCCESS) {
                         listenToButton(button);
-                        mReactEvent.sendScanMessage(false, result, button);
+                        mReactEvent.sendScanMessage("completion",false, result, button);
                     } else {
-                        mReactEvent.sendScanMessage(true, result, button);
+                        mReactEvent.sendScanMessage("completion",true, result, button);
                     }
 
                 }
@@ -323,39 +326,6 @@ public class Flic2 extends ReactContextBaseJavaModule implements HandlerInterfac
         return false;
     }
 
-    @Override
-    public void post(Runnable r) {
-        Log.d(TAG, "post()");
-        this.post(r);
-    }
-
-    @Override
-    public void postDelayed(Runnable r, long delayMillis) {
-        Log.d(TAG, "postDelayed() " + delayMillis);
-        this.postDelayed(r, delayMillis);
-    }
-
-    @Override
-    public void removeCallbacks(Runnable r) {
-        Log.d(TAG, "removeCallbacks()");
-        this.removeCallbacks(r);
-    }
-
-    @Override
-    public boolean currentThreadIsHandlerThread() {
-
-        if (Thread.currentThread() == Looper.getMainLooper().getThread()) {
-            Log.d(TAG, "currentThreadIsHandlerThread() true");
-        } else {
-            Log.d(TAG, "currentThreadIsHandlerThread() false");
-        }
-        return Thread.currentThread() == Looper.getMainLooper().getThread();
-    }
-
-    @Override
-    public void log(String bdAddr, String Action, String text) {
-        Log.d(TAG, "log()");
-    }
 
 
 }

@@ -266,25 +266,29 @@ class Flic2 extends EventEmitter {
    *
    * @version 1.0.0
    */
-  onScanResult({ error, result, button }){
-
-    // remove listener
-    this.nativeEvents.removeListener('scanResult', this.onScanResultFunction);
+  onScanResult({ event, error, result, button }){
 
     // check if error
     let ButtonObject;
-    if (error === false) {
+    if (event === 'completion') {
+      // remove listener
+      this.nativeEvents.removeListener('scanResult', this.onScanResultFunction);
 
-      // create button object
-      ButtonObject = new Flic2Button(button);
+      if (error === false) {
 
-      // save to known buttons
-      this.knownButtons[ButtonObject.getUuid()] = ButtonObject;
+        // create button object
+        ButtonObject = new Flic2Button(button);
 
+        // save to known buttons
+        this.knownButtons[ButtonObject.getUuid()] = ButtonObject;
+
+      }
     }
+
 
     // check if error
     this.emit('scanResult', {
+      event: event,
       error: !!error,
       result: result,
       button: ButtonObject,
