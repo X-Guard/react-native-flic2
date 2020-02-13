@@ -27,7 +27,7 @@
     }
 
     if (hasListeners) {
-        if (button != nil) {
+        if (errorBool == false && button != nil) {
             [self sendEventWithName:@"scanResult" body: @{
                 @"event": event,
                 @"error": @(errorBool),
@@ -132,6 +132,9 @@ RCT_EXPORT_MODULE()
 -(NSInteger) getCorrectScanResultCode: (NSInteger) code {
 
     switch (code) {
+        case 0:
+            return 0;
+            break;
         case FLICButtonScannerErrorCodeBluetoothNotActivated:
             return 2;
             break;
