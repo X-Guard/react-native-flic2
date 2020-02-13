@@ -31,7 +31,7 @@
             [self sendEventWithName:@"scanResult" body: @{
                 @"event": event,
                 @"error": @(errorBool),
-                @"result": @([self getCorrectScanResultCode:error]),
+                @"result": @(0),
                 @"button": [self convertButtonToDictForScan:button]
             }];
         } else {
@@ -132,9 +132,6 @@ RCT_EXPORT_MODULE()
 -(NSInteger) getCorrectScanResultCode: (NSInteger) code {
 
     switch (code) {
-        case 0:
-            return 0;
-            break;
         case FLICButtonScannerErrorCodeBluetoothNotActivated:
             return 2;
             break;
