@@ -27,11 +27,11 @@
     }
 
     if (hasListeners) {
-        if (button != nil) {
+        if (errorBool == false && button != nil) {
             [self sendEventWithName:@"scanResult" body: @{
                 @"event": event,
                 @"error": @(errorBool),
-                @"result": @([self getCorrectScanResultCode:error]),
+                @"result": @(0),
                 @"button": [self convertButtonToDictForScan:button]
             }];
         } else {
