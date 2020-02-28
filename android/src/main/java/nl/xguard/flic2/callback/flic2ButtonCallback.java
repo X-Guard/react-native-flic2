@@ -29,24 +29,24 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
         packageName = packageName;
     }
 
-    private void checkAndRestart() {
-        Log.d(TAG, "checkAndRestart()"+ mReactInstanceManager.hasStartedCreatingInitialContext()+ " context" +mReactInstanceManager.getCurrentReactContext() + " " + mContext);
-        if (!mReactInstanceManager.hasStartedCreatingInitialContext()) {
-            Log.d(TAG, "create background()");
-            mReactInstanceManager.createReactContextInBackground();
-
-        } else {
-            flic2SharedPreferences sisSharedPreferences = flic2SharedPreferences.getInstance(mContext);
-            Log.d(TAG, "check sis" + sisSharedPreferences.getBoolean(flic2SharedPreferences.PREF_KEY_IS_RUNNING));
-            if (!sisSharedPreferences.getBoolean(flic2SharedPreferences.PREF_KEY_IS_RUNNING)) {
-                Log.d(TAG, "recreate background() null");
-                    mReactInstanceManager.recreateReactContextInBackground();
-
-            }
-
-        }
-
-    }
+//    private void checkAndRestart() {
+//        Log.d(TAG, "checkAndRestart()"+ mReactInstanceManager.hasStartedCreatingInitialContext()+ " context" +mReactInstanceManager.getCurrentReactContext() + " " + mContext);
+//        if (!mReactInstanceManager.hasStartedCreatingInitialContext()) {
+//            Log.d(TAG, "create background()");
+//            mReactInstanceManager.createReactContextInBackground();
+//
+//        } else {
+//            flic2SharedPreferences sisSharedPreferences = flic2SharedPreferences.getInstance(mContext);
+//            Log.d(TAG, "check sis" + sisSharedPreferences.getBoolean(flic2SharedPreferences.PREF_KEY_IS_RUNNING));
+//            if (!sisSharedPreferences.getBoolean(flic2SharedPreferences.PREF_KEY_IS_RUNNING)) {
+//                Log.d(TAG, "recreate background() null");
+//                    mReactInstanceManager.recreateReactContextInBackground();
+//
+//            }
+//
+//        }
+//
+//    }
 
     @Override
     public void onDisconnect(Flic2Button button) {
@@ -113,7 +113,7 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
     @Override
     public void onButtonSingleOrDoubleClickOrHold(Flic2Button button, boolean wasQueued, boolean lastQueued, long timestamp, boolean isSingleClick, boolean isDoubleClick, boolean isHold) {
         if (isSingleClick) {
-            checkAndRestart();
+//            checkAndRestart();
             mReactEvent.send(button, ReactEvent.EVENT_BUTTON_SINGLE_CLICK, wasQueued, timestamp);
         } else if (isHold) {
             mReactEvent.send(button, ReactEvent.EVENT_BUTTON_HOLD, wasQueued, timestamp);

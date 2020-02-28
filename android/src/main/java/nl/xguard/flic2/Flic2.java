@@ -12,6 +12,7 @@ import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
+import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
@@ -56,6 +57,15 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         super(reactContext);
         Log.d(TAG, "onCreate()");
         managerIsReady = false;
+
+        try {
+            manager = Flic2Manager.getInstance();
+            managerIsReady = true;
+        }
+        catch(Exception e) {
+            managerIsReady = false;
+        }
+
         mreactContext = reactContext;
         mReactEvent = new ReactEvent(mreactContext);
         handler = new Handler(mreactContext.getMainLooper());
@@ -67,6 +77,11 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
 
         sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, true);
+
+        for (Flic2Button button : Flic2Manager.getInstance().getButtons()) {
+            listenToButton(button);
+        }
+
     }
 
     @Override
@@ -89,42 +104,42 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
 
         sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, false);
-//        for (ButtonData data : dataSet) {
-//            data.button.removeListener(data.listener);
-//        }
+        for (ButtonData data : dataSet) {
+            data.button.removeListener(data.listener);
+        }
     }
 
+
     @ReactMethod
+    @TargetApi(23)
     public void startup() {
+        // do nothing
+    }
+    
+    public static void startupAndroid(Context context, Handler handler) {
         Log.d(TAG, "startup()");
-        manager = Flic2Manager.initAndGetInstance(mreactContext, handler);
-        managerIsReady = true;
-        mReactEvent.sendEvent("managerInitialized");
+        Flic2Manager.initAndGetInstance(context, handler);
     }
 
     @ReactMethod
     @TargetApi(23)
     public void startService() {
         Log.d(TAG, "startService()");
-        Boolean isRunning = isServiceRunning(mreactContext, Flic2Service.class);
-        Log.d(TAG, "startService()" + !isRunning + " " + isRunning);
-        if (!isRunning) {
-            Intent intent = new Intent(mreactContext, Flic2Service.class);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                Log.d(TAG, "startService() new");
-                mreactContext.startForegroundService(intent);
-            } else {
-                Log.d(TAG, "startService() old" );
-                mreactContext.startService(intent);
-            }
-
-            for (Flic2Button button : manager.getButtons()) {
-                button.connect();
-                listenToButton(button);
-            }
-        } else {
-            Log.d(TAG, "startService(): service is already running");
-        }
+//        Boolean isRunning = isServiceRunning(mreactContext, Flic2Service.class);
+//        Log.d(TAG, "startService()" + !isRunning + " " + isRunning);
+//        if (!isRunning) {
+//            Intent intent = new Intent(mreactContext, Flic2Service.class);
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+//                Log.d(TAG, "startService() new");
+//                mreactContext.startForegroundService(intent);
+//            } else {
+//                Log.d(TAG, "startService() old" );
+//                mreactContext.startService(intent);
+//            }
+//
+//        } else {
+//            Log.d(TAG, "startService(): service is already running");
+//        }
     }
 
     public void listenToButton(Flic2Button button) {
@@ -142,7 +157,6 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         for (Flic2Button button : manager.getButtons()) {
 //            button.disconnectOrAbortPendingConnection();
             button.connect();
-//            listenToButton(button);
         }
     }
 
@@ -269,33 +283,36 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 //            }
         Log.d(TAG, "startScan() start scan");
         isScanning = true;
-        Flic2Manager.getInstance().startScan(new Flic2ScanCallback() {
-            @Override
-            public void onDiscoveredAlreadyPairedButton(Flic2Button button) {
-                Log.d(TAG, "startScan() already paired button");
-                mReactEvent.sendScanStatusMessage("alreadyPaired");
-            }
-            @Override
-            public void onDiscovered(String bdAddr) {
-                Log.d(TAG, "startScan() Found Flic2, now connecting...");
-                mReactEvent.sendScanStatusMessage("discovered");
-            }
-            @Override
-            public void onConnected() {
-                Log.d(TAG, "startScan() Connected. Now pairing...");
-                mReactEvent.sendScanStatusMessage("connected");
-            }
-            @Override
-            public void onComplete(int result, int subCode, Flic2Button button) {
-                isScanning = false;
-                if (result == Flic2ScanCallback.RESULT_SUCCESS) {
-                    listenToButton(button);
-                    mReactEvent.sendScanMessage("completion",false, result, button);
-                } else {
-                    mReactEvent.sendScanMessage("completion",true, result, button);
+        if (managerIsReady) {
+            manager.startScan(new Flic2ScanCallback() {
+                @Override
+                public void onDiscoveredAlreadyPairedButton(Flic2Button button) {
+                    Log.d(TAG, "startScan() already paired button");
+                    mReactEvent.sendScanStatusMessage("alreadyPaired");
                 }
-            }
-        });
+                @Override
+                public void onDiscovered(String bdAddr) {
+                    Log.d(TAG, "startScan() Found Flic2, now connecting...");
+                    mReactEvent.sendScanStatusMessage("discovered");
+                }
+                @Override
+                public void onConnected() {
+                    Log.d(TAG, "startScan() Connected. Now pairing...");
+                    mReactEvent.sendScanStatusMessage("connected");
+                }
+                @Override
+                public void onComplete(int result, int subCode, Flic2Button button) {
+                    isScanning = false;
+                    if (result == Flic2ScanCallback.RESULT_SUCCESS) {
+                        listenToButton(button);
+                        mReactEvent.sendScanMessage("completion",false, result, button);
+                    } else {
+                        mReactEvent.sendScanMessage("completion",true, result, button);
+                    }
+                }
+            });
+        }
+
 //        }
     }
     private boolean isServiceRunning(Context context, Class<?> serviceClass) {
