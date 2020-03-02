@@ -19,7 +19,7 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
 //    private String packageName;
     private ReactContext mContext;
 
-    final private ReactInstanceManager mReactInstanceManager;
+//    final private ReactInstanceManager mReactInstanceManager;
     public flic2ButtonCallback(ReactContext context, ReactInstanceManager instanceManager) {
         super();
         Log.d(TAG, "constructor()");
