@@ -78,7 +78,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
         sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, true);
 
-        for (Flic2Button button : Flic2Manager.getInstance().getButtons()) {
+        for (Flic2Button button : manager.getButtons()) {
             listenToButton(button);
         }
 
@@ -88,12 +88,14 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void onHostResume() {
         // Activity `onResume`
         Log.d(TAG, "onHostResume()");
+        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, true);
     }
 
     @Override
     public void onHostPause() {
         // Activity `onPause`
         Log.d(TAG, "onHostPause()");
+        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, false);
     }
 
     @Override
@@ -102,11 +104,9 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         Log.d(TAG, "onHostDestroy()");
 
 
-
-        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, false);
-        for (ButtonData data : dataSet) {
-            data.button.removeListener(data.listener);
-        }
+//        for (ButtonData data : dataSet) {
+//            data.button.removeListener(data.listener);
+//        }
     }
 
 
@@ -145,7 +145,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void listenToButton(Flic2Button button) {
         Log.d(TAG, "listenToButton()");
         final ButtonData buttonData = new ButtonData(button);
-        buttonData.listener = new flic2ButtonCallback(mreactContext, reactInstanceManager, packageName);
+        buttonData.listener = new flic2ButtonCallback(mreactContext, reactInstanceManager);
+//        buttonData.listener = new flic2ButtonCallback(mreactContext);
         button.addListener(buttonData.listener);
         dataSet.add(buttonData);
     }
