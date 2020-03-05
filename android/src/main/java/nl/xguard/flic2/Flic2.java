@@ -7,7 +7,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
-import com.facebook.react.ReactApplication;
+//import com.facebook.react.ReactApplication;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -71,12 +71,12 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         handler = new Handler(mreactContext.getMainLooper());
         packageName = mreactContext.getPackageName();
         reactContext.addLifecycleEventListener(this);
-        ReactApplication reactApplication = (ReactApplication)reactContext.getApplicationContext().getApplicationContext();
-        reactInstanceManager = reactApplication.getReactNativeHost().getReactInstanceManager();
-        sisSharedPreferences = flic2SharedPreferences.getInstance(reactContext);
-
-
-        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, true);
+//        ReactApplication reactApplication = (ReactApplication)reactContext.getApplicationContext().getApplicationContext();
+//        reactInstanceManager = reactApplication.getReactNativeHost().getReactInstanceManager();
+//        sisSharedPreferences = flic2SharedPreferences.getInstance(reactContext);
+//
+//
+//        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, true);
 
         for (Flic2Button button : manager.getButtons()) {
             listenToButton(button);
@@ -88,14 +88,14 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void onHostResume() {
         // Activity `onResume`
         Log.d(TAG, "onHostResume()");
-        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, true);
+//        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, true);
     }
 
     @Override
     public void onHostPause() {
         // Activity `onPause`
         Log.d(TAG, "onHostPause()");
-        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, false);
+//        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, false);
     }
 
     @Override
