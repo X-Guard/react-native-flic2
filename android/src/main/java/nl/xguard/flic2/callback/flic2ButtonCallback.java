@@ -2,50 +2,25 @@ package nl.xguard.flic2.callback;
 
 import android.util.Log;
 
-import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.ReactContext;
 import nl.xguard.flic2.communication.ReactEvent;
 
 import io.flic.flic2libandroid.BatteryLevel;
 import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2ButtonListener;
-import nl.xguard.flic2.sharedpreferences.flic2SharedPreferences;
 
 public class flic2ButtonCallback extends Flic2ButtonListener {
 
     private static final String TAG = "Flic2ButtonCallback";
 
     private ReactEvent mReactEvent;
-//    private String packageName;
-    private ReactContext mContext;
 
-//    final private ReactInstanceManager mReactInstanceManager;
-    public flic2ButtonCallback(ReactContext context, ReactInstanceManager instanceManager) {
+    public flic2ButtonCallback(ReactContext context) {
         super();
         Log.d(TAG, "constructor()");
         mReactEvent = new ReactEvent(context);
-        // mReactInstanceManager = instanceManager;
-        // mContext = context;
-//        packageName = packageName;
     }
 
-//     private void checkAndRestart() {
-//         Log.d(TAG, "checkAndRestart()"+ mReactInstanceManager.hasStartedCreatingInitialContext()+ " context" +mReactInstanceManager.getCurrentReactContext() + " " + mContext);
-//         if (mReactInstanceManager.hasStartedCreatingInitialContext()) {
-//             Log.d(TAG, "create background()");
-// //            mReactInstanceManager.createReactContextInBackground();
-
-//         } else {
-//             if (!mReactInstanceManager.hasStartedCreatingInitialContext()) {
-//                 flic2SharedPreferences sisSharedPreferences = flic2SharedPreferences.getInstance(mContext);
-//                 Log.d(TAG, "check sis" + sisSharedPreferences.getBoolean(flic2SharedPreferences.PREF_KEY_IS_RUNNING));
-//                 if (!sisSharedPreferences.getBoolean(flic2SharedPreferences.PREF_KEY_IS_RUNNING)) {
-//                     Log.d(TAG, "recreate background() null");
-// //                    mReactInstanceManager.recreateReactContextInBackground();
-//                 }
-//             }
-//         }
-//     }
 
     @Override
     public void onDisconnect(Flic2Button button) {
@@ -132,8 +107,8 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
     }
 
     @Override
-    public void onBatteryLevelUpdated(BatteryLevel level) {
+    public void onBatteryLevelUpdated(Flic2Button button, BatteryLevel level) {
         Log.d(TAG, "onBatteryLevelUpdated() called with: button = [" + level.getEstimatedPercentage() + "]");
-//        mReactEvent.send(ReactEvent.EVENT_BUTTON_BATTERY_LEVEL, level.getEstimatedPercentage());
+        mReactEvent.send(button, ReactEvent.EVENT_BUTTON_BATTERY_LEVEL);
     }
 }

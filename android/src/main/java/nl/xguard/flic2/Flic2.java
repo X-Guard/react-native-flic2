@@ -1,18 +1,12 @@
 package nl.xguard.flic2;
+
 import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
 import android.os.Handler;
-import android.os.Looper;
 import android.util.Log;
-//import com.facebook.react.ReactApplication;
-import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.bridge.Callback;
-import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
@@ -22,28 +16,22 @@ import com.facebook.react.bridge.WritableNativeArray;
 import io.flic.flic2libandroid.Flic2ButtonListener;
 import nl.xguard.flic2.callback.flic2ButtonCallback;
 import nl.xguard.flic2.communication.ReactEvent;
-import nl.xguard.flic2.service.Flic2Service;
 
 import java.util.ArrayList;
 import java.util.List;
 import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
 import io.flic.flic2libandroid.Flic2ScanCallback;
-import io.flic.flic2libandroid.HandlerInterface;
-import io.flic.flic2libandroid.LoggerInterface;
-import nl.xguard.flic2.sharedpreferences.flic2SharedPreferences;
 
-public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventListener {
+public class Flic2 extends ReactContextBaseJavaModule {
     private static final String TAG = "Flic2Module";
     private ReactApplicationContext mreactContext;
     private Flic2Manager manager;
     private ReactEvent mReactEvent;
-    private String packageName;
+    private boolean managerIsReady;
     private Handler handler;
     private boolean isScanning;
-    private boolean managerIsReady;
-    private ReactInstanceManager reactInstanceManager;
-    private flic2SharedPreferences sisSharedPreferences;
+
 
     ArrayList<ButtonData> dataSet = new ArrayList<>();
 
@@ -69,37 +57,11 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         mreactContext = reactContext;
         mReactEvent = new ReactEvent(mreactContext);
         handler = new Handler(mreactContext.getMainLooper());
-        packageName = mreactContext.getPackageName();
-        reactContext.addLifecycleEventListener(this);
-//        ReactApplication reactApplication = (ReactApplication)reactContext.getApplicationContext().getApplicationContext();
-//        reactInstanceManager = reactApplication.getReactNativeHost().getReactInstanceManager();
-//        sisSharedPreferences = flic2SharedPreferences.getInstance(reactContext);
-//
-//
-//        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, true);
 
         for (Flic2Button button : manager.getButtons()) {
             listenToButton(button);
         }
 
-    }
-
-    @Override
-    public void onHostResume() {
-        // Activity `onResume`
-        Log.d(TAG, "onHostResume()");
-    }
-
-    @Override
-    public void onHostPause() {
-        // Activity `onPause`
-        Log.d(TAG, "onHostPause()");
-    }
-
-    @Override
-    public void onHostDestroy() {
-        // Activity `onDestroy`
-        Log.d(TAG, "onHostDestroy()");
     }
 
 
@@ -117,9 +79,9 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     @ReactMethod
     @TargetApi(23)
     public void startService() {
-        Log.d(TAG, "startService()");
+//        Log.d(TAG, "startService()");
 //        Boolean isRunning = isServiceRunning(mreactContext, Flic2Service.class);
-//        Log.d(TAG, "startService()" + !isRunning + " " + isRunning);
+//
 //        if (!isRunning) {
 //            Intent intent = new Intent(mreactContext, Flic2Service.class);
 //            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
