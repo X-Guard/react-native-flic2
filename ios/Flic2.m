@@ -262,15 +262,6 @@ RCT_EXPORT_MODULE()
         case FLICButtonScannerErrorCodeNotInPublicMode:
             return 21;
             break;
-        case FLICErrorUnsupportedOSVersion:
-            return 22;
-            break;
-        case FLICErrorAlreadyForgotten:
-            return 23;
-            break;
-        case FLICErrorUnpaired:
-            return 24;
-            break;
         default:
             return 3;
             break;
@@ -454,9 +445,10 @@ RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCT
     return;
 }
 
-RCT_EXPORT_METHOD(isScanning callback:(RCTResponseSenderBlock) successCallBack) {
+RCT_EXPORT_METHOD(isScanning: callback:(RCTResponseSenderBlock) successCallBack) {
 
-    successCallBack(@([FLICManager sharedManager].isScanning;));
+    Boolean scanBool = [FLICManager sharedManager].isScanning;
+    successCallBack(@(scanBool));
     
     return;
 }
@@ -604,7 +596,7 @@ RCT_EXPORT_METHOD(isScanning callback:(RCTResponseSenderBlock) successCallBack) 
     [self sendEventMessage: (@"batteryLevelIsOk") button:(button)];
 }
 
-- (void)button:(FLICButton *)button didUpdateNickname:(NSString)nickname;
+- (void)button:(FLICButton *)button didUpdateNickname:(NSString *)nickname;
 {
     NSLog(@"Flic2: %@ dit update nickname", button.name);
     [self sendEventMessage: (@"didReceiveNewName") button:(button)];

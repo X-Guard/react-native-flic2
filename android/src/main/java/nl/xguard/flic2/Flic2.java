@@ -88,25 +88,18 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void onHostResume() {
         // Activity `onResume`
         Log.d(TAG, "onHostResume()");
-//        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, true);
     }
 
     @Override
     public void onHostPause() {
         // Activity `onPause`
         Log.d(TAG, "onHostPause()");
-//        sisSharedPreferences.write(flic2SharedPreferences.PREF_KEY_IS_RUNNING, false);
     }
 
     @Override
     public void onHostDestroy() {
         // Activity `onDestroy`
         Log.d(TAG, "onHostDestroy()");
-
-
-//        for (ButtonData data : dataSet) {
-//            data.button.removeListener(data.listener);
-//        }
     }
 
 
@@ -145,8 +138,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void listenToButton(Flic2Button button) {
         Log.d(TAG, "listenToButton()");
         final ButtonData buttonData = new ButtonData(button);
-        buttonData.listener = new flic2ButtonCallback(mreactContext, reactInstanceManager);
-//        buttonData.listener = new flic2ButtonCallback(mreactContext);
+        buttonData.listener = new flic2ButtonCallback(mreactContext);
         button.addListener(buttonData.listener);
         dataSet.add(buttonData);
     }
@@ -156,7 +148,6 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void connectAllKnownButtons() {
         Log.d(TAG, "connectAllKnownButtons()");
         for (Flic2Button button : manager.getButtons()) {
-//            button.disconnectOrAbortPendingConnection();
             button.connect();
         }
     }
@@ -170,9 +161,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
             Log.d(TAG, "connectButton() uuid: " + uuid +" " + button.getUuid());
             if (String.valueOf(uuid).equals(button.getUuid()))
             {
-//        button.disconnectOrAbortPendingConnection();
                 button.connect();
-                // listenToButton(button);
                 successCallback.invoke();
                 return;
             }
