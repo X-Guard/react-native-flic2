@@ -21,6 +21,7 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
         mReactEvent = new ReactEvent(context);
     }
 
+
     @Override
     public void onDisconnect(Flic2Button button) {
         Log.d(TAG, "onDisconnect() called with: button = [" + button + "]");
@@ -88,6 +89,7 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
         if (isSingleClick) {
             mReactEvent.send(button, ReactEvent.EVENT_BUTTON_SINGLE_CLICK, wasQueued, timestamp);
         } else if (isHold) {
+            // checkAndRestart();
             mReactEvent.send(button, ReactEvent.EVENT_BUTTON_HOLD, wasQueued, timestamp);
         } else {
             mReactEvent.send(button, ReactEvent.EVENT_BUTTON_DOUBLE_CLICK, wasQueued, timestamp);
@@ -105,8 +107,8 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
     }
 
     @Override
-    public void onBatteryLevelUpdated(BatteryLevel level) {
+    public void onBatteryLevelUpdated(Flic2Button button, BatteryLevel level) {
         Log.d(TAG, "onBatteryLevelUpdated() called with: button = [" + level.getEstimatedPercentage() + "]");
-//        mReactEvent.send(ReactEvent.EVENT_BUTTON_BATTERY_LEVEL, level.getEstimatedPercentage());
+        mReactEvent.send(button, ReactEvent.EVENT_BUTTON_BATTERY_LEVEL);
     }
 }
