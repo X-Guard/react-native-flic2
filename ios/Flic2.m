@@ -1,5 +1,5 @@
 #import "Flic2.h"
-#import <flic2lib/flic2lib.h>
+@import flic2lib;
 
 @implementation Flic2 {
     bool hasListeners;
