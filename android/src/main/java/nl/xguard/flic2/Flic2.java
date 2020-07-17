@@ -1,6 +1,5 @@
 package nl.xguard.flic2;
 
-import android.annotation.TargetApi;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.os.Handler;
@@ -66,7 +65,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
 
 
     @ReactMethod
-    @TargetApi(23)
     public void startup() {
         // do nothing
     }
@@ -77,7 +75,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void startService() {
 //        Log.d(TAG, "startService()");
 //        Boolean isRunning = isServiceRunning(mreactContext, Flic2Service.class);
@@ -104,7 +101,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void connectAllKnownButtons() {
         Log.d(TAG, "connectAllKnownButtons()");
         for (Flic2Button button : mFlic2Manager.getButtons()) {
@@ -113,7 +109,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void connectButton(String uuid, Callback successCallback) {
         Log.d(TAG, "connectButton()");
         List<Flic2Button> buttons = mFlic2Manager.getButtons();
@@ -130,7 +125,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void disconnectButton(String uuid, Callback successCallback) {
         Log.d(TAG, "disconnectButton()");
         List<Flic2Button> buttons = mFlic2Manager.getButtons();
@@ -147,7 +141,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void disconnectAllKnownButtons() {
         Log.d(TAG, "disconnectAllKnownButtons()");
         for (Flic2Button button : mFlic2Manager.getButtons()) {
@@ -156,7 +149,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void setName(String uuid, String name, Callback successCallback) {
         Log.d(TAG, "setName()");
         List<Flic2Button> buttons = mFlic2Manager.getButtons();
@@ -173,7 +165,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void stopScan() {
         Log.d(TAG, "stopScanning()");
         mFlic2Manager.stopScan();
@@ -181,7 +172,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void getButtons(Callback successCallback, Callback errorCallback) {
         Log.d(TAG, "getButtons()");
         try {
@@ -198,7 +188,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void forgetButton(String uuid, Callback successCallback) {
         Log.d(TAG, "forgetButton()");
         List<Flic2Button> buttons = mFlic2Manager.getButtons();
@@ -216,7 +205,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void forgetAllButtons() {
         Log.d(TAG, "forgetAllButtons()");
         List<Flic2Button> buttons = mFlic2Manager.getButtons();
@@ -227,7 +215,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void startScan() {
 //        if (!isScanning) {
 //            int permissionCheck = ContextCompat.checkSelfPermission(mreactContext, Manifest.permission.ACCESS_FINE_LOCATION);
