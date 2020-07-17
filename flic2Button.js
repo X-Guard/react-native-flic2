@@ -1,6 +1,9 @@
 // event emitter
 import EventEmitter from 'react-native/Libraries/vendor/emitter/EventEmitter';
 
+// the Flic2 module
+import Flic2 from 'react-native-flic2';
+
 /**
  * React Native Flic 2 Button object.
  *
