@@ -23,7 +23,7 @@ import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
 import io.flic.flic2libandroid.Flic2ScanCallback;
 
-public class Flic2 extends ReactContextBaseJavaModule {
+public class Flic2Module extends ReactContextBaseJavaModule {
     private static final String TAG = "Flic2Module";
     private ReactApplicationContext mreactContext;
     private Flic2Manager manager;
@@ -37,11 +37,11 @@ public class Flic2 extends ReactContextBaseJavaModule {
 
     @Override
     public String getName() {
-        return Flic2.class.getSimpleName();
+        return Flic2Module.class.getSimpleName();
     }
 
     @ReactMethod
-    public Flic2(ReactApplicationContext reactContext) {
+    public Flic2Module(ReactApplicationContext reactContext) {
         super(reactContext);
         Log.d(TAG, "onCreate()");
         managerIsReady = false;
@@ -58,6 +58,10 @@ public class Flic2 extends ReactContextBaseJavaModule {
         mReactEvent = new ReactEvent(mreactContext);
         handler = new Handler(mreactContext.getMainLooper());
 
+        if(manager == null) {
+          Log.e(TAG, "Flic2: manager is null");
+          return;
+        }
         for (Flic2Button button : manager.getButtons()) {
             listenToButton(button);
         }

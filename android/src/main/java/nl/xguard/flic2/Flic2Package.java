@@ -13,7 +13,7 @@ import com.facebook.react.bridge.JavaScriptModule;
 public class Flic2Package implements ReactPackage {
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        return Arrays.<NativeModule>asList(new Flic2(reactContext));
+        return Arrays.asList(new Flic2Module(reactContext));
     }
 
     // Deprecated from RN 0.47
