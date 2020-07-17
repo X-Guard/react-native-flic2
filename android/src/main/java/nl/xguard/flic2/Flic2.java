@@ -17,18 +17,14 @@ import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableNativeArray;
 
-import java.util.ArrayList;
 import java.util.Objects;
 
-import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
 import nl.xguard.flic2.callback.ReactFlic2ButtonListener;
-import nl.xguard.flic2.callback.ReactFlic2ScanCallback;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.model.ReactAndroidHandler;
+import nl.xguard.flic2.model.ReactFlic2Manager;
 import nl.xguard.flic2.model.ReactLogger;
 import nl.xguard.flic2.service.Flic2Service;
 import nl.xguard.flic2.util.SisAction;
@@ -40,12 +36,10 @@ import static nl.xguard.flic2.util.ActivityUtil.startForegroundService;
 public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private static final String TAG = Flic2.class.getSimpleName();
 
-    private SisAction mAction = createDefaultAction();
+    private SisAction mHostResumeAction = createDefaultAction();
     private static final Integer PERMISSION_REQUEST_CODE = 741;
 
-    private Flic2Manager mFlic2Manager = null;
-    private ReactFlic2ButtonListener mReactFlic2ButtonListener = new ReactFlic2ButtonListener();
-    private ArrayList<Flic2Button> mRegisteredFlic2Buttons = new ArrayList<>();
+    private ReactFlic2Manager mReactFlic2Manager;
 
     @NonNull
     @Override
@@ -65,14 +59,12 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void startup() {
         try {
             Flic2Manager.init(getReactApplicationContext(), new ReactAndroidHandler(new Handler()), new ReactLogger());
-            mFlic2Manager = Flic2Manager.getInstance();
+            mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener());
         } catch (Exception e) {
             Log.e(TAG, "Flic2: ", e);
         }
 
-        for (Flic2Button flic2Button : mFlic2Manager.getButtons()) {
-            registerFlic2Button(flic2Button);
-        }
+        mReactFlic2Manager.initButtons();
 
     }
 
@@ -93,52 +85,17 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         }
     }
 
-    private void registerFlic2Button(Flic2Button flic2Button) {
-        flic2Button.addListener(mReactFlic2ButtonListener);
-        mRegisteredFlic2Buttons.add(flic2Button);
-    }
-
-    private void unregisterFlic2Button(Flic2Button flic2Button) {
-        mRegisteredFlic2Buttons.remove(flic2Button);
-        flic2Button.removeListener(mReactFlic2ButtonListener);
-    }
-
     @ReactMethod
     public void connectAllKnownButtons() {
         Log.d(TAG, "connectAllKnownButtons()");
-        for (Flic2Button button : mRegisteredFlic2Buttons) {
-            button.connect();
-        }
-    }
-
-    private Flic2Button getButton(String uuid) {
-        Flic2Button flic2Button = getButtonByBdAddr(uuid);
-        if (flic2Button != null) {
-            Log.d(TAG, "getButton() found with uuid: " + flic2Button.getUuid());
-        } else {
-            Log.d(TAG, "getButton() no button found " + uuid);
-        }
-        return flic2Button;
-    }
-
-    private Flic2Button getButtonByBdAddr(String uuid) {
-        for (Flic2Button button : mRegisteredFlic2Buttons) {
-            if (button.getUuid().equalsIgnoreCase(uuid)) {
-                return button;
-            }
-        }
-        return null;
+        mReactFlic2Manager.connectAllButtons();
     }
 
     @ReactMethod
     public void connectButton(String uuid, Callback successCallback) {
         Log.d(TAG, "connectButton() called with: uuid = [" + uuid + "], successCallback = []");
 
-        Flic2Button flic2Button = getButton(uuid);
-        if (flic2Button != null) {
-            flic2Button.connect();
-            registerFlic2Button(flic2Button);
-        }
+        mReactFlic2Manager.connectButton(uuid);
         successCallback.invoke();
     }
 
@@ -146,31 +103,21 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void disconnectButton(String uuid, Callback successCallback) {
         Log.d(TAG, "disconnectButton()");
 
-        Flic2Button flic2Button = getButton(uuid);
-        if (flic2Button != null) {
-            disconnectButton(flic2Button);
-        }
-
+        mReactFlic2Manager.disconnectButton(uuid);
         successCallback.invoke();
     }
 
     @ReactMethod
     public void disconnectAllKnownButtons() {
         Log.d(TAG, "disconnectAllKnownButtons() called");
-        for (Flic2Button button : mRegisteredFlic2Buttons) {
-            disconnectButton(button);
-        }
+        mReactFlic2Manager.disconnectAllKnownButtons();
     }
 
     @ReactMethod
     public void setName(String uuid, String name, Callback successCallback) {
         Log.d(TAG, "setName() called with: uuid = [" + uuid + "], name = [" + name + "], successCallback = []");
 
-        Flic2Button flic2Button = getButton(uuid);
-        if (flic2Button != null) {
-            flic2Button.setName(name);
-        }
-
+        mReactFlic2Manager.setName(uuid, name);
         successCallback.invoke();
     }
 
@@ -178,11 +125,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void getButtons(Callback successCallback, Callback errorCallback) {
         Log.d(TAG, "getButtons() called with: successCallback = [], errorCallback = []");
         try {
-            WritableArray array = new WritableNativeArray();
-            for (Flic2Button button : mRegisteredFlic2Buttons) {
-                WritableMap map = ReactEvent.getInstance().getButtonArgs(button);
-                array.pushMap(map);
-            }
+            WritableArray array = mReactFlic2Manager.getButtons();
             successCallback.invoke(array);
         } catch (Exception e) {
             errorCallback.invoke("Error getting buttons", e.getMessage());
@@ -193,49 +136,33 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void forgetButton(String uuid, Callback successCallback) {
         Log.d(TAG, "forgetButton() called with: uuid = [" + uuid + "], successCallback = []");
 
-        Flic2Button flic2Button = getButton(uuid);
-        if (flic2Button != null) {
-            forgetButton(flic2Button);
-        }
-
+        mReactFlic2Manager.forgetButton(uuid);
         successCallback.invoke();
     }
 
     @ReactMethod
     public void forgetAllButtons() {
         Log.d(TAG, "forgetAllButtons() called");
-
-        for (Flic2Button button : mRegisteredFlic2Buttons) {
-            forgetButton(button);
-        }
+        mReactFlic2Manager.forgetAllButtons();
     }
 
-    private void disconnectButton(Flic2Button flic2Button){
-        unregisterFlic2Button(flic2Button);
-        flic2Button.disconnectOrAbortPendingConnection();
-    }
-
-    private void forgetButton(Flic2Button flic2Button){
-        disconnectButton(flic2Button);
-        mFlic2Manager.forgetButton(flic2Button);
-    }
 
     @ReactMethod
     public void startScan() {
         Log.d(TAG, "startScan() called");
         if (isPermissionDenied()) {
             requestPermission();
-            setResumeAction(this::startScan);
+            setHostResumeAction(this::startScan);
             return;
         }
 
-        mFlic2Manager.startScan(new ReactFlic2ScanCallback(this::registerFlic2Button));
+        mReactFlic2Manager.startScan();
     }
 
     @ReactMethod
     public void stopScan() {
         Log.d(TAG, "stopScan() called");
-        mFlic2Manager.stopScan();
+        mReactFlic2Manager.stopScan();
     }
 
     private boolean isPermissionDenied() {
@@ -250,10 +177,10 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         }
     }
 
-    private void setResumeAction(SisAction action) {
-        mAction = () -> {
+    private void setHostResumeAction(SisAction action) {
+        mHostResumeAction = () -> {
             action.call();
-            mAction = createDefaultAction();
+            mHostResumeAction = createDefaultAction();
         };
     }
 
@@ -264,7 +191,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
     @Override
     public void onHostResume() {
-        mAction.call();
+        mHostResumeAction.call();
     }
 
     @Override
