@@ -87,7 +87,6 @@ public class ReactFlic2Manager {
         WritableArray array = new WritableNativeArray();
 
         for (Flic2Button button : mRegisteredFlic2Buttons) {
-            Log.e(TAG, "getButtons: button: " + button.getConnectionState());
             WritableMap map = ReactEvent.getInstance().getButtonArgs(button);
             array.pushMap(map);
         }
