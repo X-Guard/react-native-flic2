@@ -1,13 +1,18 @@
 package nl.xguard.flic2;
 
+import android.Manifest;
 import android.app.ActivityManager;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
@@ -17,15 +22,20 @@ import com.facebook.react.bridge.WritableNativeArray;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
 import nl.xguard.flic2.callback.ReactFlic2ScanCallback;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.model.ReactFlic2Button;
+import nl.xguard.flic2.util.SisAction;
 
-public class Flic2 extends ReactContextBaseJavaModule {
+public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private static final String TAG = Flic2.class.getSimpleName();
+
+    private SisAction mAction = createDefaultAction();
+    private static final Integer PERMISSION_REQUEST_CODE = 741;
 
     private Flic2Manager mFlic2Manager = null;
     private ArrayList<ReactFlic2Button> mReactFlic2Buttons = new ArrayList<>();
@@ -39,6 +49,8 @@ public class Flic2 extends ReactContextBaseJavaModule {
     @ReactMethod
     public Flic2(ReactApplicationContext reactContext) {
         super(reactContext);
+
+        getReactApplicationContext().addLifecycleEventListener(this);
         Log.d(TAG, "onCreate()");
 
         try {
@@ -184,7 +196,7 @@ public class Flic2 extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void forgetButton(String uuid, Callback successCallback) {
-        Log.d(TAG, "forgetButton()");
+        Log.d(TAG, "forgetButton() called with: uuid = [" + uuid + "], successCallback = [" + successCallback + "]");
         List<Flic2Button> buttons = mFlic2Manager.getButtons();
         for (Flic2Button button : buttons) {
             Log.d(TAG, "forgetButton() uuid: " + uuid + " " + button.getUuid());
@@ -211,13 +223,12 @@ public class Flic2 extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void startScan() {
-//        if (!isScanning) {
-//            int permissionCheck = ContextCompat.checkSelfPermission(mreactContext, Manifest.permission.ACCESS_FINE_LOCATION);
-//            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-//                Log.d(TAG, "scanNewButton() No permission");
-//                return;
-//            }
-        Log.d(TAG, "startScan() start scan");
+        Log.d(TAG, "startScan() called");
+        if (isPermissionDenied()) {
+            requestPermission();
+            setResumeAction(this::startScan);
+            return;
+        }
 
         mFlic2Manager.startScan(new ReactFlic2ScanCallback(this::registerFlic2Button));
     }
@@ -235,5 +246,45 @@ public class Flic2 extends ReactContextBaseJavaModule {
         }
         Log.d(TAG, "isServiceRunning() false");
         return false;
+    }
+
+
+    private boolean isPermissionDenied() {
+        int permissionCheck = ContextCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+        return permissionCheck == PackageManager.PERMISSION_DENIED;
+    }
+
+    private void requestPermission() {
+        Log.d(TAG, "requestPermission() called");
+        if (isPermissionDenied()) {
+            ActivityCompat.requestPermissions(Objects.requireNonNull(getCurrentActivity()), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
+        }
+    }
+
+    private void setResumeAction(SisAction action) {
+        mAction = () -> {
+            action.call();
+            mAction = createDefaultAction();
+        };
+    }
+
+    private SisAction createDefaultAction() {
+        return () -> {
+        };
+    }
+
+    @Override
+    public void onHostResume() {
+        mAction.call();
+    }
+
+    @Override
+    public void onHostPause() {
+        // empty
+    }
+
+    @Override
+    public void onHostDestroy() {
+        // empty
     }
 }
