@@ -148,8 +148,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
         Flic2Button flic2Button = getButton(uuid);
         if (flic2Button != null) {
-            unregisterFlic2Button(flic2Button);
-            flic2Button.disconnectOrAbortPendingConnection();
+            disconnectButton(flic2Button);
         }
 
         successCallback.invoke();
@@ -159,8 +158,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void disconnectAllKnownButtons() {
         Log.d(TAG, "disconnectAllKnownButtons() called");
         for (Flic2Button button : mRegisteredFlic2Buttons) {
-            unregisterFlic2Button(button);
-            button.disconnectOrAbortPendingConnection();
+            disconnectButton(button);
         }
     }
 
@@ -197,9 +195,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
         Flic2Button flic2Button = getButton(uuid);
         if (flic2Button != null) {
-            unregisterFlic2Button(flic2Button);
-            flic2Button.disconnectOrAbortPendingConnection();
-            mFlic2Manager.forgetButton(flic2Button);
+            forgetButton(flic2Button);
         }
 
         successCallback.invoke();
@@ -210,10 +206,18 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         Log.d(TAG, "forgetAllButtons() called");
 
         for (Flic2Button button : mRegisteredFlic2Buttons) {
-            unregisterFlic2Button(button);
-            button.disconnectOrAbortPendingConnection();
-            mFlic2Manager.forgetButton(button);
+            forgetButton(button);
         }
+    }
+
+    private void disconnectButton(Flic2Button flic2Button){
+        unregisterFlic2Button(flic2Button);
+        flic2Button.disconnectOrAbortPendingConnection();
+    }
+
+    private void forgetButton(Flic2Button flic2Button){
+        disconnectButton(flic2Button);
+        mFlic2Manager.forgetButton(flic2Button);
     }
 
     @ReactMethod
