@@ -13,7 +13,6 @@ public class ReactFlic2ButtonListener extends Flic2ButtonListener {
 
     public ReactFlic2ButtonListener() {
         super();
-        Log.d(TAG, "ReactFlic2ButtonListener() called");
     }
 
     @Override

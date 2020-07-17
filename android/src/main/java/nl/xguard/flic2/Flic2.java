@@ -21,15 +21,14 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
+import nl.xguard.flic2.callback.ReactFlic2ButtonListener;
 import nl.xguard.flic2.callback.ReactFlic2ScanCallback;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.model.ReactAndroidHandler;
-import nl.xguard.flic2.model.ReactFlic2Button;
 import nl.xguard.flic2.model.ReactLogger;
 import nl.xguard.flic2.service.Flic2Service;
 import nl.xguard.flic2.util.SisAction;
@@ -45,7 +44,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     private static final Integer PERMISSION_REQUEST_CODE = 741;
 
     private Flic2Manager mFlic2Manager = null;
-    private ArrayList<ReactFlic2Button> mReactFlic2Buttons = new ArrayList<>();
+    private ReactFlic2ButtonListener mReactFlic2ButtonListener = new ReactFlic2ButtonListener();
+    private ArrayList<Flic2Button> mRegisteredFlic2Buttons = new ArrayList<>();
 
     @NonNull
     @Override
@@ -70,8 +70,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
             Log.e(TAG, "Flic2: ", e);
         }
 
-        for (Flic2Button button : mFlic2Manager.getButtons()) {
-            registerFlic2Button(button);
+        for (Flic2Button flic2Button : mFlic2Manager.getButtons()) {
+            registerFlic2Button(flic2Button);
         }
 
     }
@@ -94,88 +94,94 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     }
 
     private void registerFlic2Button(Flic2Button flic2Button) {
-        Log.d(TAG, "registerFlic2Button() called with: flic2Button = [" + flic2Button + "]");
-        final ReactFlic2Button reactFlic2Button = new ReactFlic2Button(flic2Button);
-        mReactFlic2Buttons.add(reactFlic2Button);
+        flic2Button.addListener(mReactFlic2ButtonListener);
+        mRegisteredFlic2Buttons.add(flic2Button);
+    }
+
+    private void unregisterFlic2Button(Flic2Button flic2Button) {
+        mRegisteredFlic2Buttons.remove(flic2Button);
+        flic2Button.removeListener(mReactFlic2ButtonListener);
     }
 
     @ReactMethod
     public void connectAllKnownButtons() {
         Log.d(TAG, "connectAllKnownButtons()");
-        for (Flic2Button button : mFlic2Manager.getButtons()) {
+        for (Flic2Button button : mRegisteredFlic2Buttons) {
             button.connect();
         }
     }
 
-    @ReactMethod
-    public void connectButton(String uuid, Callback successCallback) {
-        Log.d(TAG, "connectButton()");
-        List<Flic2Button> buttons = mFlic2Manager.getButtons();
-        for (Flic2Button button : buttons) {
-            Log.d(TAG, "connectButton() uuid: " + uuid + " " + button.getUuid());
-            if (String.valueOf(uuid).equals(button.getUuid())) {
-                button.connect();
-                successCallback.invoke();
-                return;
+    private Flic2Button getButton(String uuid) {
+        Flic2Button flic2Button = getButtonByBdAddr(uuid);
+        if (flic2Button != null) {
+            Log.d(TAG, "getButton() found with uuid: " + flic2Button.getUuid());
+        } else {
+            Log.d(TAG, "getButton() no button found " + uuid);
+        }
+        return flic2Button;
+    }
+
+    private Flic2Button getButtonByBdAddr(String uuid) {
+        for (Flic2Button button : mRegisteredFlic2Buttons) {
+            if (button.getUuid().equalsIgnoreCase(uuid)) {
+                return button;
             }
         }
+        return null;
+    }
+
+    @ReactMethod
+    public void connectButton(String uuid, Callback successCallback) {
+        Log.d(TAG, "connectButton() called with: uuid = [" + uuid + "], successCallback = []");
+
+        Flic2Button flic2Button = getButton(uuid);
+        if (flic2Button != null) {
+            flic2Button.connect();
+            registerFlic2Button(flic2Button);
+        }
         successCallback.invoke();
-        Log.d(TAG, "connectButton() no button found " + uuid);
     }
 
     @ReactMethod
     public void disconnectButton(String uuid, Callback successCallback) {
         Log.d(TAG, "disconnectButton()");
-        List<Flic2Button> buttons = mFlic2Manager.getButtons();
-        for (Flic2Button button : buttons) {
-            Log.d(TAG, "disconnectButton() uuid: " + uuid + " " + button.getUuid());
-            if (String.valueOf(uuid).equals(button.getUuid())) {
-                button.disconnectOrAbortPendingConnection();
-                successCallback.invoke();
-                return;
-            }
+
+        Flic2Button flic2Button = getButton(uuid);
+        if (flic2Button != null) {
+            unregisterFlic2Button(flic2Button);
+            flic2Button.disconnectOrAbortPendingConnection();
         }
+
         successCallback.invoke();
-        Log.d(TAG, "disconnectButton() no button found " + uuid);
     }
 
     @ReactMethod
     public void disconnectAllKnownButtons() {
-        Log.d(TAG, "disconnectAllKnownButtons()");
-        for (Flic2Button button : mFlic2Manager.getButtons()) {
+        Log.d(TAG, "disconnectAllKnownButtons() called");
+        for (Flic2Button button : mRegisteredFlic2Buttons) {
+            unregisterFlic2Button(button);
             button.disconnectOrAbortPendingConnection();
         }
     }
 
     @ReactMethod
     public void setName(String uuid, String name, Callback successCallback) {
-        Log.d(TAG, "setName()");
-        List<Flic2Button> buttons = mFlic2Manager.getButtons();
-        for (Flic2Button button : buttons) {
-            Log.d(TAG, "setName() uuid: " + uuid + " " + button.getUuid());
-            if (String.valueOf(uuid).equals(button.getUuid())) {
-                button.setName(name);
-                successCallback.invoke();
-                return;
-            }
-        }
-        successCallback.invoke();
-        Log.d(TAG, "setName() no button found " + uuid);
-    }
+        Log.d(TAG, "setName() called with: uuid = [" + uuid + "], name = [" + name + "], successCallback = []");
 
-    @ReactMethod
-    public void stopScan() {
-        Log.d(TAG, "stopScanning()");
-        mFlic2Manager.stopScan();
+        Flic2Button flic2Button = getButton(uuid);
+        if (flic2Button != null) {
+            flic2Button.setName(name);
+        }
+
+        successCallback.invoke();
     }
 
     @ReactMethod
     public void getButtons(Callback successCallback, Callback errorCallback) {
-        Log.d(TAG, "getButtons()");
+        Log.d(TAG, "getButtons() called with: successCallback = [], errorCallback = []");
         try {
-            List<Flic2Button> buttons = mFlic2Manager.getButtons();
             WritableArray array = new WritableNativeArray();
-            for (Flic2Button button : buttons) {
+            for (Flic2Button button : mRegisteredFlic2Buttons) {
                 WritableMap map = ReactEvent.getInstance().getButtonArgs(button);
                 array.pushMap(map);
             }
@@ -187,26 +193,24 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
     @ReactMethod
     public void forgetButton(String uuid, Callback successCallback) {
-        Log.d(TAG, "forgetButton() called with: uuid = [" + uuid + "], successCallback = [" + successCallback + "]");
-        List<Flic2Button> buttons = mFlic2Manager.getButtons();
-        for (Flic2Button button : buttons) {
-            Log.d(TAG, "forgetButton() uuid: " + uuid + " " + button.getUuid());
-            if (String.valueOf(uuid).equals(button.getUuid())) {
-                button.disconnectOrAbortPendingConnection();
-                mFlic2Manager.forgetButton(button);
-                successCallback.invoke();
-                return;
-            }
+        Log.d(TAG, "forgetButton() called with: uuid = [" + uuid + "], successCallback = []");
+
+        Flic2Button flic2Button = getButton(uuid);
+        if (flic2Button != null) {
+            unregisterFlic2Button(flic2Button);
+            flic2Button.disconnectOrAbortPendingConnection();
+            mFlic2Manager.forgetButton(flic2Button);
         }
+
         successCallback.invoke();
-        Log.d(TAG, "forgetButton() no button found " + uuid);
     }
 
     @ReactMethod
     public void forgetAllButtons() {
-        Log.d(TAG, "forgetAllButtons()");
-        List<Flic2Button> buttons = mFlic2Manager.getButtons();
-        for (Flic2Button button : buttons) {
+        Log.d(TAG, "forgetAllButtons() called");
+
+        for (Flic2Button button : mRegisteredFlic2Buttons) {
+            unregisterFlic2Button(button);
             button.disconnectOrAbortPendingConnection();
             mFlic2Manager.forgetButton(button);
         }
@@ -222,6 +226,12 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         }
 
         mFlic2Manager.startScan(new ReactFlic2ScanCallback(this::registerFlic2Button));
+    }
+
+    @ReactMethod
+    public void stopScan() {
+        Log.d(TAG, "stopScan() called");
+        mFlic2Manager.stopScan();
     }
 
     private boolean isPermissionDenied() {

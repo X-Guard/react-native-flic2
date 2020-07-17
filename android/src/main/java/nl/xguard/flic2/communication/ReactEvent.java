@@ -87,7 +87,7 @@ public class ReactEvent implements IReactEvent {
 
     @Override
     public void send(Flic2Button button, String event) {
-        Log.d(TAG, "sendEventMessage() called with: button = [" + button + "], event = [" + event + "]" + mReactContext);
+        Log.d(TAG, "send() called with: button = [" + button + "], event = [" + event + "]");
         WritableMap args = new WritableNativeMap();
         WritableMap buttonMap = this.getButtonArgs(button);
         args.putString(KEY_EVENT, event);
@@ -100,7 +100,7 @@ public class ReactEvent implements IReactEvent {
 
     @Override
     public void send(Flic2Button button, String event, Boolean queued, long age) {
-        Log.d(TAG, "sendEventMessage() called with: button = [" + button + "], event = [" + event + "]" + mReactContext);
+        Log.d(TAG, "send() called with: button = [" + button + "], event = [" + event + "], queued = [" + queued + "], age = [" + age + "]");
         WritableMap args = new WritableNativeMap();
         WritableMap buttonMap = this.getButtonArgs(button);
         args.putString(KEY_EVENT, event);
@@ -114,7 +114,7 @@ public class ReactEvent implements IReactEvent {
     }
 
     public void send(String event) {
-        Log.d(TAG, "sendEventMessage() called with: event = [" + event + "]" + mReactContext);
+        Log.d(TAG, "send() called with: event = [" + event + "]");
         WritableMap args = new WritableNativeMap();
         args.putString(KEY_EVENT, event);
 
@@ -123,14 +123,14 @@ public class ReactEvent implements IReactEvent {
     }
 
     public void sendEvent(String event) {
-        Log.d(TAG, "sendEventMessage() called with: event = [" + event + "]" + mReactContext);
+        Log.d(TAG, "sendEvent() called with: event = [" + event + "]");
 
         mReactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
                 .emit(event, null);
     }
 
     private void send(String event, String value, String keyValue) {
-        Log.d(TAG, "sendEventMessage() called with an string: event = [" + event + "], value = [" + value + "]" + mReactContext);
+        Log.d(TAG, "send() called with: event = [" + event + "], value = [" + value + "], keyValue = [" + keyValue + "]");
         WritableMap args = new WritableNativeMap();
         args.putString(KEY_EVENT, event);
         args.putString(keyValue, value);
@@ -140,7 +140,7 @@ public class ReactEvent implements IReactEvent {
     }
 
     public void send(String event, int value, String keyValue) {
-        Log.d(TAG, "sendEventMessage() called with an int: event = [" + event + "], value = [" + value + "]" + mReactContext);
+        Log.d(TAG, "send() called with: event = [" + event + "], value = [" + value + "], keyValue = [" + keyValue + "]");
         WritableMap args = new WritableNativeMap();
         args.putString(KEY_EVENT, event);
         args.putInt(keyValue, value);
@@ -150,7 +150,7 @@ public class ReactEvent implements IReactEvent {
     }
 
     public void send(String event, Boolean value, String keyValue) {
-        Log.d(TAG, "sendEventMessage() called with an boolean: event = [" + event + "], value = [" + value + "]" + mReactContext);
+        Log.d(TAG, "send() called with: event = [" + event + "], value = [" + value + "], keyValue = [" + keyValue + "]");
         WritableMap args = new WritableNativeMap();
         args.putString(KEY_EVENT, event);
         args.putBoolean(keyValue, value);
@@ -160,7 +160,7 @@ public class ReactEvent implements IReactEvent {
     }
 
     public void send(String event, int level) {
-        Log.d(TAG, "sendEventMessage() called with: event = [" + event + "]" + mReactContext);
+        Log.d(TAG, "send() called with: event = [" + event + "], level = [" + level + "]");
         WritableMap args = new WritableNativeMap();
         args.putString(KEY_EVENT, event);
         args.putInt("BatteryLevel", level);
