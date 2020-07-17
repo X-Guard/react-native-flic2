@@ -10,8 +10,6 @@ import java.util.ArrayList;
 
 import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
-import nl.xguard.flic2.callback.ReactFlic2ButtonListener;
-import nl.xguard.flic2.callback.ReactFlic2ScanCallback;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.util.SisConsumer;
 

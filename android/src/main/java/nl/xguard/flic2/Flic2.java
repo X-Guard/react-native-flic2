@@ -21,7 +21,7 @@ import com.facebook.react.bridge.WritableArray;
 import java.util.Objects;
 
 import io.flic.flic2libandroid.Flic2Manager;
-import nl.xguard.flic2.callback.ReactFlic2ButtonListener;
+import nl.xguard.flic2.model.ReactFlic2ButtonListener;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.model.ReactAndroidHandler;
 import nl.xguard.flic2.model.ReactFlic2Manager;

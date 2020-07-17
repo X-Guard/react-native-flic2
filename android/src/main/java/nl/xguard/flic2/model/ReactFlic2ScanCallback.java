@@ -1,4 +1,4 @@
-package nl.xguard.flic2.callback;
+package nl.xguard.flic2.model;
 
 import android.util.Log;
 
