@@ -5,6 +5,8 @@ import android.content.Context;
 import android.os.Handler;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
@@ -18,21 +20,17 @@ import java.util.List;
 
 import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
-import io.flic.flic2libandroid.Flic2ScanCallback;
+import nl.xguard.flic2.callback.ReactFlic2ScanCallback;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.model.ReactFlic2Button;
 
 public class Flic2 extends ReactContextBaseJavaModule {
     private static final String TAG = Flic2.class.getSimpleName();
 
-    private Flic2Manager mFlic2Manager;
-    private boolean managerIsReady;
+    private Flic2Manager mFlic2Manager = null;
     private ArrayList<ReactFlic2Button> mReactFlic2Buttons = new ArrayList<>();
 
-    @Deprecated
-    private boolean isScanning;
-
-
+    @NonNull
     @Override
     public String getName() {
         return Flic2.class.getSimpleName();
@@ -42,13 +40,11 @@ public class Flic2 extends ReactContextBaseJavaModule {
     public Flic2(ReactApplicationContext reactContext) {
         super(reactContext);
         Log.d(TAG, "onCreate()");
-        managerIsReady = false;
 
         try {
             mFlic2Manager = Flic2Manager.getInstance();
-            managerIsReady = true;
         } catch (Exception e) {
-            managerIsReady = false;
+            Log.e(TAG, "Flic2: ", e);
         }
 
         ReactEvent.createInstance(reactContext);
@@ -168,7 +164,6 @@ public class Flic2 extends ReactContextBaseJavaModule {
     public void stopScan() {
         Log.d(TAG, "stopScanning()");
         mFlic2Manager.stopScan();
-        isScanning = false;
     }
 
     @ReactMethod
@@ -223,41 +218,8 @@ public class Flic2 extends ReactContextBaseJavaModule {
 //                return;
 //            }
         Log.d(TAG, "startScan() start scan");
-        isScanning = true;
-        if (managerIsReady) {
-            mFlic2Manager.startScan(new Flic2ScanCallback() {
-                @Override
-                public void onDiscoveredAlreadyPairedButton(Flic2Button button) {
-                    Log.d(TAG, "startScan() already paired button");
-                    ReactEvent.getInstance().sendScanStatusMessage("alreadyPaired");
-                }
 
-                @Override
-                public void onDiscovered(String bdAddr) {
-                    Log.d(TAG, "startScan() Found nl.xguard.flic2.Flic2, now connecting...");
-                    ReactEvent.getInstance().sendScanStatusMessage("discovered");
-                }
-
-                @Override
-                public void onConnected() {
-                    Log.d(TAG, "startScan() Connected. Now pairing...");
-                    ReactEvent.getInstance().sendScanStatusMessage("connected");
-                }
-
-                @Override
-                public void onComplete(int result, int subCode, Flic2Button button) {
-                    isScanning = false;
-                    if (result == Flic2ScanCallback.RESULT_SUCCESS) {
-                        registerFlic2Button(button);
-
-                        ReactEvent.getInstance().sendScanMessage("completion", false, result, button);
-                    } else {
-                        ReactEvent.getInstance().sendScanMessage("completion", true, result, button);
-                    }
-                }
-            });
-        }
-
+        mFlic2Manager.startScan(new ReactFlic2ScanCallback(this::registerFlic2Button));
     }
 
     private boolean isServiceRunning(Context context, Class<?> serviceClass) {
