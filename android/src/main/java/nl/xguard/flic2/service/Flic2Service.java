@@ -48,9 +48,7 @@ public class Flic2Service extends Service {
                 .setOngoing(true)
                 .build();
         startForeground(SERVICE_NOTIFICATION_ID, notification);
-
     }
-
 
     @Override
     public void onDestroy() {

@@ -1,8 +1,8 @@
 package nl.xguard.flic2;
 
 import android.Manifest;
-import android.app.ActivityManager;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.util.Log;
@@ -28,8 +28,15 @@ import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
 import nl.xguard.flic2.callback.ReactFlic2ScanCallback;
 import nl.xguard.flic2.communication.ReactEvent;
+import nl.xguard.flic2.model.ReactAndroidHandler;
 import nl.xguard.flic2.model.ReactFlic2Button;
+import nl.xguard.flic2.model.ReactLogger;
+import nl.xguard.flic2.service.Flic2Service;
 import nl.xguard.flic2.util.SisAction;
+
+
+import static nl.xguard.flic2.util.ActivityUtil.isServiceRunning;
+import static nl.xguard.flic2.util.ActivityUtil.startForegroundService;
 
 public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private static final String TAG = Flic2.class.getSimpleName();
@@ -51,58 +58,42 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         super(reactContext);
 
         getReactApplicationContext().addLifecycleEventListener(this);
-        Log.d(TAG, "onCreate()");
+        ReactEvent.createInstance(reactContext);
+    }
 
+    @ReactMethod
+    public void startup() {
         try {
+            Flic2Manager.init(getReactApplicationContext(), new ReactAndroidHandler(new Handler()), new ReactLogger());
             mFlic2Manager = Flic2Manager.getInstance();
         } catch (Exception e) {
             Log.e(TAG, "Flic2: ", e);
         }
 
-        ReactEvent.createInstance(reactContext);
-
-        if (mFlic2Manager == null) {
-            Log.e(TAG, "nl.xguard.flic2.Flic2: manager is null");
-            return;
-        }
         for (Flic2Button button : mFlic2Manager.getButtons()) {
             registerFlic2Button(button);
         }
 
     }
 
-
-    @ReactMethod
-    public void startup() {
-        // do nothing
-    }
-
+    @Deprecated
     public static void startupAndroid(Context context, Handler handler) {
-        Log.d(TAG, "startup()");
-        Flic2Manager.initAndGetInstance(context, handler);
+        Log.w(TAG, "startupAndroid() is deprecated and no longer used, use startup() init and get a Flic2Manager");
     }
 
     @ReactMethod
     public void startService() {
-//        Log.d(TAG, "startService()");
-//        Boolean isRunning = isServiceRunning(mreactContext, Flic2Service.class);
-//
-//        if (!isRunning) {
-//            Intent intent = new Intent(mreactContext, Flic2Service.class);
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                Log.d(TAG, "startService() new");
-//                mreactContext.startForegroundService(intent);
-//            } else {
-//                Log.d(TAG, "startService() old" );
-//                mreactContext.startService(intent);
-//            }
-//
-//        } else {
-//            Log.d(TAG, "startService(): service is already running");
-//        }
+        Log.d(TAG, "startService()");
+
+        Context context = getReactApplicationContext();
+        boolean isRunning = isServiceRunning(context, Flic2Service.class);
+        if (!isRunning) {
+            Intent intent = new Intent(context, Flic2Service.class);
+            startForegroundService(context, intent);
+        }
     }
 
-    public void registerFlic2Button(Flic2Button flic2Button) {
+    private void registerFlic2Button(Flic2Button flic2Button) {
         Log.d(TAG, "registerFlic2Button() called with: flic2Button = [" + flic2Button + "]");
         final ReactFlic2Button reactFlic2Button = new ReactFlic2Button(flic2Button);
         mReactFlic2Buttons.add(reactFlic2Button);
@@ -232,22 +223,6 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
         mFlic2Manager.startScan(new ReactFlic2ScanCallback(this::registerFlic2Button));
     }
-
-    private boolean isServiceRunning(Context context, Class<?> serviceClass) {
-        Log.d(TAG, "isServiceRunning()");
-        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-
-            Log.d(TAG, "isServiceRunning()" + serviceClass.getName() + " " + service.service.getClassName());
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                Log.d(TAG, "isServiceRunning() true");
-                return true;
-            }
-        }
-        Log.d(TAG, "isServiceRunning() false");
-        return false;
-    }
-
 
     private boolean isPermissionDenied() {
         int permissionCheck = ContextCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
