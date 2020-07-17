@@ -23,8 +23,9 @@ import io.flic.flic2libandroid.Flic2ScanCallback;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.model.ReactFlic2Button;
 
-public class Flic2Module extends ReactContextBaseJavaModule {
-    private static final String TAG = "Flic2Module";
+public class Flic2 extends ReactContextBaseJavaModule {
+    private static final String TAG = Flic2.class.getSimpleName();
+
     private Flic2Manager mFlic2Manager;
     private boolean managerIsReady;
     private ArrayList<ReactFlic2Button> mReactFlic2Buttons = new ArrayList<>();
@@ -35,11 +36,11 @@ public class Flic2Module extends ReactContextBaseJavaModule {
 
     @Override
     public String getName() {
-        return Flic2Module.class.getSimpleName();
+        return Flic2.class.getSimpleName();
     }
 
     @ReactMethod
-    public Flic2Module(ReactApplicationContext reactContext) {
+    public Flic2(ReactApplicationContext reactContext) {
         super(reactContext);
         Log.d(TAG, "onCreate()");
         managerIsReady = false;
@@ -54,7 +55,7 @@ public class Flic2Module extends ReactContextBaseJavaModule {
         ReactEvent.createInstance(reactContext);
 
         if (mFlic2Manager == null) {
-            Log.e(TAG, "Flic2: manager is null");
+            Log.e(TAG, "nl.xguard.flic2.Flic2: manager is null");
             return;
         }
         for (Flic2Button button : mFlic2Manager.getButtons()) {
@@ -246,7 +247,7 @@ public class Flic2Module extends ReactContextBaseJavaModule {
 
                 @Override
                 public void onDiscovered(String bdAddr) {
-                    Log.d(TAG, "startScan() Found Flic2, now connecting...");
+                    Log.d(TAG, "startScan() Found nl.xguard.flic2.Flic2, now connecting...");
                     ReactEvent.getInstance().sendScanStatusMessage("discovered");
                 }
 
