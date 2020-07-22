@@ -36,9 +36,6 @@ import static nl.xguard.flic2.util.ActivityUtil.startForegroundService;
 public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private static final String TAG = Flic2.class.getSimpleName();
 
-    private SisAction mHostResumeAction = createDefaultAction();
-    private static final Integer PERMISSION_REQUEST_CODE = 741;
-
     private ReactFlic2Manager mReactFlic2Manager;
 
     @NonNull
@@ -150,11 +147,6 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     @ReactMethod
     public void startScan() {
         Log.d(TAG, "startScan() called");
-        if (isPermissionDenied()) {
-            requestPermission();
-            setHostResumeAction(this::startScan);
-            return;
-        }
 
         mReactFlic2Manager.startScan();
     }
@@ -165,33 +157,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         mReactFlic2Manager.stopScan();
     }
 
-    private boolean isPermissionDenied() {
-        int permissionCheck = ContextCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-        return permissionCheck == PackageManager.PERMISSION_DENIED;
-    }
-
-    private void requestPermission() {
-        Log.d(TAG, "requestPermission() called");
-        if (isPermissionDenied()) {
-            ActivityCompat.requestPermissions(Objects.requireNonNull(getCurrentActivity()), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
-        }
-    }
-
-    private void setHostResumeAction(SisAction action) {
-        mHostResumeAction = () -> {
-            action.call();
-            mHostResumeAction = createDefaultAction();
-        };
-    }
-
-    private SisAction createDefaultAction() {
-        return () -> {
-        };
-    }
-
     @Override
     public void onHostResume() {
-        mHostResumeAction.call();
     }
 
     @Override
