@@ -5,14 +5,14 @@ import android.util.Log;
 import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2ScanCallback;
 import nl.xguard.flic2.communication.ReactEvent;
-import nl.xguard.flic2.util.SisConsumer;
+import nl.xguard.flic2.util.Consumer;
 
 public class ReactFlic2ScanCallback implements Flic2ScanCallback {
     private static final String TAG = ReactFlic2ScanCallback.class.getSimpleName();
 
-    SisConsumer<Flic2Button> mAddFlic2ButtonConsumer;
+    Consumer<Flic2Button> mAddFlic2ButtonConsumer;
 
-    public ReactFlic2ScanCallback(SisConsumer<Flic2Button> addFlic2ButtonConsumer) {
+    public ReactFlic2ScanCallback(Consumer<Flic2Button> addFlic2ButtonConsumer) {
         mAddFlic2ButtonConsumer = addFlic2ButtonConsumer;
     }
 

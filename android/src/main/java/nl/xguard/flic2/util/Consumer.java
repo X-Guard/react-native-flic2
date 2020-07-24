@@ -1,6 +1,6 @@
 package nl.xguard.flic2.util;
 
-public interface SisConsumer<T> {
+public interface Consumer<T> {
 
     /**
      * Performs this operation on the given argument.

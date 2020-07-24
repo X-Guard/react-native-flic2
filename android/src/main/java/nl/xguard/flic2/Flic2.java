@@ -1,15 +1,11 @@
 package nl.xguard.flic2;
 
-import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -18,16 +14,13 @@ import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
 
-import java.util.Objects;
-
 import io.flic.flic2libandroid.Flic2Manager;
-import nl.xguard.flic2.model.ReactFlic2ButtonListener;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.model.ReactAndroidHandler;
+import nl.xguard.flic2.model.ReactFlic2ButtonListener;
 import nl.xguard.flic2.model.ReactFlic2Manager;
 import nl.xguard.flic2.model.ReactLogger;
 import nl.xguard.flic2.service.Flic2Service;
-import nl.xguard.flic2.util.SisAction;
 
 
 import static nl.xguard.flic2.util.ActivityUtil.isServiceRunning;

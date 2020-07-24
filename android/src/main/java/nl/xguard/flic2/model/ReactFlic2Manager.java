@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
 import nl.xguard.flic2.communication.ReactEvent;
-import nl.xguard.flic2.util.SisConsumer;
+import nl.xguard.flic2.util.Consumer;
 
 public class ReactFlic2Manager {
     private static final String TAG = ReactFlic2Manager.class.getSimpleName();
@@ -111,7 +111,7 @@ public class ReactFlic2Manager {
         return null;
     }
 
-    private void updateButtons(SisConsumer<Flic2Button> consumer) {
+    private void updateButtons(Consumer<Flic2Button> consumer) {
         for (Flic2Button flic2Button : mRegisteredFlic2Buttons) {
             consumer.accept(flic2Button);
         }
