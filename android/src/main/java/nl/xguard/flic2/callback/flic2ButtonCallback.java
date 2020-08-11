@@ -106,7 +106,7 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
 
     @Override
     public void onAllQueuedButtonEventsProcessed(Flic2Button button) {
-      TODO: Implement if desired
+      //TODO: Implement if desired
     }
 
     @Override
