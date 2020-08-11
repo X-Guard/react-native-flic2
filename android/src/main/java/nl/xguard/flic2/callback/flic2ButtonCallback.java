@@ -26,7 +26,7 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
         Log.d(TAG, "onDisconnect() called with: button = [" + button + "]");
         mReactEvent.send(button, ReactEvent.EVENT_BUTTON_STATUS_DISCONNECTED);
     }
-    
+
     @Override
     public void onConnect(Flic2Button button) {
         Log.d(TAG, "onConnect() called with: button = [" + button + "]");
@@ -105,9 +105,13 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
     }
 
     @Override
+    public void onAllQueuedButtonEventsProcessed(Flic2Button button) {
+      //TODO: Implement if desired
+    }
+
+    @Override
     public void onBatteryLevelUpdated(BatteryLevel level) {
         Log.d(TAG, "onBatteryLevelUpdated() called with: button = [" + level.getEstimatedPercentage() + "]");
 //        mReactEvent.send(ReactEvent.EVENT_BUTTON_BATTERY_LEVEL, level.getEstimatedPercentage());
     }
-    
 }
