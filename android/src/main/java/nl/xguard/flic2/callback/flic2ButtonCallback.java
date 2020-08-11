@@ -104,10 +104,10 @@ public class flic2ButtonCallback extends Flic2ButtonListener {
         mReactEvent.send(button, ReactEvent.EVENT_BUTTON_NEW_NAME);
     }
 
-    @Override
-    public void onAllQueuedButtonEventsProcessed(Flic2Button button) {
+    //@Override
+    //public void onAllQueuedButtonEventsProcessed(Flic2Button button) {
       //TODO: Implement if desired
-    }
+    //}
 
     @Override
     public void onBatteryLevelUpdated(BatteryLevel level) {
