@@ -1,10 +1,9 @@
 {
   "name": "react-native-flic2",
-  "version": "0.3.0",
+  "version": "0.3.6",
   "description": "React Native Flic plugin made with the Flic2 SDK (unofficial)",
   "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/X-Guard/react-native-flic2.git"

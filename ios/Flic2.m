@@ -1,5 +1,5 @@
 #import "Flic2.h"
-#import <flic2lib/flic2lib.h>
+@import flic2lib;
 
 @implementation Flic2 {
     bool hasListeners;
@@ -27,11 +27,11 @@
     }
 
     if (hasListeners) {
-        if (button != nil) {
+        if (errorBool == false && button != nil) {
             [self sendEventWithName:@"scanResult" body: @{
                 @"event": event,
                 @"error": @(errorBool),
-                @"result": @([self getCorrectScanResultCode:error]),
+                @"result": @(0),
                 @"button": [self convertButtonToDictForScan:button]
             }];
         } else {
@@ -62,7 +62,7 @@
     if (hasListeners) {
         [self sendEventWithName:@"didReceiveButtonEvent" body: @{
         @"event": event,
-        @"error": @(error),
+        @"error": @([self getCorrectFlicErrorCode:error]),
         @"button": [self convertButtonToDictForScan:button]
         }];
     }
@@ -127,6 +127,76 @@ RCT_EXPORT_MODULE()
         @"scanResult",
         @"didReceiveButtonEvent",
     ];
+}
+
+-(NSInteger) getCorrectFlicErrorCode: (NSInteger) code {
+
+    switch (code) {
+         /**
+        * An unknown error has occurred.
+        */
+        case FLICErrorUnknown:
+          return 0;
+          break;
+        /**
+        * You are trying to use the manager while it has not been configured yet.
+        */
+        case FLICErrorNotConfigured:
+          return 1;
+          break;
+        /**
+        * A bluetooth specific error code. This means that something went wrong while the phone tried to establish a connection with the Flic peripheral.
+        */
+        case FLICErrorCouldNotDiscoverBluetoothServices:
+          return 2;
+          break;
+        /**
+        * The framework was unable to verify the cryptographic signature from the Flic while setting up a session.
+        */
+        case FLICErrorVerificationSignatureMismatch:
+          return 3;
+          break;
+        /**
+        * The UUID of a button is not correct.
+        */
+        case FLICErrorInvalidUuid:
+          return 4;
+          break;
+        /**
+        * While establishing a connection with the Flic the framework was unable to verify the authenticity of the button.
+        */
+        case FLICErrorGenuineCheckFailed:
+          return 5;
+          break;
+        /**
+        * The app was unable to establish a connection with the Flic button because it already had a connection with too many apps on this particular phone.
+        */
+        case FLICErrorTooManyApps:
+          return 6;
+          break;
+        /**
+        * The pairing on the Flic button has been lost so the app's pairing data is no longer valid. This typically happens if the Flic is factory reset.
+        */
+        case FLICErrorUnpaired:
+          return 7;
+          break;
+        /**
+        * The manager was unable to complete the task since the device is not running on a supported iOS version.
+        */
+        case FLICErrorUnsupportedOSVersion:
+          return 8;
+          break;
+        /**
+        * You are trying to use a FLICButton object that has already been forgotten by the manager. Please discard of your references to this object.
+        */
+        case FLICErrorAlreadyForgotten:
+          return 9;
+          break;
+
+        default:
+          return 0;
+          break;
+    }
 }
 
 -(NSInteger) getCorrectScanResultCode: (NSInteger) code {
@@ -375,6 +445,14 @@ RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCT
     return;
 }
 
+RCT_EXPORT_METHOD(isScanning: callback:(RCTResponseSenderBlock) successCallBack) {
+
+    Boolean scanBool = [FLICManager sharedManager].isScanning;
+    successCallBack(@(scanBool));
+    
+    return;
+}
+
 - (void)stopScanForButton {
 
     [[FLICManager sharedManager] stopScan];
@@ -510,6 +588,18 @@ RCT_EXPORT_METHOD(setName:(NSString *)uuid name:(NSString *) name  callback:(RCT
         [self sendEventMessage:(@"buttonConnectionUnpaired") button:(button) errorCode:(error.code)];
     }
 
+}
+
+- (void)button:(FLICButton *)button didUpdateBatteryVoltage:(float)voltage;
+{
+    NSLog(@"Flic2: %@ dit update battery voltage", button.name);
+    [self sendEventMessage: (@"batteryLevelIsOk") button:(button)];
+}
+
+- (void)button:(FLICButton *)button didUpdateNickname:(NSString *)nickname;
+{
+    NSLog(@"Flic2: %@ dit update nickname", button.name);
+    [self sendEventMessage: (@"didReceiveNewName") button:(button)];
 }
 
 - (void)buttonIsReady:(nonnull FLICButton *)button {

@@ -196,7 +196,13 @@ class Flic2 extends EventEmitter {
 
             // update
             const knownButton = this.knownButtons[buttonUuid];
+
             knownButton.setData(button);
+
+            if (button.batteryLevelIsOk === false) {
+              // emit
+              this.emit('criticalBattery');
+            }
 
             // add
             exportButtons.push(knownButton);
@@ -205,6 +211,11 @@ class Flic2 extends EventEmitter {
 
             // create it
             this.knownButtons[buttonUuid] = new Flic2Button(button);
+
+            if (button.batteryLevelIsOk === false) {
+              // emit
+              this.emit('criticalBattery');
+            }
 
             // add
             exportButtons.push(this.knownButtons[buttonUuid]);
@@ -274,7 +285,7 @@ class Flic2 extends EventEmitter {
       // remove listener
       this.nativeEvents.removeListener('scanResult', this.onScanResultFunction);
 
-      if (error === false) {
+      if (!!error === false) {
 
         // create button object
         ButtonObject = new Flic2Button(button);
@@ -283,8 +294,7 @@ class Flic2 extends EventEmitter {
         this.knownButtons[ButtonObject.getUuid()] = ButtonObject;
 
       }
-    }
-
+    } 
 
     // check if error
     this.emit('scanResult', {
