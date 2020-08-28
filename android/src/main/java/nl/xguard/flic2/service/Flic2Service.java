@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.os.Binder;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
+import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
 
@@ -42,7 +43,7 @@ public class Flic2Service extends Service implements IFlic2Service {
         super.onCreate();
         Log.d(TAG, "onCreate()");
 
-        Flic2Manager.init(getApplicationContext(), new ReactAndroidHandler(getApplicationContext()), new ReactLogger());
+        Flic2Manager.init(getApplicationContext(), new ReactAndroidHandler(new Handler()), new ReactLogger());
         setFlic2Init();
         Log.e(TAG, "onCreate: init Flic2Manager");
 
