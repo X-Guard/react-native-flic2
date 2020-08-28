@@ -13,45 +13,51 @@ import io.flic.flic2libandroid.Flic2Manager;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.util.Consumer;
 
-public class ReactFlic2Manager {
+public class ReactFlic2Manager implements IReactFlic2Manager {
     private static final String TAG = ReactFlic2Manager.class.getSimpleName();
 
     private Flic2Manager mFlic2Manager;
     private ReactFlic2ButtonListener mReactFlic2ButtonListener;
     private ArrayList<Flic2Button> mRegisteredFlic2Buttons = new ArrayList<>();
 
-
     public ReactFlic2Manager(Flic2Manager flic2Manager, ReactFlic2ButtonListener reactFlic2ButtonListener) {
         mFlic2Manager = flic2Manager;
         mReactFlic2ButtonListener = reactFlic2ButtonListener;
     }
 
+    @Override
     public void startScan() {
         mFlic2Manager.startScan(new ReactFlic2ScanCallback(this::registerFlic2Button));
     }
 
+    @Override
     public void stopScan() {
         mFlic2Manager.stopScan();
     }
 
+    @Override
     public void initButtons() {
         for (Flic2Button flic2Button : mFlic2Manager.getButtons()) {
             registerFlic2Button(flic2Button);
         }
     }
 
+    @Override
     public void connectAllButtons() {
         updateButtons(this::connectButton);
     }
 
+    @Override
     public void disconnectAllKnownButtons() {
         updateButtons(this::disconnectButton);
     }
 
+    @Override
     public void forgetAllButtons() {
         updateButtons(this::forgetButton);
     }
 
+    @Override
     public void connectButton(String uuid) {
         Log.w(TAG, "connectButton() called with: size = [" + mRegisteredFlic2Buttons.size() + "]");
         Flic2Button flic2Button = getButton(uuid);
@@ -60,6 +66,7 @@ public class ReactFlic2Manager {
         }
     }
 
+    @Override
     public void setName(String uuid, String name) {
         Flic2Button flic2Button = getButton(uuid);
         if (flic2Button != null) {
@@ -67,6 +74,7 @@ public class ReactFlic2Manager {
         }
     }
 
+    @Override
     public void disconnectButton(String uuid) {
         Flic2Button flic2Button = getButton(uuid);
         if (flic2Button != null) {
@@ -74,6 +82,7 @@ public class ReactFlic2Manager {
         }
     }
 
+    @Override
     public void forgetButton(String uuid) {
         Flic2Button flic2Button = getButton(uuid);
         if (flic2Button != null) {
@@ -81,6 +90,7 @@ public class ReactFlic2Manager {
         }
     }
 
+    @Override
     public WritableArray getButtons() {
         WritableArray array = new WritableNativeArray();
 

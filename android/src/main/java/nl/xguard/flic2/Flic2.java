@@ -15,12 +15,14 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
 
 import io.flic.flic2libandroid.Flic2Manager;
+import io.reactivex.disposables.Disposable;
 import nl.xguard.flic2.communication.ReactEvent;
-import nl.xguard.flic2.model.ReactAndroidHandler;
+import nl.xguard.flic2.model.IReactFlic2Manager;
+import nl.xguard.flic2.model.NullReactFlic2Manager;
 import nl.xguard.flic2.model.ReactFlic2ButtonListener;
 import nl.xguard.flic2.model.ReactFlic2Manager;
-import nl.xguard.flic2.model.ReactLogger;
 import nl.xguard.flic2.service.Flic2Service;
+import nl.xguard.flic2.service.Flic2ServiceConnection;
 
 
 import static nl.xguard.flic2.util.ActivityUtil.isServiceRunning;
@@ -29,7 +31,9 @@ import static nl.xguard.flic2.util.ActivityUtil.startForegroundService;
 public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventListener {
     private static final String TAG = Flic2.class.getSimpleName();
 
-    private ReactFlic2Manager mReactFlic2Manager;
+    private IReactFlic2Manager mReactFlic2Manager = new NullReactFlic2Manager();
+    private Flic2ServiceConnection mFlic2ServiceConnection = new Flic2ServiceConnection();
+    private Disposable mFlic2ServiceDisposable;
 
     @NonNull
     @Override
@@ -48,19 +52,28 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     @ReactMethod
     public void startup() {
         try {
-            Flic2Manager.init(getReactApplicationContext(), new ReactAndroidHandler(new Handler()), new ReactLogger());
-            mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener());
+            startService();
+            getReactApplicationContext().bindService(
+                    new Intent(getReactApplicationContext(), Flic2Service.class),
+                    mFlic2ServiceConnection,
+                    0);
+
+            mFlic2ServiceDisposable = mFlic2ServiceConnection.getFlic2ServiceObservable()
+                    .subscribe(flic2Service -> {
+                        Log.e(TAG, "startup: subscribe, get is init");
+                        boolean isConnected = flic2Service.flic2IsInitialized().blockingFirst();
+                        Log.e(TAG, "startup: subscribe, get is init OK: " + isConnected);
+                        mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener());
+                        mReactFlic2Manager.initButtons();
+                    }, e -> Log.e(TAG, "startup: ", e));
         } catch (Exception e) {
             Log.e(TAG, "Flic2: ", e);
         }
-
-        mReactFlic2Manager.initButtons();
-
     }
 
     @Deprecated
     public static void startupAndroid(Context context, Handler handler) {
-        Log.w(TAG, "startupAndroid() is deprecated and no longer used, use startup() init and get a Flic2Manager");
+        Log.w(TAG, "startupAndroid() is deprecated and no longer used, use startup()");
     }
 
     @ReactMethod
@@ -73,6 +86,11 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
             Intent intent = new Intent(context, Flic2Service.class);
             startForegroundService(context, intent);
         }
+    }
+
+    @ReactMethod
+    public boolean isFlic2ManagerInitialized() {
+        return (mReactFlic2Manager instanceof ReactFlic2Manager);
     }
 
     @ReactMethod
@@ -161,6 +179,13 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
     @Override
     public void onHostDestroy() {
-        // empty
+        if (mFlic2ServiceConnection.isServiceConnected()) {
+            getReactApplicationContext().unbindService(mFlic2ServiceConnection);
+        }
+
+        if (mFlic2ServiceDisposable != null) {
+            mFlic2ServiceDisposable.dispose();
+        }
     }
+
 }
