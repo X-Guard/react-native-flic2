@@ -122,26 +122,6 @@ class Flic2 extends EventEmitter {
     return this.isInitialized;
   }
 
-  /**
-   * Starts an Android service.
-   *
-   * @version 1.0.0
-   * @returns {boolean} Returns boolean true when finished.
-   */
-  startService() {
-
-    // android only
-    if (Platform.OS === 'android') {
-
-      // proxy
-      Flic2Module.startService();
-
-    }
-
-    // done
-    return true;
-
-  }
 
   /**
    * Get a Flic2Button object by UUID.
