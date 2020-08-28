@@ -2,7 +2,6 @@ package nl.xguard.flic2;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Handler;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -51,29 +50,20 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
     @ReactMethod
     public void startup() {
-        try {
-            startService();
-            getReactApplicationContext().bindService(
-                    new Intent(getReactApplicationContext(), Flic2Service.class),
-                    mFlic2ServiceConnection,
-                    0);
+        startService();
+        getReactApplicationContext().bindService(
+                new Intent(getReactApplicationContext(), Flic2Service.class),
+                mFlic2ServiceConnection,
+                0);
 
-            mFlic2ServiceDisposable = mFlic2ServiceConnection.getFlic2ServiceObservable()
-                    .subscribe(flic2Service -> {
-                        Log.e(TAG, "startup: subscribe, get is init");
-                        boolean isConnected = flic2Service.flic2IsInitialized().blockingFirst();
-                        Log.e(TAG, "startup: subscribe, get is init OK: " + isConnected);
-                        mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener());
-                        mReactFlic2Manager.initButtons();
-                    }, e -> Log.e(TAG, "startup: ", e));
-        } catch (Exception e) {
-            Log.e(TAG, "Flic2: ", e);
-        }
-    }
+        mFlic2ServiceDisposable = mFlic2ServiceConnection.getFlic2ServiceObservable()
+                .subscribe(flic2Service -> {
+                            boolean isConnected = flic2Service.flic2IsInitialized().blockingFirst();
+                            mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener());
+                            mReactFlic2Manager.initButtons();
+                        },
+                        e -> Log.e(TAG, "startup: ", e));
 
-    @Deprecated
-    public static void startupAndroid(Context context, Handler handler) {
-        Log.w(TAG, "startupAndroid() is deprecated and no longer used, use startup()");
     }
 
     @ReactMethod

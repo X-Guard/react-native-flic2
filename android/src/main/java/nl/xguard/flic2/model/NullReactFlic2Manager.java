@@ -65,6 +65,6 @@ public class NullReactFlic2Manager implements IReactFlic2Manager {
     }
 
     private void logNullReactFlic2Manager() {
-        Log.e(TAG, "logNullReactFlic2Manager: The Flic2Manager is not yet initialized, check if the Flic2Service is running");
+        Log.w(TAG, "logNullReactFlic2Manager: The Flic2Manager is not yet initialized, check if the Flic2Service is running");
     }
 }

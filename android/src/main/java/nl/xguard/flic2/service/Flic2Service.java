@@ -45,7 +45,6 @@ public class Flic2Service extends Service implements IFlic2Service {
 
         Flic2Manager.init(getApplicationContext(), new ReactAndroidHandler(new Handler()), new ReactLogger());
         setFlic2Init();
-        Log.e(TAG, "onCreate: init Flic2Manager");
 
         Intent notificationIntent = new Intent(this, Flic2Service.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
@@ -94,7 +93,6 @@ public class Flic2Service extends Service implements IFlic2Service {
     }
 
     private void setFlic2Init() {
-        Log.d(TAG, "setFlic2Init() called");
         mIsFlic2InitSubject.onNext(true);
     }
 

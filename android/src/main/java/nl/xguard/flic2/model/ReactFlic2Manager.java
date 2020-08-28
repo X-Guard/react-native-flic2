@@ -130,7 +130,6 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     private void registerFlic2Button(Flic2Button flic2Button) {
         flic2Button.addListener(mReactFlic2ButtonListener);
         mRegisteredFlic2Buttons.add(flic2Button);
-        Log.w(TAG, "registerFlic2Button() called with: size = [" + mRegisteredFlic2Buttons.size() + "]");
     }
 
     private void unregisterFlic2Button(Flic2Button flic2Button) {
@@ -139,7 +138,6 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     }
 
     private void connectButton(Flic2Button flic2Button) {
-        Log.e(TAG, "connectButton() called with: flic2Button = [" + flic2Button + "]");
         flic2Button.connect();
     }
 
