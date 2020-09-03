@@ -112,7 +112,7 @@ class Flic2 extends EventEmitter {
 
   onInitialized() {
 
-    this.isInitialized = Flic2Module.isFlic2ManagerInitialized();
+    this.isInitialized = Platform.OS === 'android' ? Flic2Module.isFlic2ManagerInitialized() : true;
 
     // emit
     this.emit('managerInitialized');
