@@ -33,6 +33,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     private IReactFlic2Manager mReactFlic2Manager = new NullReactFlic2Manager();
     private Flic2ServiceConnection mFlic2ServiceConnection = new Flic2ServiceConnection();
     private Disposable mFlic2ServiceDisposable;
+    private Callback mFlic2ManagerInitializedCallback = args -> {};
 
     @NonNull
     @Override
@@ -61,6 +62,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
                             boolean isConnected = flic2Service.flic2IsInitialized().blockingFirst();
                             mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener());
                             mReactFlic2Manager.initButtons();
+                            mFlic2ManagerInitializedCallback.invoke(true);
                         },
                         e -> Log.e(TAG, "startup: ", e));
 
@@ -79,8 +81,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     }
 
     @ReactMethod
-    public boolean isFlic2ManagerInitialized() {
-        return (mReactFlic2Manager instanceof ReactFlic2Manager);
+    public void registerFlic2ManagerInitializedCallback(Callback callback) {
+        mFlic2ManagerInitializedCallback = callback;
     }
 
     @ReactMethod
