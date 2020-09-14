@@ -20,11 +20,11 @@ This plugin is supported by the Flic2 SDKs
 import Flic2 from 'react-native-flic2';
 
 // Flic2 Module
-Flic2.isInitialized()                    // returns a boolean if the manager is initialized or not
+Flic2.isInitialized();                   // returns a boolean if the manager is initialized or not
 Flic2.startScan();                       // start a scan
 Flic2.stopScan();                        // stop a scan
 Flic2.startService();                    // enable background capabilities through a service on Android, ignored by iOS
-Flic2.addEventListener(event, fn);       // listen for button events (all buttons). Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
+Flic2.addEventListener(event, fn);       // listen for events (manager & all buttons). Possible events are: managerInitialized, didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
 Flic2.connectAllKnownButtons();          // connect to known buttons
 Flic2.buttonConnect(uuid);               // connect to a button with this uuid
 Flic2.buttonForget(uuid);                // disconnect and forget the button
@@ -191,10 +191,6 @@ export default class App extends Component {
 
       // connect to all known buttons
       Flic2.connectAllKnownButtons();
-
-      // start android service
-      // don't worry, this function is ignored on iOS
-      Flic2.startService();
 
       // get the buttons
       this.getButtons();

@@ -8,37 +8,54 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
+import android.os.Binder;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
+import android.os.Handler;
 import android.os.IBinder;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
-import nl.xguard.flic2.R;
+
+import androidx.core.app.NotificationCompat.Builder;
 
 import java.util.Objects;
 
+import io.flic.flic2libandroid.Flic2Manager;
+import io.reactivex.Observable;
+import io.reactivex.subjects.BehaviorSubject;
+import nl.xguard.flic2.R;
+import nl.xguard.flic2.model.ReactAndroidHandler;
+import nl.xguard.flic2.model.ReactLogger;
 
-public class Flic2Service extends Service {
 
-    private static final String TAG = "Flic2Service";
+public class Flic2Service extends Service implements IFlic2Service {
+
+    private static final String TAG = Flic2Service.class.getSimpleName();
+
+    private IBinder mFlic2ServiceBinder = new Flic2ServiceBinder();
     private static final int SERVICE_NOTIFICATION_ID = 123321;
     private final String NOTIFICATION_CHANNEL_ID = "Notification_Channel_Flic2Service";
     private final CharSequence NOTIFICATION_CHANNEL_NAME = "Flic2Channel";
 
+    private BehaviorSubject<Boolean> mIsFlic2InitSubject = BehaviorSubject.create();
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "onCreate()");
+
+        Flic2Manager.init(getApplicationContext(), new ReactAndroidHandler(new Handler()), new ReactLogger());
+        setFlic2Init();
+
         Intent notificationIntent = new Intent(this, Flic2Service.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (VERSION.SDK_INT >= VERSION_CODES.O) {
             NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
             NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
             notificationManager.createNotificationChannel(mChannel);
         }
 
-        Notification notification = new NotificationCompat.Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
+        Notification notification = new Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
                 .setContentTitle("Flic2")
                 .setContentText("Flic2")
                 .setSmallIcon(R.mipmap.ic_launcher)
@@ -46,9 +63,7 @@ public class Flic2Service extends Service {
                 .setOngoing(true)
                 .build();
         startForeground(SERVICE_NOTIFICATION_ID, notification);
-
     }
-
 
     @Override
     public void onDestroy() {
@@ -61,7 +76,7 @@ public class Flic2Service extends Service {
 
     @Override
     public IBinder onBind(Intent intent) {
-        throw new UnsupportedOperationException("Not implemented");
+        return mFlic2ServiceBinder;
     }
 
     @Override
@@ -77,6 +92,15 @@ public class Flic2Service extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
+    private void setFlic2Init() {
+        mIsFlic2InitSubject.onNext(true);
+    }
+
+    @Override
+    public Observable<Boolean> flic2IsInitialized() {
+        return mIsFlic2InitSubject;
+    }
+
     public static class BootUpReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -90,6 +114,12 @@ public class Flic2Service extends Service {
         public void onReceive(Context context, Intent intent) {
             Log.d(TAG, "UpdateReceiver()");
             // The Application class's onCreate has already been called at this point, which is what we want
+        }
+    }
+
+    public class Flic2ServiceBinder extends Binder {
+        IFlic2Service getService() {
+            return Flic2Service.this;
         }
     }
 }

@@ -58,7 +58,7 @@ class Flic2 extends EventEmitter {
     // extended class initialisation
     super();
 
-    this.isInitialized = false;
+    this.isFlic2ManagerInitialized = false;
 
     // define constants
     this.constants = {
@@ -93,55 +93,44 @@ class Flic2 extends EventEmitter {
     // proxy
     this.onScanResultFunction = this.onScanResult.bind(this);
     this.didReceiveButtonEventFunction = this.didReceiveButtonEvent.bind(this);
-    this.onInitializedFunction = this.onInitialized.bind(this);
 
     // listen to events
     this.nativeEvents = new NativeEventEmitter(Flic2Module);
 
     // button click events
     this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEventFunction);
-    this.nativeEvents.addListener('managerInitialized', this.onInitializedFunction);
 
-    // start the native context
+
+	this.registerInitializedCallback();
+	
+	// start the native context
     Flic2Module.startup();
 
     // known buttons
     this.knownButtons = {};
-
   }
+  
+  registerInitializedCallback(){
+	if(Platform.OS === 'android') {
+		Flic2Module.registerFlic2ManagerInitializedCallback( (result) => {
+			if(result) {
+				this.onInitialized();
+			}
+		})	
+	} else {
+		this.onInitialized();
+	}
+  }  
 
   onInitialized() {
-
-    this.isInitialized = true;
-
-    // emit
+	this.isFlic2ManagerInitialized = true;
     this.emit('managerInitialized');
   }
 
   isInitialized() {
-    return this.isInitialized;
+	return this.isFlic2ManagerInitialized;
   }
 
-  /**
-   * Starts an Android service.
-   *
-   * @version 1.0.0
-   * @returns {boolean} Returns boolean true when finished.
-   */
-  startService() {
-
-    // android only
-    if (Platform.OS === 'android') {
-
-      // proxy
-      Flic2Module.startService();
-
-    }
-
-    // done
-    return true;
-
-  }
 
   /**
    * Get a Flic2Button object by UUID.

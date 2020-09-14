@@ -1,40 +1,41 @@
 package nl.xguard.flic2;
 
-import android.annotation.TargetApi;
-import android.app.ActivityManager;
 import android.content.Context;
-import android.os.Handler;
+import android.content.Intent;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
 import com.facebook.react.bridge.Callback;
+import com.facebook.react.bridge.LifecycleEventListener;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
-import com.facebook.react.bridge.WritableMap;
-import com.facebook.react.bridge.WritableNativeArray;
 
-import io.flic.flic2libandroid.Flic2ButtonListener;
-import nl.xguard.flic2.callback.flic2ButtonCallback;
-import nl.xguard.flic2.communication.ReactEvent;
-
-import java.util.ArrayList;
-import java.util.List;
-import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
-import io.flic.flic2libandroid.Flic2ScanCallback;
-
-public class Flic2 extends ReactContextBaseJavaModule {
-    private static final String TAG = "Flic2Module";
-    private ReactApplicationContext mreactContext;
-    private Flic2Manager manager;
-    private ReactEvent mReactEvent;
-    private boolean managerIsReady;
-    private Handler handler;
-    private boolean isScanning;
+import io.reactivex.disposables.Disposable;
+import nl.xguard.flic2.communication.ReactEvent;
+import nl.xguard.flic2.model.IReactFlic2Manager;
+import nl.xguard.flic2.model.NullReactFlic2Manager;
+import nl.xguard.flic2.model.ReactFlic2ButtonListener;
+import nl.xguard.flic2.model.ReactFlic2Manager;
+import nl.xguard.flic2.service.Flic2Service;
+import nl.xguard.flic2.service.Flic2ServiceConnection;
 
 
-    ArrayList<ButtonData> dataSet = new ArrayList<>();
+import static nl.xguard.flic2.util.ActivityUtil.isServiceRunning;
+import static nl.xguard.flic2.util.ActivityUtil.startForegroundService;
 
+public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventListener {
+    private static final String TAG = Flic2.class.getSimpleName();
+
+    private IReactFlic2Manager mReactFlic2Manager = new NullReactFlic2Manager();
+    private Flic2ServiceConnection mFlic2ServiceConnection = new Flic2ServiceConnection();
+    private Disposable mFlic2ServiceDisposable;
+    private Callback mFlic2ManagerInitializedCallback = args -> {};
+
+    @NonNull
     @Override
     public String getName() {
         return Flic2.class.getSimpleName();
@@ -43,253 +44,140 @@ public class Flic2 extends ReactContextBaseJavaModule {
     @ReactMethod
     public Flic2(ReactApplicationContext reactContext) {
         super(reactContext);
-        Log.d(TAG, "onCreate()");
-        managerIsReady = false;
 
-        try {
-            manager = Flic2Manager.getInstance();
-            managerIsReady = true;
-        }
-        catch(Exception e) {
-            managerIsReady = false;
-        }
-
-        mreactContext = reactContext;
-        mReactEvent = new ReactEvent(mreactContext);
-        handler = new Handler(mreactContext.getMainLooper());
-
-        for (Flic2Button button : manager.getButtons()) {
-            listenToButton(button);
-        }
-
+        getReactApplicationContext().addLifecycleEventListener(this);
+        ReactEvent.createInstance(reactContext);
     }
 
-
     @ReactMethod
-    @TargetApi(23)
     public void startup() {
-        // do nothing
-    }
-    
-    public static void startupAndroid(Context context, Handler handler) {
-        Log.d(TAG, "startup()");
-        Flic2Manager.initAndGetInstance(context, handler);
+        startService();
+        getReactApplicationContext().bindService(
+                new Intent(getReactApplicationContext(), Flic2Service.class),
+                mFlic2ServiceConnection,
+                0);
+
+        mFlic2ServiceDisposable = mFlic2ServiceConnection.getFlic2ServiceObservable()
+                .subscribe(flic2Service -> {
+                            boolean isConnected = flic2Service.flic2IsInitialized().blockingFirst();
+                            mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener());
+                            mReactFlic2Manager.initButtons();
+                            mFlic2ManagerInitializedCallback.invoke(true);
+                        },
+                        e -> Log.e(TAG, "startup: ", e));
+
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void startService() {
-//        Log.d(TAG, "startService()");
-//        Boolean isRunning = isServiceRunning(mreactContext, Flic2Service.class);
-//
-//        if (!isRunning) {
-//            Intent intent = new Intent(mreactContext, Flic2Service.class);
-//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-//                Log.d(TAG, "startService() new");
-//                mreactContext.startForegroundService(intent);
-//            } else {
-//                Log.d(TAG, "startService() old" );
-//                mreactContext.startService(intent);
-//            }
-//
-//        } else {
-//            Log.d(TAG, "startService(): service is already running");
-//        }
-    }
+        Log.d(TAG, "startService()");
 
-    public void listenToButton(Flic2Button button) {
-        Log.d(TAG, "listenToButton()");
-        final ButtonData buttonData = new ButtonData(button);
-        buttonData.listener = new flic2ButtonCallback(mreactContext);
-        button.addListener(buttonData.listener);
-        dataSet.add(buttonData);
+        Context context = getReactApplicationContext();
+        boolean isRunning = isServiceRunning(context, Flic2Service.class);
+        if (!isRunning) {
+            Intent intent = new Intent(context, Flic2Service.class);
+            startForegroundService(context, intent);
+        }
     }
 
     @ReactMethod
-    @TargetApi(23)
+    public void registerFlic2ManagerInitializedCallback(Callback callback) {
+        mFlic2ManagerInitializedCallback = callback;
+    }
+
+    @ReactMethod
     public void connectAllKnownButtons() {
         Log.d(TAG, "connectAllKnownButtons()");
-        for (Flic2Button button : manager.getButtons()) {
-            button.connect();
-        }
+        mReactFlic2Manager.connectAllButtons();
     }
 
     @ReactMethod
-    @TargetApi(23)
     public void connectButton(String uuid, Callback successCallback) {
-        Log.d(TAG, "connectButton()");
-        List<Flic2Button> buttons = manager.getButtons();
-        for (Flic2Button button: buttons) {
-            Log.d(TAG, "connectButton() uuid: " + uuid +" " + button.getUuid());
-            if (String.valueOf(uuid).equals(button.getUuid()))
-            {
-                button.connect();
-                successCallback.invoke();
-                return;
-            }
-        }
+        Log.d(TAG, "connectButton() called with: uuid = [" + uuid + "], successCallback = []");
+
+        mReactFlic2Manager.connectButton(uuid);
         successCallback.invoke();
-        Log.d(TAG, "connectButton() no button found " + uuid);
     }
+
     @ReactMethod
-    @TargetApi(23)
     public void disconnectButton(String uuid, Callback successCallback) {
         Log.d(TAG, "disconnectButton()");
-        List<Flic2Button> buttons = manager.getButtons();
-        for (Flic2Button button: buttons) {
-            Log.d(TAG, "disconnectButton() uuid: " + uuid +" " + button.getUuid());
-            if (String.valueOf(uuid).equals(button.getUuid()))
-            {
-                button.disconnectOrAbortPendingConnection();
-                successCallback.invoke();
-                return;
-            }
-        }
+
+        mReactFlic2Manager.disconnectButton(uuid);
         successCallback.invoke();
-        Log.d(TAG, "disconnectButton() no button found " + uuid);
     }
+
     @ReactMethod
-    @TargetApi(23)
     public void disconnectAllKnownButtons() {
-        Log.d(TAG, "disconnectAllKnownButtons()");
-        for (Flic2Button button : manager.getButtons()) {
-            button.disconnectOrAbortPendingConnection();
-        }
+        Log.d(TAG, "disconnectAllKnownButtons() called");
+        mReactFlic2Manager.disconnectAllKnownButtons();
     }
+
     @ReactMethod
-    @TargetApi(23)
     public void setName(String uuid, String name, Callback successCallback) {
-        Log.d(TAG, "setName()");
-        List<Flic2Button> buttons = manager.getButtons();
-        for (Flic2Button button: buttons) {
-            Log.d(TAG, "setName() uuid: " + uuid +" " + button.getUuid());
-            if (String.valueOf(uuid).equals(button.getUuid()))
-            {
-                button.setName(name);
-                successCallback.invoke();
-                return;
-            }
-        }
+        Log.d(TAG, "setName() called with: uuid = [" + uuid + "], name = [" + name + "], successCallback = []");
+
+        mReactFlic2Manager.setName(uuid, name);
         successCallback.invoke();
-        Log.d(TAG, "setName() no button found " + uuid);
     }
+
     @ReactMethod
-    @TargetApi(23)
-    public void stopScan() {
-        Log.d(TAG, "stopScanning()");
-        manager.stopScan();
-        isScanning = false;
-    }
-    @ReactMethod
-    @TargetApi(23)
     public void getButtons(Callback successCallback, Callback errorCallback) {
-        Log.d(TAG, "getButtons()");
+        Log.d(TAG, "getButtons() called with: successCallback = [], errorCallback = []");
         try {
-            List<Flic2Button> buttons = manager.getButtons();
-            WritableArray array = new WritableNativeArray();
-            for (Flic2Button button: buttons) {
-                WritableMap map = mReactEvent.getButtonArgs(button);
-                array.pushMap(map);
-            }
+            WritableArray array = mReactFlic2Manager.getButtons();
             successCallback.invoke(array);
-        }  catch (Exception e) {
+        } catch (Exception e) {
             errorCallback.invoke("Error getting buttons", e.getMessage());
         }
     }
+
     @ReactMethod
-    @TargetApi(23)
     public void forgetButton(String uuid, Callback successCallback) {
-        Log.d(TAG, "forgetButton()");
-        List<Flic2Button> buttons = manager.getButtons();
-        for (Flic2Button button: buttons) {
-            Log.d(TAG, "forgetButton() uuid: " + uuid +" " + button.getUuid());
-            if (String.valueOf(uuid).equals(button.getUuid()))
-            {
-                button.disconnectOrAbortPendingConnection();
-                manager.forgetButton(button);
-                successCallback.invoke();
-                return;
-            }
-        }
+        Log.d(TAG, "forgetButton() called with: uuid = [" + uuid + "], successCallback = []");
+
+        mReactFlic2Manager.forgetButton(uuid);
         successCallback.invoke();
-        Log.d(TAG, "forgetButton() no button found " + uuid);
     }
+
     @ReactMethod
-    @TargetApi(23)
     public void forgetAllButtons() {
-        Log.d(TAG, "forgetAllButtons()");
-        List<Flic2Button> buttons = manager.getButtons();
-        for (Flic2Button button: buttons) {
-            button.disconnectOrAbortPendingConnection();
-            manager.forgetButton(button);
-        }
+        Log.d(TAG, "forgetAllButtons() called");
+        mReactFlic2Manager.forgetAllButtons();
     }
+
+
     @ReactMethod
-    @TargetApi(23)
     public void startScan() {
-//        if (!isScanning) {
-//            int permissionCheck = ContextCompat.checkSelfPermission(mreactContext, Manifest.permission.ACCESS_FINE_LOCATION);
-//            if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-//                Log.d(TAG, "scanNewButton() No permission");
-//                return;
-//            }
-        Log.d(TAG, "startScan() start scan");
-        isScanning = true;
-        if (managerIsReady) {
-            manager.startScan(new Flic2ScanCallback() {
-                @Override
-                public void onDiscoveredAlreadyPairedButton(Flic2Button button) {
-                    Log.d(TAG, "startScan() already paired button");
-                    mReactEvent.sendScanStatusMessage("alreadyPaired");
-                }
-                @Override
-                public void onDiscovered(String bdAddr) {
-                    Log.d(TAG, "startScan() Found Flic2, now connecting...");
-                    mReactEvent.sendScanStatusMessage("discovered");
-                }
-                @Override
-                public void onConnected() {
-                    Log.d(TAG, "startScan() Connected. Now pairing...");
-                    mReactEvent.sendScanStatusMessage("connected");
-                }
-                @Override
-                public void onComplete(int result, int subCode, Flic2Button button) {
-                    isScanning = false;
-                    if (result == Flic2ScanCallback.RESULT_SUCCESS) {
-                        listenToButton(button);
-                        mReactEvent.sendScanMessage("completion",false, result, button);
-                    } else {
-                        mReactEvent.sendScanMessage("completion",true, result, button);
-                    }
-                }
-            });
-        }
+        Log.d(TAG, "startScan() called");
 
-//        }
-    }
-    private boolean isServiceRunning(Context context, Class<?> serviceClass) {
-        Log.d(TAG, "isServiceRunning()");
-        ActivityManager manager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-
-            Log.d(TAG, "isServiceRunning()" +serviceClass.getName() + " " + service.service.getClassName());
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                Log.d(TAG, "isServiceRunning() true");
-                return true;
-            }
-        }
-        Log.d(TAG, "isServiceRunning() false");
-        return false;
+        mReactFlic2Manager.startScan();
     }
 
-    static class ButtonData {
-        Flic2Button button;
-        boolean isDown;
-        Flic2ButtonListener listener;
+    @ReactMethod
+    public void stopScan() {
+        Log.d(TAG, "stopScan() called");
+        mReactFlic2Manager.stopScan();
+    }
 
-        public ButtonData(Flic2Button button) {
-            this.button = button;
+    @Override
+    public void onHostResume() {
+    }
+
+    @Override
+    public void onHostPause() {
+        // empty
+    }
+
+    @Override
+    public void onHostDestroy() {
+        if (mFlic2ServiceConnection.isServiceConnected()) {
+            getReactApplicationContext().unbindService(mFlic2ServiceConnection);
         }
 
+        if (mFlic2ServiceDisposable != null) {
+            mFlic2ServiceDisposable.dispose();
+        }
     }
+
 }
