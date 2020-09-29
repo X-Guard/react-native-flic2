@@ -93,6 +93,7 @@ class Flic2 extends EventEmitter {
     // proxy
     this.onScanResultFunction = this.onScanResult.bind(this);
     this.didReceiveButtonEventFunction = this.didReceiveButtonEvent.bind(this);
+    this.onInitializedFunction = this.onInitialized.bind(this);
 
     // listen to events
     this.nativeEvents = new NativeEventEmitter(Flic2Module);
@@ -101,9 +102,9 @@ class Flic2 extends EventEmitter {
     this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEventFunction);
 
 
-	this.registerInitializedCallback();
+	  this.registerInitializedCallback();
 	
-	// start the native context
+	  // start the native context
     Flic2Module.startup();
 
     // known buttons
@@ -111,19 +112,19 @@ class Flic2 extends EventEmitter {
   }
   
   registerInitializedCallback(){
-	if(Platform.OS === 'android') {
-		Flic2Module.registerFlic2ManagerInitializedCallback( (result) => {
-			if(result) {
-				this.onInitialized();
-			}
-		})	
-	} else {
-		this.onInitialized();
-	}
+    if(Platform.OS === 'android') {
+      Flic2Module.registerFlic2ManagerInitializedCallback( (result) => {
+        if(result) {
+          this.onInitialized();
+        }
+      })	
+    } else {
+      this.nativeEvents.addListener('managerInitialized', this.onInitializedFunction);
+    }
   }  
 
   onInitialized() {
-	this.isFlic2ManagerInitialized = true;
+	  this.isFlic2ManagerInitialized = true;
     this.emit('managerInitialized');
   }
 
