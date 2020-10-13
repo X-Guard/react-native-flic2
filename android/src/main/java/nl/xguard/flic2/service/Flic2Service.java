@@ -56,9 +56,6 @@ public class Flic2Service extends Service implements IFlic2Service {
         }
 
         Notification notification = new Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("Flic2")
-                .setContentText("Flic2")
-                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
                 .build();
