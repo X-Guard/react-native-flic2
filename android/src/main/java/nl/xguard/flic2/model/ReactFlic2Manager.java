@@ -1,5 +1,7 @@
 package nl.xguard.flic2.model;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import com.facebook.react.bridge.WritableArray;
@@ -7,7 +9,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.bridge.WritableNativeArray;
 
 import java.util.ArrayList;
-
+import androidx.core.content.ContextCompat;
 import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
 import nl.xguard.flic2.communication.ReactEvent;
@@ -27,6 +29,10 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
 
     @Override
     public void startScan() {
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+            ReactEvent.getInstance().sendScanStatusMessage("noPermission");
+        }
         mFlic2Manager.startScan(new ReactFlic2ScanCallback(this::registerFlic2Button));
     }
 
