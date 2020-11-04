@@ -1,10 +1,13 @@
 package nl.xguard.flic2;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.LifecycleEventListener;
@@ -151,6 +154,12 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void startScan() {
         Log.d(TAG, "startScan() called");
 
+        int permissionCheck = ContextCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+        if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
+          ReactEvent.getInstance().sendScanStatusMessage("noPermission");
+          return;
+        }
+
         mReactFlic2Manager.startScan();
     }
 
@@ -171,13 +180,19 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
     @Override
     public void onHostDestroy() {
+
+      try {
         if (mFlic2ServiceConnection.isServiceConnected()) {
-            getReactApplicationContext().unbindService(mFlic2ServiceConnection);
+          getReactApplicationContext().unbindService(mFlic2ServiceConnection);
         }
 
         if (mFlic2ServiceDisposable != null) {
-            mFlic2ServiceDisposable.dispose();
+          mFlic2ServiceDisposable.dispose();
         }
+      } catch (Exception e) {
+        Log.d(TAG, "onHostDestroy() , error");
+      }
+
     }
 
 }
