@@ -27,6 +27,7 @@ import nl.xguard.flic2.service.Flic2Service;
 import nl.xguard.flic2.service.Flic2ServiceConnection;
 
 
+import static android.content.Context.BIND_AUTO_CREATE;
 import static nl.xguard.flic2.util.ActivityUtil.isServiceRunning;
 import static nl.xguard.flic2.util.ActivityUtil.startForegroundService;
 
@@ -156,8 +157,8 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
         int permissionCheck = ContextCompat.checkSelfPermission(getReactApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
         if (permissionCheck != PackageManager.PERMISSION_GRANTED) {
-          ReactEvent.getInstance().sendScanStatusMessage("noPermission");
-          return;
+            ReactEvent.getInstance().sendScanStatusMessage("noPermission");
+            return;
         }
 
         mReactFlic2Manager.startScan();
@@ -171,28 +172,32 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
 
     @Override
     public void onHostResume() {
+        Context context = getReactApplicationContext();
+        boolean isRunning = isServiceRunning(context, Flic2Service.class);
+        if (isRunning) {
+            Intent intent = new Intent(context, Flic2Service.class);
+            getReactApplicationContext().bindService(intent, mFlic2ServiceConnection, BIND_AUTO_CREATE);
+        }
     }
 
     @Override
     public void onHostPause() {
-        // empty
+        try {
+            Context context = getReactApplicationContext();
+            boolean isRunning = isServiceRunning(context, Flic2Service.class);
+            if (mFlic2ServiceConnection.isServiceConnected() && isRunning) {
+                context.unbindService(mFlic2ServiceConnection);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "onHostPause() , unbindService", e);
+        }
     }
 
     @Override
     public void onHostDestroy() {
-
-      try {
-        if (mFlic2ServiceConnection.isServiceConnected()) {
-          getReactApplicationContext().unbindService(mFlic2ServiceConnection);
-        }
-
         if (mFlic2ServiceDisposable != null) {
-          mFlic2ServiceDisposable.dispose();
+            mFlic2ServiceDisposable.dispose();
         }
-      } catch (Exception e) {
-        Log.d(TAG, "onHostDestroy() , error");
-      }
-
     }
 
 }
