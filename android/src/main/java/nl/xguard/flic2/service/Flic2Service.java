@@ -8,12 +8,15 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.os.Binder;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
 import android.os.IBinder;
 import android.util.Log;
+import android.os.Bundle;
 
 import androidx.core.app.NotificationCompat.Builder;
 
@@ -35,6 +38,11 @@ public class Flic2Service extends Service implements IFlic2Service {
     private static final int SERVICE_NOTIFICATION_ID = 123321;
     private final String NOTIFICATION_CHANNEL_ID = "Notification_Channel_Flic2Service";
     private final CharSequence NOTIFICATION_CHANNEL_NAME = "Flic2Channel";
+    private static final String NOTIFICATION_TITLE_KEY = "nl.xguard.flic2.notification_title";
+    private static final String NOTIFICATION_TEXT_KEY = "nl.xguard.flic2.notification_text";
+
+    private String notificationTitle;
+    private String notificationText;
 
     private BehaviorSubject<Boolean> mIsFlic2InitSubject = BehaviorSubject.create();
 
@@ -43,6 +51,16 @@ public class Flic2Service extends Service implements IFlic2Service {
         super.onCreate();
         Log.d(TAG, "onCreate()");
 
+        try {
+            Context context = getApplicationContext();
+            Bundle metadata = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA).metaData;
+
+            notificationTitle = metadata.getString(NOTIFICATION_TITLE_KEY);
+            notificationText = metadata.getString(NOTIFICATION_TEXT_KEY);
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.w(TAG, "onCreate(), NameNotFoundException", e);
+        }
+        
         Flic2Manager.init(getApplicationContext(), new ReactAndroidHandler(new Handler()), new ReactLogger());
         setFlic2Init();
 
@@ -56,6 +74,9 @@ public class Flic2Service extends Service implements IFlic2Service {
         }
 
         Notification notification = new Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
+                .setContentTitle(notificationTitle)
+                .setContentText(notificationText)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
                 .build();
