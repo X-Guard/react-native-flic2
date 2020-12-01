@@ -40,7 +40,8 @@ public class Flic2Service extends Service implements IFlic2Service {
     private final CharSequence NOTIFICATION_CHANNEL_NAME = "Flic2Channel";
     private static final String NOTIFICATION_TITLE_KEY = "nl.xguard.flic2.notification_title";
     private static final String NOTIFICATION_TEXT_KEY = "nl.xguard.flic2.notification_text";
-
+    
+    private Notification notification;
     private String notificationTitle;
     private String notificationText;
 
@@ -73,14 +74,13 @@ public class Flic2Service extends Service implements IFlic2Service {
             notificationManager.createNotificationChannel(mChannel);
         }
 
-        Notification notification = new Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
+        notification = new Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
                 .setContentTitle(notificationTitle)
                 .setContentText(notificationText)
                 .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
-                .build();
-        startForeground(SERVICE_NOTIFICATION_ID, notification);
+                .build();  
     }
 
     @Override
@@ -139,6 +139,16 @@ public class Flic2Service extends Service implements IFlic2Service {
         IFlic2Service getService() {
             return Flic2Service.this;
         }
+    }
+
+    @Override
+    public void startForegroundService() {
+        startForeground(SERVICE_NOTIFICATION_ID, notification);
+    }
+
+    @Override
+    public void stopForegroundService() {
+        stopForeground(true);
     }
 }
 
