@@ -147,6 +147,9 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
 
     private void connectButton(Flic2Button flic2Button) {
         flic2Button.connect();
+        if (mRegisteredFlic2Buttons.size() > 0) {
+            mFlic2Service.startForegroundService();
+        }
     }
 
     private void disconnectButton(Flic2Button flic2Button) {

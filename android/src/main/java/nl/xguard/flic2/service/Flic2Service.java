@@ -81,6 +81,8 @@ public class Flic2Service extends Service implements IFlic2Service {
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
                 .build();  
+        startForegroundService();
+        stopForegroundService();
     }
 
     @Override
@@ -89,7 +91,7 @@ public class Flic2Service extends Service implements IFlic2Service {
         Log.d(TAG, "onDestroy()");
 
         stopSelf();
-        stopForeground(true);
+        stopForegroundService();
     }
 
     @Override
