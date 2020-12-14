@@ -6,4 +6,8 @@ import io.reactivex.Observable;
 public interface IFlic2Service {
 
     Observable<Boolean> flic2IsInitialized();
+
+    void startForegroundService();
+
+    void stopForegroundService();
 }
