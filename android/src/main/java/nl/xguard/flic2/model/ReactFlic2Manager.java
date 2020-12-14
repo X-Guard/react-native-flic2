@@ -11,6 +11,7 @@ import io.flic.flic2libandroid.Flic2Button;
 import io.flic.flic2libandroid.Flic2Manager;
 import nl.xguard.flic2.communication.ReactEvent;
 import nl.xguard.flic2.util.Consumer;
+import nl.xguard.flic2.service.IFlic2Service;
 
 public class ReactFlic2Manager implements IReactFlic2Manager {
     private static final String TAG = ReactFlic2Manager.class.getSimpleName();
@@ -18,10 +19,12 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     private Flic2Manager mFlic2Manager;
     private ReactFlic2ButtonListener mReactFlic2ButtonListener;
     private ArrayList<Flic2Button> mRegisteredFlic2Buttons = new ArrayList<>();
+    private IFlic2Service mFlic2Service;
 
-    public ReactFlic2Manager(Flic2Manager flic2Manager, ReactFlic2ButtonListener reactFlic2ButtonListener) {
+    public ReactFlic2Manager(Flic2Manager flic2Manager, ReactFlic2ButtonListener reactFlic2ButtonListener, IFlic2Service flic2Service) {
         mFlic2Manager = flic2Manager;
         mReactFlic2ButtonListener = reactFlic2ButtonListener;
+        mFlic2Service = flic2Service;
     }
 
     @Override
@@ -129,15 +132,24 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     private void registerFlic2Button(Flic2Button flic2Button) {
         flic2Button.addListener(mReactFlic2ButtonListener);
         mRegisteredFlic2Buttons.add(flic2Button);
+        if (mRegisteredFlic2Buttons.size() > 0) {
+            mFlic2Service.startForegroundService();
+        }
     }
 
     private void unregisterFlic2Button(Flic2Button flic2Button) {
         mRegisteredFlic2Buttons.remove(flic2Button);
         flic2Button.removeListener(mReactFlic2ButtonListener);
+        if (mRegisteredFlic2Buttons.size() == 0) {
+            mFlic2Service.stopForegroundService();
+        }
     }
 
     private void connectButton(Flic2Button flic2Button) {
         flic2Button.connect();
+        if (mRegisteredFlic2Buttons.size() > 0) {
+            mFlic2Service.startForegroundService();
+        }
     }
 
     private void disconnectButton(Flic2Button flic2Button) {
