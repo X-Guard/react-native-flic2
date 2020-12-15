@@ -130,7 +130,7 @@ Place the following meta-data's inside the application tag of your manifest
 
 ```javascript
     <application>
-      <meta-data android:name="nl.xguard.flic2.notification_title" android:value="Bluetooth Alarm Button"/>
+      <meta-data android:name="nl.xguard.flic2.notification_title" android:value="Flic 2 Button"/>
       <meta-data android:name="nl.xguard.flic2.notification_text" android:value="Service active"/>
       <meta-data android:name="nl.xguard.flic2.notification_icon" android:resource="@mipmap/xguard_adaptive_launcher"/>
     </application>
