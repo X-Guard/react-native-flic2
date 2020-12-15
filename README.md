@@ -125,12 +125,15 @@ Flic2.addEventListener('didReceiveButtonHold', ((object) eventData) => {
 ```
 
 ## Android only
-Changing the title, text and icon of the service:
+Changing the title, text and icon of the service.
+Place the following meta-data's inside the application tag of your manifest
 
 ```javascript
-    <meta-data android:name="nl.xguard.flic2.notification_title" android:value="Bluetooth Alarm Button"/>
-    <meta-data android:name="nl.xguard.flic2.notification_text" android:value="Service active"/>
-    <meta-data android:name="nl.xguard.flic2.notification_icon" android:resource="@mipmap/xguard_adaptive_launcher"/>
+    <application>
+      <meta-data android:name="nl.xguard.flic2.notification_title" android:value="Bluetooth Alarm Button"/>
+      <meta-data android:name="nl.xguard.flic2.notification_text" android:value="Service active"/>
+      <meta-data android:name="nl.xguard.flic2.notification_icon" android:resource="@mipmap/xguard_adaptive_launcher"/>
+    </application>
 ```
 
 # Example component
