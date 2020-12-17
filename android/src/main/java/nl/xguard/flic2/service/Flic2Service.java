@@ -48,6 +48,7 @@ public class Flic2Service extends Service implements IFlic2Service {
     private String notificationTitle = "Flic 2";
     private String notificationText = "Flic 2 service is running";
     private int notificationIcon = R.mipmap.ic_launcher;
+    private boolean foregroundRunning = false;
 
     private BehaviorSubject<Boolean> mIsFlic2InitSubject = BehaviorSubject.create();
 
@@ -99,15 +100,18 @@ public class Flic2Service extends Service implements IFlic2Service {
                 .setOngoing(true)
                 .build();
 
+        this.startForegroundService();
+
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy()");
+        Log.d(TAG, "onDestroy()" + this.foregroundRunning);
 
+        this.stopForegroundService();
         stopSelf();
-        stopForegroundService();
+
     }
 
     @Override
@@ -129,12 +133,14 @@ public class Flic2Service extends Service implements IFlic2Service {
     }
 
     private void setFlic2Init() {
+      Log.d(TAG, "setFlic2Init");
         mIsFlic2InitSubject.onNext(true);
     }
 
     @Override
     public Observable<Boolean> flic2IsInitialized() {
-        return mIsFlic2InitSubject;
+      Log.d(TAG, "setFlic2Init" +mIsFlic2InitSubject);
+      return mIsFlic2InitSubject;
     }
 
     public static class BootUpReceiver extends BroadcastReceiver {
@@ -161,12 +167,27 @@ public class Flic2Service extends Service implements IFlic2Service {
 
     @Override
     public void startForegroundService() {
+      Log.d(TAG, "startForegroundService() isrunning? " +this.foregroundRunning);
+
+      if (this.foregroundRunning == false) {
+        this.foregroundRunning = true;
+
         startForeground(SERVICE_NOTIFICATION_ID, notification);
+      }
+
     }
 
     @Override
     public void stopForegroundService() {
+
+      Log.d(TAG, "stopForegroundService() isrunning? " +this.foregroundRunning);
+
+      if (this.foregroundRunning == true) {
+        this.foregroundRunning = false;
+
         stopForeground(true);
+      }
+
     }
 }
 
