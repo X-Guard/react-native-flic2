@@ -63,6 +63,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
                 0);
 
         mFlic2ServiceDisposable = mFlic2ServiceConnection.getFlic2ServiceObservable()
+                .firstElement()
                 .subscribe(flic2Service -> {
                             boolean isConnected = flic2Service.flic2IsInitialized().blockingFirst();
                             mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener(), flic2Service);
