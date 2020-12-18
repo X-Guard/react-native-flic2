@@ -42,6 +42,10 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
         for (Flic2Button flic2Button : mFlic2Manager.getButtons()) {
             registerFlic2Button(flic2Button);
         }
+
+        if (mRegisteredFlic2Buttons.size() == 0) {
+          mFlic2Service.stopForegroundService();
+        }
     }
 
     @Override
