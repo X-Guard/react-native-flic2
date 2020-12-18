@@ -27,6 +27,7 @@ import java.util.Objects;
 import io.flic.flic2libandroid.Flic2Manager;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
+import nl.xguard.flic2.NotificationHelper;
 import nl.xguard.flic2.R;
 import nl.xguard.flic2.model.ReactAndroidHandler;
 import nl.xguard.flic2.model.ReactLogger;
@@ -48,7 +49,8 @@ public class Flic2Service extends Service implements IFlic2Service {
     private String notificationTitle = "Flic 2";
     private String notificationText = "Flic 2 service is running";
     private int notificationIcon = R.mipmap.ic_launcher;
-    private boolean foregroundRunning = false;
+
+    private boolean isServiceStarted = false;
 
     private BehaviorSubject<Boolean> mIsFlic2InitSubject = BehaviorSubject.create();
 
@@ -57,57 +59,55 @@ public class Flic2Service extends Service implements IFlic2Service {
         super.onCreate();
         Log.d(TAG, "onCreate()");
 
-        try {
-            Context context = getApplicationContext();
-            Bundle metadata = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA).metaData;
+      try {
+        Context context = getApplicationContext();
+        Bundle metadata = context.getPackageManager().getApplicationInfo(context.getPackageName(), PackageManager.GET_META_DATA).metaData;
 
-            String title = metadata.getString(NOTIFICATION_TITLE_KEY);
-            if (title != null) {
-              notificationTitle = title;
-            }
-
-            String text = metadata.getString(NOTIFICATION_TEXT_KEY);
-            if (text != null) {
-              notificationText = text;
-            }
-
-            int icon = metadata.getInt(NOTIFICATION_ICON_KEY);
-            if (icon != 0) {
-              notificationIcon = icon;
-            }
-
-        } catch (PackageManager.NameNotFoundException e) {
-            Log.w(TAG, "onCreate(), NameNotFoundException", e);
-        }
-        
-        Flic2Manager.init(getApplicationContext(), new ReactAndroidHandler(new Handler()), new ReactLogger());
-        setFlic2Init();
-
-        Intent notificationIntent = new Intent(this, Flic2Service.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
-
-        if (VERSION.SDK_INT >= VERSION_CODES.O) {
-            NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
-            NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-            notificationManager.createNotificationChannel(mChannel);
+        String title = metadata.getString(NOTIFICATION_TITLE_KEY);
+        if (title != null) {
+          notificationTitle = title;
         }
 
-        notification = new Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
-                .setContentTitle(notificationTitle)
-                .setContentText(notificationText)
-                .setSmallIcon(notificationIcon)
-                .setContentIntent(contentIntent)
-                .setOngoing(true)
-                .build();
+        String text = metadata.getString(NOTIFICATION_TEXT_KEY);
+        if (text != null) {
+          notificationText = text;
+        }
 
-        this.startForegroundService();
+        int icon = metadata.getInt(NOTIFICATION_ICON_KEY);
+        if (icon != 0) {
+          notificationIcon = icon;
+        }
+
+      } catch (PackageManager.NameNotFoundException e) {
+        Log.w(TAG, "onCreate(), NameNotFoundException", e);
+      }
+
+      Flic2Manager.init(getApplicationContext(), new ReactAndroidHandler(new Handler()), new ReactLogger());
+      setFlic2Init();
+
+      Intent notificationIntent = new Intent(this, Flic2Service.class);
+      PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+
+      if (VERSION.SDK_INT >= VERSION_CODES.O) {
+        NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+        NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.createNotificationChannel(mChannel);
+      }
+
+      notification = new Builder(getApplicationContext(), NOTIFICATION_CHANNEL_ID)
+        .setContentTitle(notificationTitle)
+        .setContentText(notificationText)
+        .setSmallIcon(notificationIcon)
+        .setContentIntent(contentIntent)
+        .setOngoing(true)
+        .build();
 
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy()" + this.foregroundRunning);
+        Log.d(TAG, "onDestroy()");
 
         this.stopForegroundService();
         stopSelf();
@@ -127,20 +127,20 @@ public class Flic2Service extends Service implements IFlic2Service {
             if (Objects.equals(intent.getAction(), Intent.ACTION_BOOT_COMPLETED)) {
                 Log.d(TAG, "onStartCommand: ACTION_BOOT_COMPLETED");
             }
+
+          this.startForegroundService();
         }
 
         return super.onStartCommand(intent, flags, startId);
     }
 
     private void setFlic2Init() {
-      Log.d(TAG, "setFlic2Init");
         mIsFlic2InitSubject.onNext(true);
     }
 
     @Override
     public Observable<Boolean> flic2IsInitialized() {
-      Log.d(TAG, "setFlic2Init" +mIsFlic2InitSubject);
-      return mIsFlic2InitSubject;
+        return mIsFlic2InitSubject;
     }
 
     public static class BootUpReceiver extends BroadcastReceiver {
@@ -167,24 +167,16 @@ public class Flic2Service extends Service implements IFlic2Service {
 
     @Override
     public void startForegroundService() {
-      Log.d(TAG, "startForegroundService() isrunning? " +this.foregroundRunning);
-
-      if (this.foregroundRunning == false) {
-        this.foregroundRunning = true;
-
+      if (isServiceStarted == false && notification != null) {
+        this.isServiceStarted = true;
         startForeground(SERVICE_NOTIFICATION_ID, notification);
       }
-
     }
 
     @Override
     public void stopForegroundService() {
-
-      Log.d(TAG, "stopForegroundService() isrunning? " +this.foregroundRunning);
-
-      if (this.foregroundRunning == true) {
-        this.foregroundRunning = false;
-
+      if (isServiceStarted == true) {
+        this.isServiceStarted = false;
         stopForeground(true);
       }
 

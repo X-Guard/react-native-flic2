@@ -1,6 +1,7 @@
 package nl.xguard.flic2;
 
 import android.Manifest;
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -38,7 +39,6 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     private Flic2ServiceConnection mFlic2ServiceConnection = new Flic2ServiceConnection();
     private Disposable mFlic2ServiceDisposable;
     private Callback mFlic2ManagerInitializedCallback = args -> {};
-    private boolean startupInvoke = true;
 
     @NonNull
     @Override
@@ -62,19 +62,13 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
                 mFlic2ServiceConnection,
                 0);
 
-        Log.d(TAG, "startup function()");
-
         mFlic2ServiceDisposable = mFlic2ServiceConnection.getFlic2ServiceObservable()
+                .firstElement()
                 .subscribe(flic2Service -> {
                             boolean isConnected = flic2Service.flic2IsInitialized().blockingFirst();
-                            Log.d(TAG, "startup subscribe() " + isConnected);
-                            if (startupInvoke) {
-                              Log.d(TAG, "startup() for real");
-                              mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener(), flic2Service);
-                              mReactFlic2Manager.initButtons();
-                              mFlic2ManagerInitializedCallback.invoke(true);
-                              startupInvoke = false;
-                            }
+                            mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener(), flic2Service);
+                            mReactFlic2Manager.initButtons();
+                            mFlic2ManagerInitializedCallback.invoke(true);
                         },
                         e -> Log.e(TAG, "startup: ", e));
 
@@ -205,7 +199,6 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     public void onHostDestroy() {
         if (mFlic2ServiceDisposable != null) {
             mFlic2ServiceDisposable.dispose();
-            startupInvoke = true;
         }
     }
 

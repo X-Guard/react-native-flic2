@@ -39,8 +39,6 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
 
     @Override
     public void initButtons() {
-
-      Log.d(TAG, "initButtons() size" + mFlic2Manager.getButtons().size());
         for (Flic2Button flic2Button : mFlic2Manager.getButtons()) {
             registerFlic2Button(flic2Button);
         }
@@ -92,9 +90,7 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
 
     @Override
     public void forgetButton(String uuid) {
-      Log.d(TAG, "forgetButton() public " + uuid+ " size "+ mRegisteredFlic2Buttons.size());
         Flic2Button flic2Button = getButton(uuid);
-      Log.d(TAG, "forgetButton() public " + flic2Button + " size "+ mRegisteredFlic2Buttons.size());
         if (flic2Button != null) {
             forgetButton(flic2Button);
         }
@@ -123,9 +119,7 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     }
 
     private Flic2Button getButtonByBdAddr(String uuid) {
-      Log.d(TAG, "getButtonByBdAddr()  " + uuid+ " size "+ mRegisteredFlic2Buttons.size());
         for (Flic2Button button : mRegisteredFlic2Buttons) {
-          Log.d(TAG, "getButtonByBdAddr() found with uuid: " + button.getUuid() +" searching:" + uuid);
             if (button.getUuid().equalsIgnoreCase(uuid)) {
                 return button;
             }
@@ -142,7 +136,6 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     private void registerFlic2Button(Flic2Button flic2Button) {
         flic2Button.addListener(mReactFlic2ButtonListener);
         mRegisteredFlic2Buttons.add(flic2Button);
-        Log.d(TAG, "registerFlic2Button() size " + mRegisteredFlic2Buttons.size());
         if (mRegisteredFlic2Buttons.size() > 0) {
             mFlic2Service.startForegroundService();
         }
@@ -151,7 +144,6 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     private void unregisterFlic2Button(Flic2Button flic2Button) {
         mRegisteredFlic2Buttons.remove(flic2Button);
         flic2Button.removeListener(mReactFlic2ButtonListener);
-        Log.d(TAG, "unregisterFlic2Button() size " + mRegisteredFlic2Buttons.size());
         if (mRegisteredFlic2Buttons.size() == 0) {
             mFlic2Service.stopForegroundService();
         }
@@ -159,8 +151,6 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
 
     private void connectButton(Flic2Button flic2Button) {
         flic2Button.connect();
-
-        Log.d(TAG, "connectButton() size " + mRegisteredFlic2Buttons.size());
         if (mRegisteredFlic2Buttons.size() > 0) {
             mFlic2Service.startForegroundService();
         }
@@ -171,7 +161,6 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     }
 
     private void forgetButton(Flic2Button flic2Button) {
-      Log.d(TAG, "forgetButton() private " + flic2Button);
         disconnectButton(flic2Button);
         unregisterFlic2Button(flic2Button);
         mFlic2Manager.forgetButton(flic2Button);
