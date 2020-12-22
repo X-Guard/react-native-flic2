@@ -27,7 +27,6 @@ import java.util.Objects;
 import io.flic.flic2libandroid.Flic2Manager;
 import io.reactivex.Observable;
 import io.reactivex.subjects.BehaviorSubject;
-import nl.xguard.flic2.NotificationHelper;
 import nl.xguard.flic2.R;
 import nl.xguard.flic2.model.ReactAndroidHandler;
 import nl.xguard.flic2.model.ReactLogger;
