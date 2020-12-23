@@ -89,6 +89,7 @@ public class Flic2Service extends Service implements IFlic2Service {
 
       if (VERSION.SDK_INT >= VERSION_CODES.O) {
         NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+        mChannel.setShowBadge(false);
         NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.createNotificationChannel(mChannel);
       }
@@ -99,7 +100,6 @@ public class Flic2Service extends Service implements IFlic2Service {
         .setSmallIcon(notificationIcon)
         .setContentIntent(contentIntent)
         .setOngoing(true)
-        .setShowBadge(false)
         .build();
 
     }
