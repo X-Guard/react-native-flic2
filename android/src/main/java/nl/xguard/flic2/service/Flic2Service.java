@@ -99,6 +99,7 @@ public class Flic2Service extends Service implements IFlic2Service {
         .setSmallIcon(notificationIcon)
         .setContentIntent(contentIntent)
         .setOngoing(true)
+        .setShowBadge(false)
         .build();
 
     }
