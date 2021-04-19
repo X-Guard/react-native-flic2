@@ -8,11 +8,8 @@ import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.os.Binder;
-import android.os.Build;
 import android.os.Build.VERSION;
 import android.os.Build.VERSION_CODES;
 import android.os.Handler;
@@ -39,12 +36,15 @@ public class Flic2Service extends Service implements IFlic2Service {
     private IBinder mFlic2ServiceBinder = new Flic2ServiceBinder();
     private static final int SERVICE_NOTIFICATION_ID = 123321;
     private final String NOTIFICATION_CHANNEL_ID = "Notification_Channel_Flic2Service";
-    private final CharSequence NOTIFICATION_CHANNEL_NAME = "Flic2Channel";
+    private static final String KEY_CHANNEL_NAME = "nl.xguard.flic2.notification_channel_name";
+    private static final String KEY_CHANNEL_DESCRIPTION = "nl.xguard.flic2.notification_channel_description";
     private static final String NOTIFICATION_TITLE_KEY = "nl.xguard.flic2.notification_title";
     private static final String NOTIFICATION_TEXT_KEY = "nl.xguard.flic2.notification_text";
     private static final String NOTIFICATION_ICON_KEY = "nl.xguard.flic2.notification_icon";
     
     private Notification notification;
+    private String channelName = "Flic2Channel";
+    private String channelDescription = "Flic2Channel";
     private String notificationTitle = "Flic 2";
     private String notificationText = "Flic 2 service is running";
     private int notificationIcon = R.mipmap.ic_launcher;
@@ -77,6 +77,16 @@ public class Flic2Service extends Service implements IFlic2Service {
           notificationIcon = icon;
         }
 
+        String name = metadata.getString(KEY_CHANNEL_NAME);
+        if (name != null) {
+          channelName = name;
+        }
+
+        String description = metadata.getString(KEY_CHANNEL_DESCRIPTION);
+        if (description != null) {
+          channelDescription = description;
+        }
+
       } catch (PackageManager.NameNotFoundException e) {
         Log.w(TAG, "onCreate(), NameNotFoundException", e);
       }
@@ -88,7 +98,8 @@ public class Flic2Service extends Service implements IFlic2Service {
       PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
 
       if (VERSION.SDK_INT >= VERSION_CODES.O) {
-        NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+        NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_LOW);
+        mChannel.setDescription(channelDescription);
         mChannel.setShowBadge(false);
         NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.createNotificationChannel(mChannel);
