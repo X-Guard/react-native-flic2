@@ -125,7 +125,8 @@ Flic2.addEventListener('didReceiveButtonHold', ((object) eventData) => {
 ```
 
 ## Android only
-Changing the title, text and icon of the service.
+Changing the title, text and icon of the service,
+Or the notification channel name and description.
 Place the following meta-data's inside the application tag of your manifest
 
 ```javascript
@@ -133,6 +134,8 @@ Place the following meta-data's inside the application tag of your manifest
       <meta-data android:name="nl.xguard.flic2.notification_title" android:value="Flic 2 Button"/>
       <meta-data android:name="nl.xguard.flic2.notification_text" android:value="Service active"/>
       <meta-data android:name="nl.xguard.flic2.notification_icon" android:resource="@mipmap/xguard_adaptive_launcher"/>
+      <meta-data android:name="nl.xguard.flic2.notification_channel_name" android:value="Flic 2 Channel Name"/>
+      <meta-data android:name="nl.xguard.flic2.notification_channel_description" android:value="Flic 2 Channel Description"/>
     </application>
 ```
 
