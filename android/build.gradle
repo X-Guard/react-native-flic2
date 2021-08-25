@@ -30,7 +30,6 @@ buildscript {
     if (project == rootProject) {
         repositories {
             google()
-            jcenter()
         }
         dependencies {
             classpath 'com.android.tools.build:gradle:3.4.1'
@@ -70,14 +69,14 @@ repositories {
         // Android JSC is installed from npm
         url "$rootDir/../node_modules/jsc-android/dist"
     }
+    maven { url 'https://jitpack.io' }
     google()
-    jcenter()
 }
 
 dependencies {
     //noinspection GradleDynamicVersion
     implementation 'com.facebook.react:react-native:+'  // From node_modules
-    implementation 'io.flic:flic2lib-android:1.1.0'
+    implementation 'com.github.50ButtonsEach:flic2lib-android:1.+'
 
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.13'
