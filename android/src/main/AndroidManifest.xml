@@ -14,7 +14,8 @@
         <receiver
             android:name="nl.xguard.flic2.service.Flic2Service$BootUpReceiver"
             android:enabled="true"
-            android:permission="android.permission.RECEIVE_BOOT_COMPLETED">
+            android:permission="android.permission.RECEIVE_BOOT_COMPLETED"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -23,7 +24,8 @@
 
         <receiver
             android:name="nl.xguard.flic2.service.Flic2Service$UpdateReceiver"
-            android:enabled="true">
+            android:enabled="true"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_REPLACED" />
                 <data
