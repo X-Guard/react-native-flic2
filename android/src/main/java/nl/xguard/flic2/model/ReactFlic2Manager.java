@@ -25,7 +25,7 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     private ReactFlic2ButtonListener mReactFlic2ButtonListener;
     private ArrayList<Flic2Button> mRegisteredFlic2Buttons = new ArrayList<>();
     private IFlic2Service mFlic2Service;
-
+    
     private Context mContext;
     private BluetoothReceiver mReceiver;
 
@@ -58,7 +58,8 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
             registerFlic2Button(flic2Button);
         }
 
-        if (mRegisteredFlic2Buttons.size() == 0) {
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mRegisteredFlic2Buttons.size() == 0 || !mBluetoothAdapter.isEnabled()) {
           mFlic2Service.stopForegroundService();
         }
     }
@@ -143,8 +144,13 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     }
 
     private void updateButtons(Consumer<Flic2Button> consumer) {
-        for (Flic2Button flic2Button : mRegisteredFlic2Buttons) {
-            consumer.accept(flic2Button);
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        Log.d(TAG, "updateButtons - " + mRegisteredFlic2Buttons.size() + mBluetoothAdapter.isEnabled());
+
+        if (mBluetoothAdapter.isEnabled()) {
+            for (Flic2Button flic2Button : mRegisteredFlic2Buttons) {
+                consumer.accept(flic2Button);
+            }
         }
     }
 
@@ -192,7 +198,7 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
                     break;
                 }
                 case BluetoothAdapter.STATE_ON: {
-                    connectAllButtons();
+                    connectAllButtons();   
                     Log.d(TAG, "BluetoothReceiver: on - " + mRegisteredFlic2Buttons.size());
                     if (mRegisteredFlic2Buttons.size() > 0) {
                         mFlic2Service.startForegroundService();

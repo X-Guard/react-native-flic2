@@ -111,8 +111,10 @@ public class Flic2Service extends Service implements IFlic2Service {
         .setContentText(notificationText)
         .setSmallIcon(notificationIcon)
         .setContentIntent(contentIntent)
+        .setCategory(Notification.CATEGORY_SERVICE)
         .setOngoing(true)
         .build();
+
     }
 
     @Override
@@ -122,6 +124,7 @@ public class Flic2Service extends Service implements IFlic2Service {
 
         this.stopForegroundService();
         stopSelf();
+        
     }
 
     @Override
@@ -138,7 +141,7 @@ public class Flic2Service extends Service implements IFlic2Service {
                 Log.d(TAG, "onStartCommand: ACTION_BOOT_COMPLETED");
             }
 
-            this.startForegroundService();
+          this.startForegroundService();
         }
 
         return super.onStartCommand(intent, flags, startId);
@@ -177,9 +180,7 @@ public class Flic2Service extends Service implements IFlic2Service {
 
     @Override
     public void startForegroundService() {
-      BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-      if (isServiceStarted == false && notification != null && mBluetoothAdapter.isEnabled()) {
+      if (isServiceStarted == false && notification != null) {
         this.isServiceStarted = true;
         startForeground(SERVICE_NOTIFICATION_ID, notification);
       }
