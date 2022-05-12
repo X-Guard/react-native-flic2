@@ -124,7 +124,7 @@ public class Flic2Service extends Service implements IFlic2Service {
 
         this.stopForegroundService();
         stopSelf();
-        
+
     }
 
     @Override

@@ -73,6 +73,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
                             mFlic2ManagerInitializedCallback.invoke(true);
                         },
                         e -> Log.e(TAG, "startup: ", e));
+
     }
 
     @ReactMethod

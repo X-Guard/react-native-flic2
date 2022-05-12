@@ -145,7 +145,6 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
 
     private void updateButtons(Consumer<Flic2Button> consumer) {
         BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        Log.d(TAG, "updateButtons - " + mRegisteredFlic2Buttons.size() + mBluetoothAdapter.isEnabled());
 
         if (mBluetoothAdapter.isEnabled()) {
             for (Flic2Button flic2Button : mRegisteredFlic2Buttons) {
