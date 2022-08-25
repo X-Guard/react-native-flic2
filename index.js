@@ -98,6 +98,8 @@ class Flic2 extends EventEmitter {
     // listen to events
     this.nativeEvents = new NativeEventEmitter(Flic2Module);
 
+    this.scanResultListener = null;
+
     // button click events
     this.nativeEvents.addListener('didReceiveButtonEvent', this.didReceiveButtonEventFunction);
 
@@ -232,7 +234,10 @@ class Flic2 extends EventEmitter {
   startScan() {
 
     // listen for scanResult
-    this.nativeEvents.addListener('scanResult', this.onScanResultFunction);
+    this.scanResultListener = this.nativeEvents.addListener(
+      "scanResult",
+      this.onScanResultFunction
+    );
 
     // start the scan
     Flic2Module.startScan();
@@ -251,7 +256,9 @@ class Flic2 extends EventEmitter {
   stopScan() {
 
     // listen for scanResult
-    this.nativeEvents.removeListener('scanResult', this.onScanResultFunction);
+    if (this.scanResultListener) {
+      this.scanResultListener.remove();
+    }
 
     // start the scan
     Flic2Module.stopScan();
@@ -273,7 +280,9 @@ class Flic2 extends EventEmitter {
     let ButtonObject;
     if (event === 'completion') {
       // remove listener
-      this.nativeEvents.removeListener('scanResult', this.onScanResultFunction);
+      if (this.scanResultListener) {
+        this.scanResultListener.remove();
+      }
 
       if (!!error === false) {
 
