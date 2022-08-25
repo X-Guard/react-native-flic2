@@ -235,7 +235,7 @@ class Flic2 extends EventEmitter {
 
     // listen for scanResult
     this.scanResultListener = this.nativeEvents.addListener(
-      "scanResult",
+      'scanResult',
       this.onScanResultFunction
     );
 
