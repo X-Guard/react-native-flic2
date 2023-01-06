@@ -180,7 +180,11 @@ public class Flic2Service extends Service implements IFlic2Service {
     public void startForegroundService() {
       if (isServiceStarted == false && notification != null) {
         this.isServiceStarted = true;
-        startForeground(SERVICE_NOTIFICATION_ID, notification);
+        try {
+          startForeground(SERVICE_NOTIFICATION_ID, notification);
+        } catch (Exception e) {
+          Log.we(TAG, "startForegroundService() exception ", e);
+        }
       }
     }
 
