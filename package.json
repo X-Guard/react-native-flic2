@@ -24,8 +24,8 @@
   "licenseFilename": "LICENSE",
   "readmeFilename": "README.md",
   "peerDependencies": {
-    "react": "^18.1.0",
-    "react-native": "^0.70.2"
+    "react": "^18.2.0",
+    "react-native": "^0.71.3"
   },
   "devDependencies": {
     "react": "^18.2.0",
