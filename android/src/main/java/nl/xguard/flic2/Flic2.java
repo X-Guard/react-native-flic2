@@ -82,7 +82,11 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         boolean isRunning = isServiceRunning(context, Flic2Service.class);
         if (!isRunning) {
             Intent intent = new Intent(context, Flic2Service.class);
-            startForegroundService(context, intent);
+            try {
+                startForegroundService(context, intent);
+            } catch (Exception e) {
+            Log.d(TAG, "startService() exception " + e);
+            }
         }
     }
 
@@ -177,8 +181,12 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
         Context context = getReactApplicationContext();
         boolean isRunning = isServiceRunning(context, Flic2Service.class);
         if (isRunning) {
-            Intent intent = new Intent(context, Flic2Service.class);
-            getReactApplicationContext().bindService(intent, mFlic2ServiceConnection, BIND_AUTO_CREATE);
+            try {
+                Intent intent = new Intent(context, Flic2Service.class);
+                getReactApplicationContext().bindService(intent, mFlic2ServiceConnection, BIND_AUTO_CREATE);
+              } catch ( Exception e) {
+                Log.w(TAG, "onHostResume(), Exception ", e);
+              }
         }
     }
 
@@ -191,7 +199,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
                 context.unbindService(mFlic2ServiceConnection);
             }
         } catch (Exception e) {
-            Log.w(TAG, "onHostPause() , unbindService", e);
+            Log.w(TAG, "onHostPause() , Exception", e);
         }
     }
 

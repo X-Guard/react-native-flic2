@@ -95,7 +95,7 @@ public class Flic2Service extends Service implements IFlic2Service {
       setFlic2Init();
 
       Intent notificationIntent = new Intent(this, Flic2Service.class);
-      PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT);
+      PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
       if (VERSION.SDK_INT >= VERSION_CODES.O) {
         NotificationChannel mChannel = new NotificationChannel(NOTIFICATION_CHANNEL_ID, channelName, NotificationManager.IMPORTANCE_LOW);
@@ -180,7 +180,11 @@ public class Flic2Service extends Service implements IFlic2Service {
     public void startForegroundService() {
       if (isServiceStarted == false && notification != null) {
         this.isServiceStarted = true;
-        startForeground(SERVICE_NOTIFICATION_ID, notification);
+        try {
+          startForeground(SERVICE_NOTIFICATION_ID, notification);
+        } catch (Exception e) {
+          Log.we(TAG, "startForegroundService() exception ", e);
+        }
       }
     }
 
