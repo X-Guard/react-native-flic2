@@ -20,6 +20,7 @@ This plugin is supported by the Flic2 SDKs
 import Flic2 from 'react-native-flic2';
 
 // Flic2 Module
+Flic.start();                            // Starts the module, fixes auto bluetooth permission question
 Flic2.isInitialized();                   // returns a boolean if the manager is initialized or not
 Flic2.startScan();                       // start a scan
 Flic2.stopScan();                        // stop a scan
@@ -181,6 +182,9 @@ export default class App extends Component {
   }
 
   componentDidMount() {
+
+    // start module
+    Flic2.start();
 
     if (typeof Flic2.isInitialized === 'function' && Flic2.isInitialized() === true) {
       this.onInitialized();
