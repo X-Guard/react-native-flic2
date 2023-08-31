@@ -1,6 +1,6 @@
 {
   "name": "react-native-flic2",
-  "version": "0.3.21",
+  "version": "0.3.22",
   "description": "React Native Flic plugin made with the Flic2 SDK (unofficial)",
   "main": "index.js",
   "scripts": {},
