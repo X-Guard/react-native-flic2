@@ -104,12 +104,18 @@ class Flic2 extends EventEmitter {
 
 	  this.registerInitializedCallback();
 	
-	  // start the native context
-    Flic2Module.startup();
 
     // known buttons
     this.knownButtons = {};
   }
+
+    /**
+   * Start up the flic module
+   */
+    start() {
+      // start the native context
+      Flic2Module.startup();
+    }
   
   registerInitializedCallback(){
     if(Platform.OS === 'android') {
