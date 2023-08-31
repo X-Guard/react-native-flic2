@@ -183,7 +183,7 @@ public class Flic2Service extends Service implements IFlic2Service {
         try {
           startForeground(SERVICE_NOTIFICATION_ID, notification);
         } catch (Exception e) {
-          Log.we(TAG, "startForegroundService() exception ", e);
+          Log.w(TAG, "startForegroundService() exception ", e);
         }
       }
     }
