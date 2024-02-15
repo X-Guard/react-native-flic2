@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3A6BB3302B7E17AA00A0F73C /* flic2lib.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A6BB32F2B7E17AA00A0F73C /* flic2lib.xcframework */; };
+		3A6BB39D2B7E4AB400A0F73C /* Flic2.h in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5881CC2AC0600A0062D /* Flic2.h */; };
 		B3E7B58A1CC2AC0600A0062D /* Flic2.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* Flic2.m */; };
 /* End PBXBuildFile section */
 
@@ -127,6 +128,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3A6BB39D2B7E4AB400A0F73C /* Flic2.h in Sources */,
 				B3E7B58A1CC2AC0600A0062D /* Flic2.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
