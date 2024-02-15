@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		3A6BB30C2B7DF4B600A0F73C /* flic2lib.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A6BB30B2B7DF4B600A0F73C /* flic2lib.xcframework */; };
+		3A6BB3302B7E17AA00A0F73C /* flic2lib.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A6BB32F2B7E17AA00A0F73C /* flic2lib.xcframework */; };
 		B3E7B58A1CC2AC0600A0062D /* Flic2.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* Flic2.m */; };
 /* End PBXBuildFile section */
 
@@ -25,7 +25,7 @@
 
 /* Begin PBXFileReference section */
 		134814201AA4EA6300B7C361 /* libFlic2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libFlic2.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		3A6BB30B2B7DF4B600A0F73C /* flic2lib.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = flic2lib.xcframework; path = Frameworks/flic2lib.xcframework; sourceTree = "<group>"; };
+		3A6BB32F2B7E17AA00A0F73C /* flic2lib.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; path = flic2lib.xcframework; sourceTree = "<group>"; };
 		B3E7B5881CC2AC0600A0062D /* Flic2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Flic2.h; sourceTree = SOURCE_ROOT; };
 		B3E7B5891CC2AC0600A0062D /* Flic2.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Flic2.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
@@ -35,7 +35,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A6BB30C2B7DF4B600A0F73C /* flic2lib.xcframework in Frameworks */,
+				3A6BB3302B7E17AA00A0F73C /* flic2lib.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -53,7 +53,7 @@
 		3A919E962B7CAD8E00FA7A77 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				3A6BB30B2B7DF4B600A0F73C /* flic2lib.xcframework */,
+				3A6BB32F2B7E17AA00A0F73C /* flic2lib.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";

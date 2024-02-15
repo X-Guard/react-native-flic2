@@ -15,9 +15,9 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => "9.0" }
   s.source       = { :git => "https://github.com/X-Guard/react-native-flic2.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{h,m,swift}"
+  s.source_files = "ios/react-native-flic2/*.{h,m}"
   s.requires_arc = true
-  s.vendored_frameworks = 'ios/Frameworks/flic2lib.xcframework'
+  s.vendored_frameworks = 'ios/flic2lib.xcframework'
 
   s.dependency "React"
   # ...
