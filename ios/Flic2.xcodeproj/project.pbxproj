@@ -8,7 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		3A6BB39D2B7E4AB400A0F73C /* Flic2.h in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5881CC2AC0600A0062D /* Flic2.h */; };
-		3A8166312B7F45110032C2D0 /* flic2lib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A8166302B7F45110032C2D0 /* flic2lib.framework */; platformFilter = ios; };
+		3A9E18882B7F704600B18D9F /* flic2lib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A8166302B7F45110032C2D0 /* flic2lib.framework */; platformFilter = ios; };
 		B3E7B58A1CC2AC0600A0062D /* Flic2.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* Flic2.m */; };
 /* End PBXBuildFile section */
 
@@ -36,7 +36,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				3A8166312B7F45110032C2D0 /* flic2lib.framework in Frameworks */,
+				3A9E18882B7F704600B18D9F /* flic2lib.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,6 +259,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Frameworks/flic2lib.xcframework/ios-arm64_armv7/flic2lib.framework",
+					"$(PROJECT_DIR)/flic2lib.framework",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Flic2;
@@ -284,6 +285,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"$(PROJECT_DIR)/Frameworks/flic2lib.xcframework/ios-arm64_armv7/flic2lib.framework",
+					"$(PROJECT_DIR)/flic2lib.framework",
 				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = Flic2;
