@@ -5,6 +5,7 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -110,6 +111,7 @@ public class Flic2Service extends Service implements IFlic2Service {
         .setContentText(notificationText)
         .setSmallIcon(notificationIcon)
         .setContentIntent(contentIntent)
+        .setCategory(Notification.CATEGORY_SERVICE)
         .setOngoing(true)
         .build();
 

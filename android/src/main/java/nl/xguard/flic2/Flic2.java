@@ -39,6 +39,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     private Flic2ServiceConnection mFlic2ServiceConnection = new Flic2ServiceConnection();
     private Disposable mFlic2ServiceDisposable;
     private Callback mFlic2ManagerInitializedCallback = args -> {};
+    private Context mContext;
 
     @NonNull
     @Override
@@ -49,6 +50,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
     @ReactMethod
     public Flic2(ReactApplicationContext reactContext) {
         super(reactContext);
+        mContext = reactContext;
 
         getReactApplicationContext().addLifecycleEventListener(this);
         ReactEvent.createInstance(reactContext);
@@ -66,7 +68,7 @@ public class Flic2 extends ReactContextBaseJavaModule implements LifecycleEventL
                 .firstElement()
                 .subscribe(flic2Service -> {
                             boolean isConnected = flic2Service.flic2IsInitialized().blockingFirst();
-                            mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener(), flic2Service);
+                            mReactFlic2Manager = new ReactFlic2Manager(Flic2Manager.getInstance(), new ReactFlic2ButtonListener(), flic2Service, mContext);
                             mReactFlic2Manager.initButtons();
                             mFlic2ManagerInitializedCallback.invoke(true);
                         },

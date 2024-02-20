@@ -1,5 +1,10 @@
 package nl.xguard.flic2.model;
 
+import android.bluetooth.BluetoothAdapter;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.util.Log;
 
 import com.facebook.react.bridge.WritableArray;
@@ -20,11 +25,21 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     private ReactFlic2ButtonListener mReactFlic2ButtonListener;
     private ArrayList<Flic2Button> mRegisteredFlic2Buttons = new ArrayList<>();
     private IFlic2Service mFlic2Service;
+    
+    private Context mContext;
+    private BluetoothReceiver mReceiver;
 
-    public ReactFlic2Manager(Flic2Manager flic2Manager, ReactFlic2ButtonListener reactFlic2ButtonListener, IFlic2Service flic2Service) {
+    public ReactFlic2Manager(Flic2Manager flic2Manager, ReactFlic2ButtonListener reactFlic2ButtonListener, IFlic2Service flic2Service, Context mContext) {
         mFlic2Manager = flic2Manager;
         mReactFlic2ButtonListener = reactFlic2ButtonListener;
         mFlic2Service = flic2Service;
+
+        if (mReceiver == null) {
+            mContext = mContext;
+            mReceiver = new BluetoothReceiver();
+            IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+            mContext.registerReceiver(mReceiver, filter);
+        }
     }
 
     @Override
@@ -43,7 +58,8 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
             registerFlic2Button(flic2Button);
         }
 
-        if (mRegisteredFlic2Buttons.size() == 0) {
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mRegisteredFlic2Buttons.size() == 0 || !mBluetoothAdapter.isEnabled()) {
           mFlic2Service.stopForegroundService();
         }
     }
@@ -128,8 +144,12 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
     }
 
     private void updateButtons(Consumer<Flic2Button> consumer) {
-        for (Flic2Button flic2Button : mRegisteredFlic2Buttons) {
-            consumer.accept(flic2Button);
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+
+        if (mBluetoothAdapter.isEnabled()) {
+            for (Flic2Button flic2Button : mRegisteredFlic2Buttons) {
+                consumer.accept(flic2Button);
+            }
         }
     }
 
@@ -165,4 +185,27 @@ public class ReactFlic2Manager implements IReactFlic2Manager {
         unregisterFlic2Button(flic2Button);
         mFlic2Manager.forgetButton(flic2Button);
     }
+
+    private class BluetoothReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
+            switch (state) {
+                case BluetoothAdapter.STATE_OFF: {
+                    Log.d(TAG, "BluetoothReceiver: off - " + mRegisteredFlic2Buttons.size());
+                    mFlic2Service.stopForegroundService();
+                    break;
+                }
+                case BluetoothAdapter.STATE_ON: {
+                    connectAllButtons();   
+                    Log.d(TAG, "BluetoothReceiver: on - " + mRegisteredFlic2Buttons.size());
+                    if (mRegisteredFlic2Buttons.size() > 0) {
+                        mFlic2Service.startForegroundService();
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
 }
