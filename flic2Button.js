@@ -1,5 +1,5 @@
 // event emitter
-import EventEmitter from 'react-native/Libraries/vendor/emitter/EventEmitter';
+import EventEmitter from 'react-native/Libraries/EventEmitter/EventEmitter';
 
 // the Flic2 module
 import Flic2 from './index.js';

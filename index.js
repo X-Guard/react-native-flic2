@@ -2,7 +2,7 @@
 import { NativeModules, NativeEventEmitter, Platform } from 'react-native';
 
 // event emitter
-import EventEmitter from 'react-native/Libraries/vendor/emitter/EventEmitter';
+import EventEmitter from 'react-native/Libraries/EventEmitter/EventEmitter';
 
 // local imports
 import Flic2Button from './flic2Button.js';

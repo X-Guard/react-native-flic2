@@ -12,14 +12,14 @@ Pod::Spec.new do |s|
   s.homepage     = "https://github.com/X-Guard/react-native-flic2"
   s.license      = "MIT"
   s.authors      = { "X-Guard B.V." => "npm-packages@x-guard.nl" }
-  s.platforms    = { :ios => "9.0" }
+  s.platforms    = { :ios => "12.0" }
   s.source       = { :git => "https://github.com/X-Guard/react-native-flic2.git", :tag => "#{s.version}" }
 
   s.source_files = "ios/**/*.{h,m,swift}"
   s.requires_arc = true
   s.vendored_frameworks = 'ios/flic2lib.framework'
 
-  s.dependency "React"
+  s.dependency "React-Core"
   # ...
   # s.dependency "..."
 end
