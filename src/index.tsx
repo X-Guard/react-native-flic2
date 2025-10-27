@@ -1,99 +1,147 @@
 import type { CodegenTypes } from 'react-native';
-import Flic2, {
-  type MultiplyEvent,
-  type ManagerStateChangeEvent,
-  type ScanStatusChangeEvent,
-  type ButtonEvent,
-  type FlicButton,
-  type FlicManagerState,
-  type FlicButtonState,
-  type FlicTriggerMode,
-  type FlicLatencyMode,
-  type FlicScannerEvent,
+import type {
+  MultiplyEvent,
+  ManagerStateChangeEvent,
+  ScanStatusChangeEvent,
+  ButtonEvent,
+  FlicButton,
+  TriggerModeType,
+  LatencyModeType,
 } from './NativeFlic2';
+import NativeFlic2 from './NativeFlic2';
 
-// MARK: - Example Methods (kept for reference)
+// MARK: - Example Functions (keeping for compatibility)
 
 export function multiply(a: number, b: number): number {
-  return Flic2.multiply(a, b);
+  return NativeFlic2.multiply(a, b);
 }
 
 export const onMultiply =
-  Flic2.onMultiply as CodegenTypes.EventEmitter<MultiplyEvent>;
+  NativeFlic2.onMultiply as CodegenTypes.EventEmitter<MultiplyEvent>;
 
-// MARK: - Manager Methods
+// MARK: - Manager Functions
 
 export function initialize(
-  background: boolean = false
+  background: boolean
 ): Promise<{ success: boolean; message: string }> {
-  return Flic2.initialize(background);
+  return NativeFlic2.initialize(background);
 }
 
 export function getButtons(): Promise<FlicButton[]> {
-  return Flic2.getButtons();
+  return NativeFlic2.getButtons();
 }
 
-export function scanForButtons(): Promise<FlicButton> {
-  return Flic2.scanForButtons();
+export function scanForButtons(): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  return NativeFlic2.scanForButtons();
 }
 
 export function stopScan(): Promise<{ success: boolean; message: string }> {
-  return Flic2.stopScan();
+  return NativeFlic2.stopScan();
 }
 
 export function forgetButton(
   uuid: string
 ): Promise<{ success: boolean; message: string }> {
-  return Flic2.forgetButton(uuid);
+  return NativeFlic2.forgetButton(uuid);
 }
 
-// MARK: - Button Methods
+export function connectAllKnownButtons(): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  return NativeFlic2.connectAllKnownButtons();
+}
+
+export function disconnectAllKnownButtons(): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  return NativeFlic2.disconnectAllKnownButtons();
+}
+
+export function forgetAllButtons(): Promise<{
+  success: boolean;
+  message: string;
+}> {
+  return NativeFlic2.forgetAllButtons();
+}
+
+export function isScanning(): Promise<boolean> {
+  return NativeFlic2.isScanning();
+}
+
+// MARK: - Button Functions
 
 export function connectButton(
   uuid: string
 ): Promise<{ success: boolean; message: string }> {
-  return Flic2.connectButton(uuid);
+  return NativeFlic2.connectButton(uuid);
 }
 
 export function disconnectButton(
   uuid: string
 ): Promise<{ success: boolean; message: string }> {
-  return Flic2.disconnectButton(uuid);
+  return NativeFlic2.disconnectButton(uuid);
 }
 
+/**
+ * Sets the trigger mode for a button.
+ *
+ * @platform iOS
+ * @param uuid - Button UUID
+ * @param mode - Trigger mode (0-3)
+ * @returns Promise that resolves on iOS, rejects with NOT_SUPPORTED_ON_ANDROID on Android
+ *
+ * **Note:** This feature is only available on iOS. On Android, this will reject due to
+ * limitations in the Android Flic2 library v1.1.0+.
+ */
 export function setTriggerMode(
   uuid: string,
-  mode: number
+  mode: TriggerModeType
 ): Promise<{ success: boolean; message: string }> {
-  return Flic2.setTriggerMode(uuid, mode);
+  return NativeFlic2.setTriggerMode(uuid, mode);
 }
 
+/**
+ * Sets the latency mode for a button.
+ *
+ * @platform iOS
+ * @param uuid - Button UUID
+ * @param mode - Latency mode (0-1)
+ * @returns Promise that resolves on iOS, rejects with NOT_SUPPORTED_ON_ANDROID on Android
+ *
+ * **Note:** This feature is only available on iOS. On Android, this will reject due to
+ * limitations in the Android Flic2 library v1.1.0+.
+ */
 export function setLatencyMode(
   uuid: string,
-  mode: number
+  mode: LatencyModeType
 ): Promise<{ success: boolean; message: string }> {
-  return Flic2.setLatencyMode(uuid, mode);
+  return NativeFlic2.setLatencyMode(uuid, mode);
 }
 
 export function setNickname(
   uuid: string,
   nickname: string
 ): Promise<{ success: boolean; message: string }> {
-  return Flic2.setNickname(uuid, nickname);
+  return NativeFlic2.setNickname(uuid, nickname);
 }
 
 // MARK: - Event Emitters
 
 export const onManagerStateChange =
-  Flic2.onManagerStateChange as CodegenTypes.EventEmitter<ManagerStateChangeEvent>;
+  NativeFlic2.onManagerStateChange as CodegenTypes.EventEmitter<ManagerStateChangeEvent>;
 
 export const onScanStatusChange =
-  Flic2.onScanStatusChange as CodegenTypes.EventEmitter<ScanStatusChangeEvent>;
+  NativeFlic2.onScanStatusChange as CodegenTypes.EventEmitter<ScanStatusChangeEvent>;
 
 export const onButtonEvent =
-  Flic2.onButtonEvent as CodegenTypes.EventEmitter<ButtonEvent>;
+  NativeFlic2.onButtonEvent as CodegenTypes.EventEmitter<ButtonEvent>;
 
-// MARK: - Type Exports
+// MARK: - Re-export Types
 
 export type {
   MultiplyEvent,
@@ -106,34 +154,6 @@ export type {
   FlicTriggerMode,
   FlicLatencyMode,
   FlicScannerEvent,
-};
-
-// MARK: - Constants
-
-export const TriggerMode = {
-  ClickAndHold: 0,
-  ClickAndDoubleClick: 1,
-  ClickAndDoubleClickAndHold: 2,
-  Click: 3,
-} as const;
-
-export const LatencyMode = {
-  Normal: 0,
-  Low: 1,
-} as const;
-
-export const ManagerState = {
-  Unknown: 0,
-  Resetting: 1,
-  Unsupported: 2,
-  Unauthorized: 3,
-  PoweredOff: 4,
-  PoweredOn: 5,
-} as const;
-
-export const ButtonState = {
-  Disconnected: 0,
-  Connecting: 1,
-  Connected: 2,
-  Disconnecting: 3,
-} as const;
+  TriggerModeType,
+  LatencyModeType,
+} from './NativeFlic2';

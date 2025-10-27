@@ -1,12 +1,10 @@
 #import "Flic2.h"
+#import <React/RCTBridgeModule.h>
 
 @implementation Flic2
 
 - (instancetype)init {
     self = [super init];
-    if (self) {
-        _buttons = [[NSMutableDictionary alloc] init];
-    }
     return self;
 }
 
@@ -26,14 +24,11 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    if (self.manager) {
-        resolve(@{@"success": @YES, @"message": @"Manager already initialized"});
-        return;
-    }
+    // Configure the shared manager (this is the correct way)
+    FLICManager *manager = [FLICManager configureWithDelegate:self buttonDelegate:self background:background];
 
-    self.manager = [FLICManager configureWithDelegate:self buttonDelegate:self background:background];
-
-    if (self.manager) {
+    if (manager) {
+        self.manager = manager; // Store reference for our own use
         resolve(@{@"success": @YES, @"message": @"Manager initialized successfully"});
     } else {
         reject(@"INIT_ERROR", @"Failed to initialize FLICManager", nil);
@@ -48,7 +43,12 @@
         return;
     }
 
-    NSArray<FLICButton *> *buttons = [self.manager buttons];
+    if (!self.managerRestored) {
+        reject(@"NOT_RESTORED", @"Manager not restored yet. Wait for managerDidRestoreState", nil);
+        return;
+    }
+
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
     NSMutableArray *buttonDicts = [[NSMutableArray alloc] init];
 
     for (FLICButton *button in buttons) {
@@ -66,27 +66,54 @@
         return;
     }
 
-    if (self.manager.isScanning) {
-        reject(@"ALREADY_SCANNING", @"Scan already in progress", nil);
+    if (!self.managerRestored) {
+        reject(@"NOT_RESTORED", @"Manager not restored yet. Wait for managerDidRestoreState", nil);
         return;
     }
 
-    [self.manager scanForButtonsWithStateChangeHandler:^(FLICButtonScannerStatusEvent event) {
-        [self emitOnScanStatusChange:@{
+    NSLog(@"Starting scan");
+
+    __weak Flic2 *weakSelf = self;
+
+    [[FLICManager sharedManager] scanForButtonsWithStateChangeHandler:^(FLICButtonScannerStatusEvent event) {
+        NSLog(@"Scan state change: %@", [weakSelf scannerEventToString:event]);
+        [weakSelf emitOnScanStatusChange:@{
             @"event": @(event),
-            @"eventName": [self scannerEventToString:event]
+            @"eventName": [weakSelf scannerEventToString:event]
         }];
     } completion:^(FLICButton * _Nullable button, NSError * _Nullable error) {
+        NSLog(@"Scan completion called - button: %@, error: %@", button ? @"YES" : @"NO", error);
+
         if (error) {
-            reject(@"SCAN_ERROR", error.localizedDescription, error);
+            NSLog(@"Scan error: %@ (code: %ld)", error.localizedDescription, (long)error.code);
+            // Check for specific error codes
+            if (error.code == FLICButtonScannerErrorCodeUserCanceled) {
+                NSLog(@"Scan was cancelled by user");
+            } else if (error.code == FLICButtonScannerErrorCodeNoPublicButtonDiscovered) {
+                NSLog(@"No Flic button found in range");
+            } else {
+                NSLog(@"Scan error: %@", error.localizedDescription);
+            }
         } else if (button) {
-            [self.buttons setObject:button forKey:button.uuid];
-            button.delegate = self;
-            resolve([self buttonToDictionary:button]);
+            NSLog(@"Button found: %@", button.uuid);
+
+            // Set trigger mode and auto-connect like old implementation
+            button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
+            [button connect];
+
+            // Emit button event for discovered button
+            [weakSelf emitOnButtonEvent:@{
+                @"uuid": button.uuid,
+                @"event": @"discovered",
+                @"button": [weakSelf buttonToDictionary:button]
+            }];
         } else {
-            reject(@"SCAN_ERROR", @"No button found", nil);
+            NSLog(@"No button found and no error");
         }
     }];
+
+    // Return immediately - scan results will come through events
+    resolve(@{@"success": @YES, @"message": @"Scan started"});
 }
 
 - (void)stopScan:(RCTPromiseResolveBlock)resolve
@@ -97,7 +124,8 @@
         return;
     }
 
-    [self.manager stopScan];
+    NSLog(@"Stopping scan");
+    [[FLICManager sharedManager] stopScan];
     resolve(@{@"success": @YES, @"message": @"Scan stopped"});
 }
 
@@ -110,17 +138,28 @@
         return;
     }
 
-    FLICButton *button = [self.buttons objectForKey:uuid];
+    // Find button in shared manager's buttons array
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+    FLICButton *button = nil;
+    for (FLICButton *btn in buttons) {
+        if ([btn.uuid isEqualToString:uuid]) {
+            button = btn;
+            break;
+        }
+    }
+
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
         return;
     }
 
-    [self.manager forgetButton:button completion:^(NSUUID *uuid, NSError * _Nullable error) {
+    // Disconnect before forgetting like old implementation
+    [button disconnect];
+
+    [[FLICManager sharedManager] forgetButton:button completion:^(NSUUID *uuid, NSError * _Nullable error) {
         if (error) {
             reject(@"FORGET_ERROR", error.localizedDescription, error);
         } else {
-            [self.buttons removeObjectForKey:uuid.UUIDString];
             resolve(@{@"success": @YES, @"message": @"Button forgotten"});
         }
     }];
@@ -132,7 +171,16 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    FLICButton *button = [self.buttons objectForKey:uuid];
+    // Find button in shared manager's buttons array
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+    FLICButton *button = nil;
+    for (FLICButton *btn in buttons) {
+        if ([btn.uuid isEqualToString:uuid]) {
+            button = btn;
+            break;
+        }
+    }
+
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
         return;
@@ -146,7 +194,16 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    FLICButton *button = [self.buttons objectForKey:uuid];
+    // Find button in shared manager's buttons array
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+    FLICButton *button = nil;
+    for (FLICButton *btn in buttons) {
+        if ([btn.uuid isEqualToString:uuid]) {
+            button = btn;
+            break;
+        }
+    }
+
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
         return;
@@ -160,7 +217,16 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    FLICButton *button = [self.buttons objectForKey:uuid];
+    // Find button in shared manager's buttons array
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+    FLICButton *button = nil;
+    for (FLICButton *btn in buttons) {
+        if ([btn.uuid isEqualToString:uuid]) {
+            button = btn;
+            break;
+        }
+    }
+
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
         return;
@@ -174,7 +240,16 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    FLICButton *button = [self.buttons objectForKey:uuid];
+    // Find button in shared manager's buttons array
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+    FLICButton *button = nil;
+    for (FLICButton *btn in buttons) {
+        if ([btn.uuid isEqualToString:uuid]) {
+            button = btn;
+            break;
+        }
+    }
+
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
         return;
@@ -188,7 +263,16 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    FLICButton *button = [self.buttons objectForKey:uuid];
+    // Find button in shared manager's buttons array
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+    FLICButton *button = nil;
+    for (FLICButton *btn in buttons) {
+        if ([btn.uuid isEqualToString:uuid]) {
+            button = btn;
+            break;
+        }
+    }
+
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
         return;
@@ -198,9 +282,82 @@
     resolve(@{@"success": @YES, @"message": @"Nickname set"});
 }
 
+// MARK: - Helper Methods
+
+- (void)connectAllKnownButtons:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject
+{
+    if (!self.manager) {
+        reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
+        return;
+    }
+
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+
+    for (FLICButton *button in buttons) {
+        NSLog(@"Flic2 Connect button: %@", button.name);
+        button.triggerMode = FLICButtonTriggerModeClickAndDoubleClickAndHold;
+        [button connect];
+    }
+
+    resolve(@{@"success": @YES, @"message": @"All buttons connection initiated"});
+}
+
+- (void)disconnectAllKnownButtons:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject
+{
+    if (!self.manager) {
+        reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
+        return;
+    }
+
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+
+    for (FLICButton *button in buttons) {
+        NSLog(@"Flic2 disconnect button: %@", button.name);
+        [button disconnect];
+    }
+
+    resolve(@{@"success": @YES, @"message": @"All buttons disconnection initiated"});
+}
+
+- (void)forgetAllButtons:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject
+{
+    if (!self.manager) {
+        reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
+        return;
+    }
+
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+
+    for (FLICButton *button in buttons) {
+        [button disconnect];
+        [[FLICManager sharedManager] forgetButton:button completion:^(NSUUID *uuid, NSError * _Nullable error) {
+            // Individual completion handlers not needed for bulk operation
+        }];
+    }
+
+    resolve(@{@"success": @YES, @"message": @"All buttons forgotten"});
+}
+
+- (void)isScanning:(RCTPromiseResolveBlock)resolve
+    reject:(RCTPromiseRejectBlock)reject
+{
+    if (!self.manager) {
+        reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
+        return;
+    }
+
+    BOOL scanning = [[FLICManager sharedManager] isScanning];
+    resolve(@(scanning));
+}
+
 // MARK: - FLICManagerDelegate
 
 - (void)managerDidRestoreState:(FLICManager *)manager {
+    self.managerRestored = YES;
+    NSLog(@"Manager state restored - ready for operations");
     [self emitOnManagerStateChange:@{
         @"event": @"restored",
         @"message": @"Manager state restored"
@@ -436,6 +593,7 @@
             return @"unknown";
     }
 }
+
 
 
 - (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:

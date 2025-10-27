@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- custom id: used for storage location-->
+    <string name="preference_filename" translatable="false">nl.xguard.flic2.default_preference</string>
+</resources>

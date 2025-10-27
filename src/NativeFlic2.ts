@@ -27,6 +27,7 @@ export type ScanStatusChangeEvent = {
 export type ButtonEvent = {
   uuid: string;
   event:
+    | 'discovered'
     | 'connected'
     | 'ready'
     | 'disconnected'
@@ -61,9 +62,13 @@ export type FlicButton = {
   serialNumber: string;
   state: number;
   stateName: string;
+  /** @platform iOS - Returns 0 on Android */
   triggerMode: number;
+  /** @platform iOS - Returns empty string on Android */
   triggerModeName: string;
+  /** @platform iOS - Returns 0 on Android */
   latencyMode: number;
+  /** @platform iOS - Returns empty string on Android */
   latencyModeName: string;
   pressCount: number;
   firmwareRevision: number;
@@ -100,6 +105,11 @@ export type FlicScannerEvent =
   | 'verified'
   | 'verificationFailed';
 
+// MARK: - Mode Types
+
+export type TriggerModeType = 0 | 1 | 2 | 3;
+export type LatencyModeType = 0 | 1;
+
 // MARK: - Spec Interface
 
 export interface Spec extends TurboModule {
@@ -112,9 +122,13 @@ export interface Spec extends TurboModule {
     background: boolean
   ): Promise<{ success: boolean; message: string }>;
   getButtons(): Promise<FlicButton[]>;
-  scanForButtons(): Promise<FlicButton>;
+  scanForButtons(): Promise<{ success: boolean; message: string }>;
   stopScan(): Promise<{ success: boolean; message: string }>;
   forgetButton(uuid: string): Promise<{ success: boolean; message: string }>;
+  connectAllKnownButtons(): Promise<{ success: boolean; message: string }>;
+  disconnectAllKnownButtons(): Promise<{ success: boolean; message: string }>;
+  forgetAllButtons(): Promise<{ success: boolean; message: string }>;
+  isScanning(): Promise<boolean>;
 
   // Button methods
   connectButton(uuid: string): Promise<{ success: boolean; message: string }>;
@@ -123,11 +137,11 @@ export interface Spec extends TurboModule {
   ): Promise<{ success: boolean; message: string }>;
   setTriggerMode(
     uuid: string,
-    mode: number
+    mode: TriggerModeType
   ): Promise<{ success: boolean; message: string }>;
   setLatencyMode(
     uuid: string,
-    mode: number
+    mode: LatencyModeType
   ): Promise<{ success: boolean; message: string }>;
   setNickname(
     uuid: string,
