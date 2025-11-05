@@ -18,11 +18,24 @@ export default [
   {
     plugins: { prettier },
     rules: {
-      'react/react-in-jsx-scope': 'off',
       'prettier/prettier': 'error',
+      'react/react-in-jsx-scope': 'off',
+      'object-curly-newline': [
+        'error',
+        {
+          ObjectExpression: { multiline: true, minProperties: 2 },
+          ObjectPattern: { multiline: true, minProperties: 2 },
+          ImportDeclaration: { multiline: true, minProperties: 2 },
+          ExportDeclaration: { multiline: true, minProperties: 2 },
+        },
+      ],
     },
   },
   {
-    ignores: ['node_modules/', 'lib/', 'android-lib-docs/', 'old-project-example/'],
+    ignores: [
+      'node_modules/',
+      'android-lib-docs/',
+      'old-project-example/',
+    ],
   },
 ];

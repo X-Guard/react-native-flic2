@@ -10,7 +10,7 @@ import NativeFlic2, {
 
 class Flic2 {
   private isFlic2ManagerInitialized: boolean = false;
-
+  private sessionId: string;
   public eventEmitter: TypedEmitter<{
     buttonEvent: (event: ButtonEvent) => void;
     managerStateChange: (event: ManagerStateChangeEvent) => void;
@@ -24,7 +24,12 @@ class Flic2 {
    * @class
    * @version 2.0.0
    */
-  constructor(options: { background: boolean; autoStartUp: boolean }) {
+  constructor() {
+    // generate a random session ID for the instance
+    this.sessionId = Math.random().toString(36).substring(2, 15);
+
+    console.log('Created new Flic2 instance with sessionId', this.sessionId);
+
     // create event emitter
     this.eventEmitter = new TypedEmitter<{
       buttonEvent: (event: ButtonEvent) => void;
@@ -37,38 +42,33 @@ class Flic2 {
     NativeFlic2.onManagerStateChange(
       this.onNativeManagerStateChange.bind(this)
     );
-    NativeFlic2.onScanStatusChange(this.onNativeScanStatusChange.bind(this));
 
-    // start up the Flic2 manager if autoStartUp is true
-    if (options.autoStartUp !== false) {
-      this.startup({
-        background: options.background ?? true,
-      });
-    }
+    NativeFlic2.onScanStatusChange(this.onNativeScanStatusChange.bind(this));
   }
 
   // MARK: Public management methods
   /**
-   * Start up the Flic2 manager.
+   * Start the Flic2 manager.
    *
-   * @param options - The options for the Flic2 manager.
-   * @param options.background - Whether to run the Flic2 manager in the background.
    * @returns A promise that resolves when the Flic2 manager is started up.
    */
-  public async startup(options: { background: boolean }): Promise<void> {
+  public async start(): Promise<boolean> {
     // check if the Flic2 manager is already initialized
     if (this.isInitialized()) {
       throw new Error('Flic2 manager is already initialized');
     }
 
-    // initialize the Flic2 manager
-    const result = await NativeFlic2.initialize(options.background);
+    // initialize the Flic2 manager in background
+    const result = await NativeFlic2.initialize(true);
 
     if (!result.success) {
       throw new Error(result.message);
     }
 
     this.onInitialized();
+    this.eventEmitter.initialize();
+
+    return true;
   }
 
   /**
@@ -85,7 +85,6 @@ class Flic2 {
    */
   public onInitialized(): void {
     this.isFlic2ManagerInitialized = true;
-    this.eventEmitter.emit('managerInitialized');
   }
 
   /**
@@ -214,7 +213,7 @@ class Flic2 {
    */
   public async getButton(uuid: string): Promise<FlicButton | null> {
     const buttons = await NativeFlic2.getButtons();
-    const button = buttons.find((button: FlicButton) => button.uuid === uuid);
+    const button = buttons.find((item: FlicButton) => item.uuid === uuid);
 
     return button ?? null;
   }
@@ -249,7 +248,7 @@ class Flic2 {
 }
 
 // export as singleton
-export default new Flic2({ background: true, autoStartUp: true });
+export default new Flic2();
 
 // re-export types
 export type * from './NativeFlic2';

@@ -175,19 +175,14 @@ class Flic2Module(reactContext: ReactApplicationContext) :
     manager.startScan(object : Flic2ScanCallback {
       override fun onDiscoveredAlreadyPairedButton(button: Flic2Button) {
         Log.d(TAG, "Discovered already paired button")
-        // Don't emit scan status change for already paired buttons
-        // This is just informational logging
       }
 
       override fun onDiscovered(bdAddr: String) {
         Log.d(TAG, "Discovered button: $bdAddr")
-        // Don't emit scan status change for discovery
-        // Button discovery will be emitted as button event in onComplete
       }
 
       override fun onConnected() {
         Log.d(TAG, "Button connected during scan")
-        // Intermediate scan status events are intentionally not emitted
       }
 
       override fun onComplete(result: Int, subCode: Int, button: Flic2Button?) {

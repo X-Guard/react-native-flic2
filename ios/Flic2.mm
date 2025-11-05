@@ -8,16 +8,6 @@
     return self;
 }
 
-- (NSNumber *)multiply:(double)a b:(double)b {
-
-    NSLog(@"multiply: %f * %f", a, b);
-    NSNumber *result = @(a * b);
-
-    [self emitOnMultiply:@{@"a": @(a), @"b": @(b), @"result": result}];
-
-    return result;
-}
-
 // MARK: - FLICManager Methods
 
 - (void)initialize:(BOOL)background
@@ -76,8 +66,9 @@
     __weak Flic2 *weakSelf = self;
 
     [[FLICManager sharedManager] scanForButtonsWithStateChangeHandler:^(FLICButtonScannerStatusEvent event) {
+
         // Intermediate scan status events are intentionally not emitted
-        NSLog(@"Scan state change: %@", [weakSelf scannerEventToString:event]);
+
     } completion:^(FLICButton * _Nullable button, NSError * _Nullable error) {
         NSLog(@"Scan completion called - button: %@, error: %@", button ? @"YES" : @"NO", error);
 
@@ -98,6 +89,7 @@
                 @"event": @"discovered",
                 @"button": [weakSelf buttonToDictionary:button]
             }];
+
         } else {
             NSLog(@"No button found and no error");
         }
@@ -578,21 +570,6 @@
             return @"normal";
         case FLICLatencyModeLow:
             return @"low";
-        default:
-            return @"unknown";
-    }
-}
-
-- (NSString *)scannerEventToString:(FLICButtonScannerStatusEvent)event {
-    switch (event) {
-        case FLICButtonScannerStatusEventDiscovered:
-            return @"discovered";
-        case FLICButtonScannerStatusEventConnected:
-            return @"connected";
-        case FLICButtonScannerStatusEventVerified:
-            return @"verified";
-        case FLICButtonScannerStatusEventVerificationFailed:
-            return @"verificationFailed";
         default:
             return @"unknown";
     }
