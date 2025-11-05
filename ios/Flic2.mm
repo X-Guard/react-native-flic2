@@ -18,7 +18,6 @@
     FLICManager *manager = [FLICManager configureWithDelegate:self buttonDelegate:self background:background];
 
     if (manager) {
-        self.manager = manager; // Store reference for our own use
         resolve(@{@"success": @YES, @"message": @"Manager initialized successfully"});
     } else {
         reject(@"INIT_ERROR", @"Failed to initialize FLICManager", nil);
@@ -28,7 +27,7 @@
 - (void)getButtons:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    if (!self.manager) {
+    if (![FLICManager sharedManager]) {
         reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
         return;
     }
@@ -51,7 +50,7 @@
 - (void)scanForButtons:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    if (!self.manager) {
+    if (![FLICManager sharedManager]) {
         reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
         return;
     }
@@ -84,22 +83,26 @@
             [button connect];
 
             // Emit button event for discovered button
-            [weakSelf emitOnButtonEvent:@{
-                @"uuid": button.uuid,
-                @"event": @"discovered",
-                @"button": [weakSelf buttonToDictionary:button]
-            }];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [weakSelf emitOnButtonEvent:@{
+                    @"uuid": button.uuid,
+                    @"event": @"discovered",
+                    @"button": [weakSelf buttonToDictionary:button]
+                }];
+            });
 
         } else {
             NSLog(@"No button found and no error");
         }
 
         // Emit scan completion with result code
-        [weakSelf emitOnScanStatusChange:@{
-            @"event": @"completion",
-            @"eventName": @"completion",
-            @"result": @(resultCode)
-        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [weakSelf emitOnScanStatusChange:@{
+                @"event": @"completion",
+                @"eventName": @"completion",
+                @"result": @(resultCode)
+            }];
+        });
     }];
 
     // Return immediately - scan results will come through events
@@ -109,7 +112,7 @@
 - (void)stopScan:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    if (!self.manager) {
+    if (![FLICManager sharedManager]) {
         reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
         return;
     }
@@ -118,9 +121,13 @@
     [[FLICManager sharedManager] stopScan];
 
     // Emit stopped event for manual stop
-    [self emitOnScanStatusChange:@{
-        @"event": @"stopped",
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnScanStatusChange:@{
+            @"event": @"stopped",
+            @"eventName": @"stopped",
+            @"result": @(12)  // USER_CANCELED
+        }];
+    });
 
     resolve(@{@"success": @YES, @"message": @"Scan stopped"});
 }
@@ -129,20 +136,12 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    if (!self.manager) {
+    if (![FLICManager sharedManager]) {
         reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
         return;
     }
 
-    // Find button in shared manager's buttons array
-    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
-    FLICButton *button = nil;
-    for (FLICButton *btn in buttons) {
-        if ([btn.uuid isEqualToString:uuid]) {
-            button = btn;
-            break;
-        }
-    }
+    FLICButton *button = [self findButtonByUUID:uuid];
 
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
@@ -167,15 +166,7 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    // Find button in shared manager's buttons array
-    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
-    FLICButton *button = nil;
-    for (FLICButton *btn in buttons) {
-        if ([btn.uuid isEqualToString:uuid]) {
-            button = btn;
-            break;
-        }
-    }
+    FLICButton *button = [self findButtonByUUID:uuid];
 
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
@@ -190,15 +181,7 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    // Find button in shared manager's buttons array
-    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
-    FLICButton *button = nil;
-    for (FLICButton *btn in buttons) {
-        if ([btn.uuid isEqualToString:uuid]) {
-            button = btn;
-            break;
-        }
-    }
+    FLICButton *button = [self findButtonByUUID:uuid];
 
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
@@ -213,15 +196,7 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    // Find button in shared manager's buttons array
-    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
-    FLICButton *button = nil;
-    for (FLICButton *btn in buttons) {
-        if ([btn.uuid isEqualToString:uuid]) {
-            button = btn;
-            break;
-        }
-    }
+    FLICButton *button = [self findButtonByUUID:uuid];
 
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
@@ -236,15 +211,7 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    // Find button in shared manager's buttons array
-    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
-    FLICButton *button = nil;
-    for (FLICButton *btn in buttons) {
-        if ([btn.uuid isEqualToString:uuid]) {
-            button = btn;
-            break;
-        }
-    }
+    FLICButton *button = [self findButtonByUUID:uuid];
 
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
@@ -259,15 +226,7 @@
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    // Find button in shared manager's buttons array
-    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
-    FLICButton *button = nil;
-    for (FLICButton *btn in buttons) {
-        if ([btn.uuid isEqualToString:uuid]) {
-            button = btn;
-            break;
-        }
-    }
+    FLICButton *button = [self findButtonByUUID:uuid];
 
     if (!button) {
         reject(@"BUTTON_NOT_FOUND", @"Button not found", nil);
@@ -283,7 +242,7 @@
 - (void)connectAllKnownButtons:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    if (!self.manager) {
+    if (![FLICManager sharedManager]) {
         reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
         return;
     }
@@ -302,7 +261,7 @@
 - (void)disconnectAllKnownButtons:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    if (!self.manager) {
+    if (![FLICManager sharedManager]) {
         reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
         return;
     }
@@ -320,7 +279,7 @@
 - (void)forgetAllButtons:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    if (!self.manager) {
+    if (![FLICManager sharedManager]) {
         reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
         return;
     }
@@ -340,7 +299,7 @@
 - (void)isScanning:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    if (!self.manager) {
+    if (![FLICManager sharedManager]) {
         reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
         return;
     }
@@ -354,36 +313,44 @@
 - (void)managerDidRestoreState:(FLICManager *)manager {
     self.managerRestored = YES;
     NSLog(@"Manager state restored - ready for operations");
-    [self emitOnManagerStateChange:@{
-        @"event": @"restored",
-        @"message": @"Manager state restored"
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnManagerStateChange:@{
+            @"event": @"restored",
+            @"message": @"Manager state restored"
+        }];
+    });
 }
 
 - (void)manager:(FLICManager *)manager didUpdateState:(FLICManagerState)state {
-    [self emitOnManagerStateChange:@{
-        @"state": @(state),
-        @"stateName": [self managerStateToString:state],
-        @"event": @"stateChanged"
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnManagerStateChange:@{
+            @"state": @(state),
+            @"stateName": [self managerStateToString:state],
+            @"event": @"stateChanged"
+        }];
+    });
 }
 
 // MARK: - FLICButtonDelegate
 
 - (void)buttonDidConnect:(FLICButton *)button {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"connected",
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"connected",
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)buttonIsReady:(FLICButton *)button {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"ready",
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"ready",
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)button:(FLICButton *)button didDisconnectWithError:(NSError * _Nullable)error {
@@ -400,98 +367,128 @@
         };
     }
 
-    [self emitOnButtonEvent:eventData];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:eventData];
+    });
 }
 
 - (void)button:(FLICButton *)button didFailToConnectWithError:(NSError * _Nullable)error {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"connectionFailed",
-        @"error": @{
-            @"code": @(error.code),
-            @"message": error.localizedDescription
-        },
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"connectionFailed",
+            @"error": @{
+                @"code": @(error.code),
+                @"message": error.localizedDescription
+            },
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonDown:(BOOL)queued age:(NSInteger)age {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"buttonDown",
-        @"queued": @(queued),
-        @"age": @(age),
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"buttonDown",
+            @"queued": @(queued),
+            @"age": @(age),
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonUp:(BOOL)queued age:(NSInteger)age {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"buttonUp",
-        @"queued": @(queued),
-        @"age": @(age),
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"buttonUp",
+            @"queued": @(queued),
+            @"age": @(age),
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonClick:(BOOL)queued age:(NSInteger)age {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"click",
-        @"queued": @(queued),
-        @"age": @(age),
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"click",
+            @"queued": @(queued),
+            @"age": @(age),
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonDoubleClick:(BOOL)queued age:(NSInteger)age {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"doubleClick",
-        @"queued": @(queued),
-        @"age": @(age),
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"doubleClick",
+            @"queued": @(queued),
+            @"age": @(age),
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)button:(FLICButton *)button didReceiveButtonHold:(BOOL)queued age:(NSInteger)age {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"hold",
-        @"queued": @(queued),
-        @"age": @(age),
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"hold",
+            @"queued": @(queued),
+            @"age": @(age),
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)button:(FLICButton *)button didUnpairWithError:(NSError * _Nullable)error {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"unpaired",
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"unpaired",
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)button:(FLICButton *)button didUpdateBatteryVoltage:(float)voltage {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"batteryUpdate",
-        @"voltage": @(voltage),
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"batteryUpdate",
+            @"voltage": @(voltage),
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 - (void)button:(FLICButton *)button didUpdateNickname:(NSString *)nickname {
-    [self emitOnButtonEvent:@{
-        @"uuid": button.uuid,
-        @"event": @"nicknameUpdate",
-        @"nickname": nickname,
-        @"button": [self buttonToDictionary:button]
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnButtonEvent:@{
+            @"uuid": button.uuid,
+            @"event": @"nicknameUpdate",
+            @"nickname": nickname,
+            @"button": [self buttonToDictionary:button]
+        }];
+    });
 }
 
 // MARK: - Helper Methods
+
+- (FLICButton *)findButtonByUUID:(NSString *)uuid {
+    NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
+    for (FLICButton *button in buttons) {
+        if ([button.uuid isEqualToString:uuid]) {
+            return button;
+        }
+    }
+    return nil;
+}
 
 - (NSDictionary *)buttonToDictionary:(FLICButton *)button {
     return @{

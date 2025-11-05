@@ -6,7 +6,6 @@
 
 @interface Flic2 : NativeFlic2SpecBase <NativeFlic2Spec, FLICManagerDelegate, FLICButtonDelegate>
 
-@property (nonatomic, strong) FLICManager *manager;
 @property (nonatomic, assign) BOOL managerRestored;
 
 @end
