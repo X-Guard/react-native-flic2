@@ -76,24 +76,15 @@
     __weak Flic2 *weakSelf = self;
 
     [[FLICManager sharedManager] scanForButtonsWithStateChangeHandler:^(FLICButtonScannerStatusEvent event) {
+        // Intermediate scan status events are intentionally not emitted
         NSLog(@"Scan state change: %@", [weakSelf scannerEventToString:event]);
-        [weakSelf emitOnScanStatusChange:@{
-            @"event": @(event),
-            @"eventName": [weakSelf scannerEventToString:event]
-        }];
     } completion:^(FLICButton * _Nullable button, NSError * _Nullable error) {
         NSLog(@"Scan completion called - button: %@, error: %@", button ? @"YES" : @"NO", error);
 
+        NSInteger resultCode = [weakSelf mapScanErrorToResultCode:error];
+
         if (error) {
-            NSLog(@"Scan error: %@ (code: %ld)", error.localizedDescription, (long)error.code);
-            // Check for specific error codes
-            if (error.code == FLICButtonScannerErrorCodeUserCanceled) {
-                NSLog(@"Scan was cancelled by user");
-            } else if (error.code == FLICButtonScannerErrorCodeNoPublicButtonDiscovered) {
-                NSLog(@"No Flic button found in range");
-            } else {
-                NSLog(@"Scan error: %@", error.localizedDescription);
-            }
+            NSLog(@"Scan error: %@ (code: %ld, mapped: %ld)", error.localizedDescription, (long)error.code, (long)resultCode);
         } else if (button) {
             NSLog(@"Button found: %@", button.uuid);
 
@@ -110,6 +101,13 @@
         } else {
             NSLog(@"No button found and no error");
         }
+
+        // Emit scan completion with result code
+        [weakSelf emitOnScanStatusChange:@{
+            @"event": @"completion",
+            @"eventName": @"completion",
+            @"result": @(resultCode)
+        }];
     }];
 
     // Return immediately - scan results will come through events
@@ -126,6 +124,12 @@
 
     NSLog(@"Stopping scan");
     [[FLICManager sharedManager] stopScan];
+
+    // Emit stopped event for manual stop
+    [self emitOnScanStatusChange:@{
+        @"event": @"stopped",
+    }];
+
     resolve(@{@"success": @YES, @"message": @"Scan stopped"});
 }
 
@@ -591,6 +595,57 @@
             return @"verificationFailed";
         default:
             return @"unknown";
+    }
+}
+
+- (NSInteger)mapScanErrorToResultCode:(NSError *)error {
+    if (!error) {
+        return 0; // SUCCESS
+    }
+
+    switch (error.code) {
+        case FLICButtonScannerErrorCodeBluetoothNotActivated:
+            return 2; // BLUETOOTH_NOT_ACTIVATED
+        case FLICButtonScannerErrorCodeUnknown:
+            return 3; // UNKNOWN
+        case FLICButtonScannerErrorCodeNoPublicButtonDiscovered:
+            return 4; // NO_PUBLIC_BUTTON_DISCOVERED
+        case FLICButtonScannerErrorCodeAlreadyConnectedToAnotherDevice:
+            return 5; // ALREADY_CONNECTED_TO_ANOTHER_DEVICE
+        case FLICButtonScannerErrorCodeConnectionTimeout:
+            return 6; // CONNECTION_TIMEOUT
+        case FLICButtonScannerErrorCodeInvalidVerifier:
+            return 7; // INVALID_VERIFIER
+        case FLICButtonScannerErrorCodeBLEPairingFailedPreviousPairingAlreadyExisting:
+            return 8; // BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING
+        case FLICButtonScannerErrorCodeBLEPairingFailedUserCanceled:
+            return 9; // BLE_PAIRING_FAILED_USER_CANCELED
+        case FLICButtonScannerErrorCodeBLEPairingFailedUnknownReason:
+            return 10; // BLE_PAIRING_FAILED_UNKNOWN_REASON
+        case FLICButtonScannerErrorCodeAppCredentialsDontMatch:
+            return 11; // APP_CREDENTIALS_DONT_MATCH
+        case FLICButtonScannerErrorCodeUserCanceled:
+            return 12; // USER_CANCELED
+        case FLICButtonScannerErrorCodeInvalidBluetoothAddress:
+            return 13; // INVALID_BLUETOOTH_ADDRESS
+        case FLICButtonScannerErrorCodeGenuineCheckFailed:
+            return 14; // GENUINE_CHECK_FAILED
+        case FLICButtonScannerErrorCodeTooManyApps:
+            return 15; // TOO_MANY_APPS
+        case FLICButtonScannerErrorCodeCouldNotSetBluetoothNotify:
+            return 16; // COULD_NOT_SET_BLUETOOTH_NOTIFY
+        case FLICButtonScannerErrorCodeCouldNotDiscoverBluetoothServices:
+            return 17; // COULD_NOT_DISCOVER_BLUETOOTH_SERVICES
+        case FLICButtonScannerErrorCodeButtonDisconnectedDuringVerification:
+            return 18; // BUTTON_DISCONNECTED_DURING_VERIFICATION
+        case FLICButtonScannerErrorCodeFailedToEstablish:
+            return 19; // FAILED_TO_ESTABLISH
+        case FLICButtonScannerErrorCodeConnectionLimitReached:
+            return 20; // CONNECTION_LIMIT_REACHED
+        case FLICButtonScannerErrorCodeNotInPublicMode:
+            return 21; // NOT_IN_PUBLIC_MODE
+        default:
+            return 3; // UNKNOWN
     }
 }
 

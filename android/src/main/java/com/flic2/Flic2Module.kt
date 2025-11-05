@@ -175,43 +175,33 @@ class Flic2Module(reactContext: ReactApplicationContext) :
     manager.startScan(object : Flic2ScanCallback {
       override fun onDiscoveredAlreadyPairedButton(button: Flic2Button) {
         Log.d(TAG, "Discovered already paired button")
-        emitOnScanStatusChange(Arguments.createMap().apply {
-          putInt("event", 0)
-          putString("eventName", "discovered")
-        })
+        // Don't emit scan status change for already paired buttons
+        // This is just informational logging
       }
 
       override fun onDiscovered(bdAddr: String) {
         Log.d(TAG, "Discovered button: $bdAddr")
-        emitOnScanStatusChange(Arguments.createMap().apply {
-          putInt("event", 0)
-          putString("eventName", "discovered")
-        })
+        // Don't emit scan status change for discovery
+        // Button discovery will be emitted as button event in onComplete
       }
 
       override fun onConnected() {
         Log.d(TAG, "Button connected during scan")
-        emitOnScanStatusChange(Arguments.createMap().apply {
-          putInt("event", 1)
-          putString("eventName", "connected")
-        })
+        // Intermediate scan status events are intentionally not emitted
       }
 
       override fun onComplete(result: Int, subCode: Int, button: Flic2Button?) {
         Log.d(TAG, "Scan complete: result=$result, button=${button?.uuid}")
 
-        if (result == Flic2ScanCallback.RESULT_SUCCESS && button != null) {
-          emitOnScanStatusChange(Arguments.createMap().apply {
-            putInt("event", 2)
-            putString("eventName", "verified")
-          })
+        val resultCode = mapScanResultToCode(result)
 
+        if (result == Flic2ScanCallback.RESULT_SUCCESS && button != null) {
           // Auto-connect (trigger mode not available in Android v1.1.0+)
           button.connect()
 
           setupButtonListener(button)
 
-          // Emit discovered event
+          // Emit discovered event as button event (like iOS)
           emitOnButtonEvent(Arguments.createMap().apply {
             putString("uuid", button.uuid)
             putString("event", "discovered")
@@ -221,6 +211,13 @@ class Flic2Module(reactContext: ReactApplicationContext) :
           val errorCode = Flic2Converter.scanResultToString(result)
           Log.e(TAG, "Scan failed with error code: $errorCode")
         }
+
+        // Emit scan completion with result code
+        emitOnScanStatusChange(Arguments.createMap().apply {
+          putString("event", "completion")
+          putString("eventName", "completion")
+          putInt("result", resultCode)
+        })
       }
     })
 
@@ -241,6 +238,12 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
       scanJob?.cancel()
       manager.stopScan()
+
+      // Emit stopped event for manual stop
+      emitOnScanStatusChange(Arguments.createMap().apply {
+        putInt("event", 99)
+        putString("eventName", "stopped")
+      })
 
       promise.resolve(Arguments.createMap().apply {
         putBoolean("success", true)
@@ -476,5 +479,33 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
     // Store listener reference
     buttonListeners[button.uuid] = listener
+  }
+
+  private fun mapScanResultToCode(result: Int): Int {
+    return when (result) {
+      Flic2ScanCallback.RESULT_SUCCESS -> 0 // SUCCESS
+      Flic2ScanCallback.RESULT_ALREADY_RUNNING -> 1 // ALREADY_RUNNING
+      Flic2ScanCallback.RESULT_BLUETOOTH_NOT_ACTIVATED -> 2 // BLUETOOTH_NOT_ACTIVATED
+      Flic2ScanCallback.RESULT_UNKNOWN -> 3 // UNKNOWN
+      Flic2ScanCallback.RESULT_NO_PUBLIC_BUTTON_DISCOVERED -> 4 // NO_PUBLIC_BUTTON_DISCOVERED
+      Flic2ScanCallback.RESULT_ALREADY_CONNECTED_TO_ANOTHER_DEVICE -> 5 // ALREADY_CONNECTED_TO_ANOTHER_DEVICE
+      Flic2ScanCallback.RESULT_CONNECTION_TIMEOUT -> 6 // CONNECTION_TIMEOUT
+      Flic2ScanCallback.RESULT_INVALID_VERIFIER -> 7 // INVALID_VERIFIER
+      Flic2ScanCallback.RESULT_BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING -> 8 // BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING
+      Flic2ScanCallback.RESULT_BLE_PAIRING_FAILED_USER_CANCELED -> 9 // BLE_PAIRING_FAILED_USER_CANCELED
+      Flic2ScanCallback.RESULT_BLE_PAIRING_FAILED_UNKNOWN_REASON -> 10 // BLE_PAIRING_FAILED_UNKNOWN_REASON
+      Flic2ScanCallback.RESULT_APP_CREDENTIALS_DONT_MATCH -> 11 // APP_CREDENTIALS_DONT_MATCH
+      Flic2ScanCallback.RESULT_USER_CANCELED -> 12 // USER_CANCELED
+      Flic2ScanCallback.RESULT_INVALID_BLUETOOTH_ADDRESS -> 13 // INVALID_BLUETOOTH_ADDRESS
+      Flic2ScanCallback.RESULT_GENUINE_CHECK_FAILED -> 14 // GENUINE_CHECK_FAILED
+      Flic2ScanCallback.RESULT_TOO_MANY_APPS -> 15 // TOO_MANY_APPS
+      Flic2ScanCallback.RESULT_COULD_NOT_SET_BLUETOOTH_NOTIFY -> 16 // COULD_NOT_SET_BLUETOOTH_NOTIFY
+      Flic2ScanCallback.RESULT_COULD_NOT_DISCOVER_BLUETOOTH_SERVICES -> 17 // COULD_NOT_DISCOVER_BLUETOOTH_SERVICES
+      Flic2ScanCallback.RESULT_BUTTON_DISCONNECTED_DURING_VERIFICATION -> 18 // BUTTON_DISCONNECTED_DURING_VERIFICATION
+      Flic2ScanCallback.RESULT_FAILED_TO_ESTABLISH -> 19 // FAILED_TO_ESTABLISH
+      Flic2ScanCallback.RESULT_CONNECTION_LIMIT_REACHED -> 20 // CONNECTION_LIMIT_REACHED
+      Flic2ScanCallback.RESULT_NOT_IN_PUBLIC_MODE -> 21 // NOT_IN_PUBLIC_MODE
+      else -> 3 // UNKNOWN
+    }
   }
 }

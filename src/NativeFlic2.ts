@@ -19,9 +19,35 @@ export type ManagerStateChangeEvent = {
   message?: string;
 };
 
+export enum ScanResult {
+  SUCCESS = 0,
+  ALREADY_RUNNING = 1,
+  BLUETOOTH_NOT_ACTIVATED = 2,
+  UNKNOWN = 3,
+  NO_PUBLIC_BUTTON_DISCOVERED = 4,
+  ALREADY_CONNECTED_TO_ANOTHER_DEVICE = 5,
+  CONNECTION_TIMEOUT = 6,
+  INVALID_VERIFIER = 7,
+  BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING = 8,
+  BLE_PAIRING_FAILED_USER_CANCELED = 9,
+  BLE_PAIRING_FAILED_UNKNOWN_REASON = 10,
+  APP_CREDENTIALS_DONT_MATCH = 11,
+  USER_CANCELED = 12,
+  INVALID_BLUETOOTH_ADDRESS = 13,
+  GENUINE_CHECK_FAILED = 14,
+  TOO_MANY_APPS = 15,
+  COULD_NOT_SET_BLUETOOTH_NOTIFY = 16,
+  COULD_NOT_DISCOVER_BLUETOOTH_SERVICES = 17,
+  BUTTON_DISCONNECTED_DURING_VERIFICATION = 18,
+  FAILED_TO_ESTABLISH = 19,
+  CONNECTION_LIMIT_REACHED = 20,
+  NOT_IN_PUBLIC_MODE = 21,
+}
+
 export type ScanStatusChangeEvent = {
-  event: number;
+  event: string;
   eventName: string;
+  result?: ScanResult;
 };
 
 export type ButtonEvent = {
@@ -98,12 +124,6 @@ export type FlicTriggerMode =
   | 'click';
 
 export type FlicLatencyMode = 'normal' | 'low';
-
-export type FlicScannerEvent =
-  | 'discovered'
-  | 'connected'
-  | 'verified'
-  | 'verificationFailed';
 
 // MARK: - Mode Types
 
