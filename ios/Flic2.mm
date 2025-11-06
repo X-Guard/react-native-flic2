@@ -128,15 +128,6 @@
     NSLog(@"Stopping scan");
     [[FLICManager sharedManager] stopScan];
 
-    // Emit stopped event for manual stop
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self emitOnScanStatusChange:@{
-            @"event": @"stopped",
-            @"eventName": @"stopped",
-            @"result": @(12)  // USER_CANCELED
-        }];
-    });
-
     resolve(@{@"success": @YES, @"message": @"Scan stopped"});
 }
 

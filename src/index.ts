@@ -53,11 +53,11 @@ class Flic2 {
 
   // MARK: Public management methods
   /**
-   * Start the Flic2 manager.
+   * Initialize the Flic2 manager.
    *
-   * @returns A promise that resolves when the Flic2 manager is started up.
+   * @returns A promise that resolves when the Flic2 manager is initialized.
    */
-  public async start(): Promise<boolean> {
+  public async initialize(): Promise<boolean> {
 
     // check if the Flic2 manager is already initialized
     if (this.isInitialized()) {
@@ -86,9 +86,20 @@ class Flic2 {
    *
    * @returns A promise that resolves when the scan is started. Events will be emitted for the scan process.
    */
-  public scanForButtons(): Promise<{ success: boolean; message: string }> {
+  public startScan(): Promise<{ success: boolean; message: string }> {
 
     return NativeFlic2.scanForButtons();
+
+  }
+
+  /**
+   * Stop the scan.
+   *
+   * @returns A promise that resolves when the scan is stopped.
+   */
+  public stopScan(): Promise<{ success: boolean; message: string }> {
+
+    return NativeFlic2.stopScan();
 
   }
 
@@ -148,6 +159,31 @@ class Flic2 {
   public forgetAllButtons(): Promise<{ success: boolean; message: string }> {
 
     return NativeFlic2.forgetAllButtons();
+
+  }
+
+  /**
+   * Check if a scan is currently running.
+   *
+   * @returns A promise that resolves to true if scanning, false otherwise.
+   */
+  public isScanning(): Promise<boolean> {
+
+    return NativeFlic2.isScanning();
+
+  }
+
+  /**
+   * Forget a specific button by UUID.
+   *
+   * @param uuid - The UUID of the button to forget.
+   * @returns A promise that resolves when the button is forgotten.
+   */
+  public forgetButton(
+    uuid: string
+  ): Promise<{ success: boolean; message: string }> {
+
+    return NativeFlic2.forgetButton(uuid);
 
   }
 

@@ -6,12 +6,6 @@ import {
 
 // MARK: - Event Types
 
-export type MultiplyEvent = {
-  a: number;
-  b: number;
-  result: number;
-};
-
 export type ManagerStateChangeEvent = {
   event: 'restored' | 'stateChanged';
   state?: number;
@@ -44,7 +38,7 @@ export enum ScanResult {
   NOT_IN_PUBLIC_MODE = 21,
 }
 
-export type ScanStatus = 'started' | 'completion' | 'stopped';
+export type ScanStatus = 'started' | 'completion';
 
 export type ScanStatusChangeEvent = {
   event: ScanStatus;
@@ -135,10 +129,6 @@ export type LatencyModeType = 0 | 1;
 // MARK: - Spec Interface
 
 export interface Spec extends TurboModule {
-  // Keep multiply example
-  multiply(a: number, b: number): number;
-  readonly onMultiply: CodegenTypes.EventEmitter<MultiplyEvent>;
-
   // Manager methods
   initialize(
     background: boolean

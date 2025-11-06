@@ -4,11 +4,12 @@ export class TypedEmitter<E extends EventMap> {
 
   private listeners: { [K in keyof E]?: Set<E[K]> } = {};
 
-  on<K extends keyof E>(event: K, fn: E[K]): this {
+  on<K extends keyof E>(event: K, fn: E[K]): { remove: () => void } {
 
     (this.listeners[event] ??= new Set()).add(fn);
 
-    return this;
+    // return shorthand for removing the listener
+    return { remove: () => this.off(event, fn) };
 
   }
 
@@ -19,7 +20,7 @@ export class TypedEmitter<E extends EventMap> {
 
   }
 
-  once<K extends keyof E>(event: K, fn: E[K]): this {
+  once<K extends keyof E>(event: K, fn: E[K]): { remove: () => void } {
 
     const wrapped: E[K] = ((...args: Parameters<E[K]>) => {
 

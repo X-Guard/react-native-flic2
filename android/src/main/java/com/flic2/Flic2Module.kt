@@ -95,20 +95,6 @@ class Flic2Module(reactContext: ReactApplicationContext) :
     }
   }
 
-  // Example method - keep for reference
-  override fun multiply(a: Double, b: Double): Double {
-    val result = a * b
-
-    val eventData = Arguments.createMap().apply {
-      putDouble("a", a)
-      putDouble("b", b)
-      putDouble("result", result)
-    }
-    emitOnMultiply(eventData)
-
-    return result
-  }
-
   // MARK: - Manager Methods
 
   override fun initialize(background: Boolean, promise: Promise) {
@@ -233,12 +219,6 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
       scanJob?.cancel()
       manager.stopScan()
-
-      // Emit stopped event for manual stop
-      emitOnScanStatusChange(Arguments.createMap().apply {
-        putInt("event", 99)
-        putString("eventName", "stopped")
-      })
 
       promise.resolve(Arguments.createMap().apply {
         putBoolean("success", true)
