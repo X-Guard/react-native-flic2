@@ -64,6 +64,14 @@
 
     __weak Flic2 *weakSelf = self;
 
+    // Emit started event
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [weakSelf emitOnScanStatusChange:@{
+            @"event": @"started",
+            @"eventName": @"started"
+        }];
+    });
+
     [[FLICManager sharedManager] scanForButtonsWithStateChangeHandler:^(FLICButtonScannerStatusEvent event) {
 
         // Intermediate scan status events are intentionally not emitted

@@ -2,26 +2,9 @@ type EventMap = Record<string, (...args: any[]) => void>;
 
 export class TypedEmitter<E extends EventMap> {
 
-  private initialized: boolean = false;
-
   private listeners: { [K in keyof E]?: Set<E[K]> } = {};
 
-  initialize(): this {
-
-    this.initialized = true;
-    return this;
-
-  }
-
   on<K extends keyof E>(event: K, fn: E[K]): this {
-
-    if (!this.initialized) {
-
-      throw new Error(
-        'Emitter not initialized, make sure you call Flic2.start() first'
-      );
-
-    }
 
     (this.listeners[event] ??= new Set()).add(fn);
 
@@ -37,14 +20,6 @@ export class TypedEmitter<E extends EventMap> {
   }
 
   once<K extends keyof E>(event: K, fn: E[K]): this {
-
-    if (!this.initialized) {
-
-      throw new Error(
-        'Emitter not initialized, make sure you call Flic2.start() first'
-      );
-
-    }
 
     const wrapped: E[K] = ((...args: Parameters<E[K]>) => {
 

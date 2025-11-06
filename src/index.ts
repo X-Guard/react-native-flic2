@@ -76,7 +76,6 @@ class Flic2 {
     }
 
     this.onInitialized();
-    this.eventEmitter.initialize();
 
     return true;
 

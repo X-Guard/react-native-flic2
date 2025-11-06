@@ -44,9 +44,11 @@ export enum ScanResult {
   NOT_IN_PUBLIC_MODE = 21,
 }
 
+export type ScanStatus = 'started' | 'completion' | 'stopped';
+
 export type ScanStatusChangeEvent = {
-  event: string;
-  eventName: string;
+  event: ScanStatus;
+  eventName: ScanStatus;
   result?: ScanResult;
 };
 
