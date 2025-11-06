@@ -9,8 +9,11 @@ import NativeFlic2, {
 } from './NativeFlic2';
 
 class Flic2 {
+
   private isFlic2ManagerInitialized: boolean = false;
+
   private sessionId: string;
+
   public eventEmitter: TypedEmitter<{
     buttonEvent: (event: ButtonEvent) => void;
     managerStateChange: (event: ManagerStateChangeEvent) => void;
@@ -25,6 +28,7 @@ class Flic2 {
    * @version 2.0.0
    */
   constructor() {
+
     // generate a random session ID for the instance
     this.sessionId = Math.random().toString(36).substring(2, 15);
 
@@ -44,6 +48,7 @@ class Flic2 {
     );
 
     NativeFlic2.onScanStatusChange(this.onNativeScanStatusChange.bind(this));
+
   }
 
   // MARK: Public management methods
@@ -53,22 +58,28 @@ class Flic2 {
    * @returns A promise that resolves when the Flic2 manager is started up.
    */
   public async start(): Promise<boolean> {
+
     // check if the Flic2 manager is already initialized
     if (this.isInitialized()) {
+
       throw new Error('Flic2 manager is already initialized');
+
     }
 
     // initialize the Flic2 manager in background
     const result = await NativeFlic2.initialize(true);
 
     if (!result.success) {
+
       throw new Error(result.message);
+
     }
 
     this.onInitialized();
     this.eventEmitter.initialize();
 
     return true;
+
   }
 
   /**
@@ -77,14 +88,18 @@ class Flic2 {
    * @returns A promise that resolves when the scan is started. Events will be emitted for the scan process.
    */
   public scanForButtons(): Promise<{ success: boolean; message: string }> {
+
     return NativeFlic2.scanForButtons();
+
   }
 
   /**
    * Called when the Flic2 manager is initialized.
    */
   public onInitialized(): void {
+
     this.isFlic2ManagerInitialized = true;
+
   }
 
   /**
@@ -93,7 +108,9 @@ class Flic2 {
    * @returns True if the Flic2 manager is initialized, false otherwise.
    */
   public isInitialized(): boolean {
+
     return this.isFlic2ManagerInitialized;
+
   }
 
   /**
@@ -105,7 +122,9 @@ class Flic2 {
     success: boolean;
     message: string;
   }> {
+
     return NativeFlic2.connectAllKnownButtons();
+
   }
 
   /**
@@ -117,7 +136,9 @@ class Flic2 {
     success: boolean;
     message: string;
   }> {
+
     return NativeFlic2.disconnectAllKnownButtons();
+
   }
 
   /**
@@ -126,7 +147,9 @@ class Flic2 {
    * @returns A promise that resolves when the all buttons are forgotten.
    */
   public forgetAllButtons(): Promise<{ success: boolean; message: string }> {
+
     return NativeFlic2.forgetAllButtons();
+
   }
 
   // MARK: Public button methods
@@ -139,7 +162,9 @@ class Flic2 {
   public buttonConnect(
     uuid: string
   ): Promise<{ success: boolean; message: string }> {
+
     return NativeFlic2.connectButton(uuid);
+
   }
 
   /**
@@ -151,7 +176,9 @@ class Flic2 {
   public buttonDisconnect(
     uuid: string
   ): Promise<{ success: boolean; message: string }> {
+
     return NativeFlic2.disconnectButton(uuid);
+
   }
 
   /**
@@ -165,7 +192,9 @@ class Flic2 {
     uuid: string,
     mode: TriggerModeType
   ): Promise<{ success: boolean; message: string }> {
+
     return NativeFlic2.setTriggerMode(uuid, mode);
+
   }
 
   /**
@@ -179,7 +208,9 @@ class Flic2 {
     uuid: string,
     mode: LatencyModeType
   ): Promise<{ success: boolean; message: string }> {
+
     return NativeFlic2.setLatencyMode(uuid, mode);
+
   }
 
   /**
@@ -193,7 +224,9 @@ class Flic2 {
     uuid: string,
     nickname: string
   ): Promise<{ success: boolean; message: string }> {
+
     return NativeFlic2.setNickname(uuid, nickname);
+
   }
 
   /**
@@ -202,7 +235,9 @@ class Flic2 {
    * @returns A promise that resolves with an array of FlicButton instances.
    */
   public getButtons(): Promise<FlicButton[]> {
+
     return NativeFlic2.getButtons();
+
   }
 
   /**
@@ -212,10 +247,12 @@ class Flic2 {
    * @returns A promise that resolves with the FlicButton instance or null if the button is not found.
    */
   public async getButton(uuid: string): Promise<FlicButton | null> {
+
     const buttons = await NativeFlic2.getButtons();
     const button = buttons.find((item: FlicButton) => item.uuid === uuid);
 
     return button ?? null;
+
   }
 
   // MARK: Private Methods
@@ -225,7 +262,9 @@ class Flic2 {
    * @param event - The button event.
    */
   private onNativeButtonEvent(event: ButtonEvent): void {
+
     this.eventEmitter.emit('buttonEvent', event);
+
   }
 
   /**
@@ -234,7 +273,9 @@ class Flic2 {
    * @param event - The manager state change event.
    */
   private onNativeManagerStateChange(event: ManagerStateChangeEvent): void {
+
     this.eventEmitter.emit('managerStateChange', event);
+
   }
 
   /**
@@ -243,8 +284,11 @@ class Flic2 {
    * @param event - The scan status change event.
    */
   private onNativeScanStatusChange(event: ScanStatusChangeEvent): void {
+
     this.eventEmitter.emit('scanStatusChange', event);
+
   }
+
 }
 
 // export as singleton
