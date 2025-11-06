@@ -64,8 +64,9 @@ export type ButtonEvent = {
     | 'nicknameUpdate';
   queued?: boolean;
   age?: number;
-  voltage?: number;
   nickname?: string;
+  voltage?: number;
+  batteryVoltageOk?: boolean;
   error?: {
     code: number;
     message: string;

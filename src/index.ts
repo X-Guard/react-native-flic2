@@ -290,13 +290,62 @@ class Flic2 {
 
   }
 
+  /**
+   * Get the battery health status of a button.
+   *
+   * @param uuid - The UUID of the button to check.
+   * @returns A promise that resolves to true if battery is OK (voltage > 2.65V), false otherwise.
+   * @throws Error if the button is not found.
+   */
+  public async getBatteryHealth(uuid: string): Promise<boolean> {
+
+    const button = await this.getButton(uuid);
+
+    if (!button) {
+
+      throw new Error(`Button with UUID ${uuid} not found`);
+
+    }
+
+    return this.isBatteryVoltageOk(button.batteryVoltage);
+
+  }
+
   // MARK: Private Methods
+  /**
+   * Check if battery voltage is OK based on the 2.65V threshold.
+   *
+   * @param voltage - The battery voltage in volts.
+   * @returns True if voltage is above 2.65V (battery is OK), false otherwise.
+   */
+  private isBatteryVoltageOk(voltage: number): boolean {
+
+    return voltage * 1000 > 2650;
+
+  }
+
   /**
    * Called when a button event is received from the native side.
    *
    * @param event - The button event.
    */
   private onNativeButtonEvent(event: ButtonEvent): void {
+
+    // Enrich batteryUpdate events with batteryVoltageOk
+    if (event.event === 'batteryUpdate') {
+
+      const voltage = typeof event.voltage === 'number' ? event.voltage : event.button?.batteryVoltage;
+
+      const enrichedEvent: ButtonEvent = {
+        ...event,
+        batteryVoltageOk: this.isBatteryVoltageOk(voltage ?? 0),
+      };
+
+      this.eventEmitter.emit('buttonEvent', enrichedEvent);
+
+      return;
+
+    }
 
     this.eventEmitter.emit('buttonEvent', event);
 
