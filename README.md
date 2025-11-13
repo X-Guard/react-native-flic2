@@ -18,6 +18,12 @@ React Native library for integrating Flic2 buttons into your React Native applic
 >
 > This software is provided "AS IS" without warranty of any kind. Please refer to the [LICENSE](LICENSE) file for complete liability disclaimers. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability arising from the use of this software.
 
+## Version Information
+
+**This is a complete rewrite of react-native-flic2 (version 2.x.x).** This version requires React Native 0.81.x or higher. We do not provide a breaking changes list or migration guide. If you are upgrading from version 1.x.x, you should restart your implementation based on the examples and documentation provided in this README. The API and architecture have been completely redesigned.
+
+If you need support for older React Native versions, please use version 1.x.x of this package instead.
+
 ## Installation
 
 ```sh
@@ -720,8 +726,4 @@ const scanForButtons = async () => {
 
 ## License
 
-MIT
-
----
-
-Made with [create-react-native-library](https://github.com/callstack/react-native-builder-bob)
+See [LICENSE](LICENSE)
