@@ -51,6 +51,8 @@ class Flic2ButtonEventListener(
         })
     }
 
+    // Android library calls ALL applicable callback methods, causing duplicate events.
+    // Only onButtonSingleOrDoubleClickOrHold should emit events to match iOS behavior.
     override fun onButtonClickOrHold(
         button: Flic2Button,
         wasQueued: Boolean,
@@ -59,13 +61,11 @@ class Flic2ButtonEventListener(
         isClick: Boolean,
         isHold: Boolean
     ) {
-        val event = if (isClick) "click" else "hold"
-        emitEvent(createButtonEvent(button, event).apply {
-            putBoolean("queued", wasQueued)
-            putDouble("age", System.currentTimeMillis() - timestamp.toDouble())
-        })
+        // Intentionally empty - events are handled by onButtonSingleOrDoubleClickOrHold
     }
 
+    // Android library calls ALL applicable callback methods, causing duplicate events.
+    // Only onButtonSingleOrDoubleClickOrHold should emit events to match iOS behavior.
     override fun onButtonSingleOrDoubleClick(
         button: Flic2Button,
         wasQueued: Boolean,
@@ -74,11 +74,7 @@ class Flic2ButtonEventListener(
         isSingleClick: Boolean,
         isDoubleClick: Boolean
     ) {
-        val event = if (isSingleClick) "click" else "doubleClick"
-        emitEvent(createButtonEvent(button, event).apply {
-            putBoolean("queued", wasQueued)
-            putDouble("age", System.currentTimeMillis() - timestamp.toDouble())
-        })
+        // Intentionally empty - events are handled by onButtonSingleOrDoubleClickOrHold
     }
 
     override fun onButtonSingleOrDoubleClickOrHold(

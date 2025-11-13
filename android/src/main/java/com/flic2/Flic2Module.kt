@@ -158,6 +158,12 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
     Log.d(TAG, "Starting scan")
 
+    // Emit started event (matches iOS)
+    emitOnScanStatusChange(Arguments.createMap().apply {
+      putString("event", "started")
+      putString("eventName", "started")
+    })
+
     manager.startScan(object : Flic2ScanCallback {
       override fun onDiscoveredAlreadyPairedButton(button: Flic2Button) {
         Log.d(TAG, "Discovered already paired button")
@@ -457,30 +463,19 @@ class Flic2Module(reactContext: ReactApplicationContext) :
   }
 
   private fun mapScanResultToCode(result: Int): Int {
+    // Map Android library's 9 result codes (0-8) to TypeScript enum codes (0-21) matching iOS
+    // Android library only provides these constants, so we map them to the closest equivalent
     return when (result) {
       Flic2ScanCallback.RESULT_SUCCESS -> 0 // SUCCESS
-      Flic2ScanCallback.RESULT_ALREADY_RUNNING -> 1 // ALREADY_RUNNING
-      Flic2ScanCallback.RESULT_BLUETOOTH_NOT_ACTIVATED -> 2 // BLUETOOTH_NOT_ACTIVATED
-      Flic2ScanCallback.RESULT_UNKNOWN -> 3 // UNKNOWN
-      Flic2ScanCallback.RESULT_NO_PUBLIC_BUTTON_DISCOVERED -> 4 // NO_PUBLIC_BUTTON_DISCOVERED
-      Flic2ScanCallback.RESULT_ALREADY_CONNECTED_TO_ANOTHER_DEVICE -> 5 // ALREADY_CONNECTED_TO_ANOTHER_DEVICE
-      Flic2ScanCallback.RESULT_CONNECTION_TIMEOUT -> 6 // CONNECTION_TIMEOUT
-      Flic2ScanCallback.RESULT_INVALID_VERIFIER -> 7 // INVALID_VERIFIER
-      Flic2ScanCallback.RESULT_BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING -> 8 // BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING
-      Flic2ScanCallback.RESULT_BLE_PAIRING_FAILED_USER_CANCELED -> 9 // BLE_PAIRING_FAILED_USER_CANCELED
-      Flic2ScanCallback.RESULT_BLE_PAIRING_FAILED_UNKNOWN_REASON -> 10 // BLE_PAIRING_FAILED_UNKNOWN_REASON
-      Flic2ScanCallback.RESULT_APP_CREDENTIALS_DONT_MATCH -> 11 // APP_CREDENTIALS_DONT_MATCH
-      Flic2ScanCallback.RESULT_USER_CANCELED -> 12 // USER_CANCELED
-      Flic2ScanCallback.RESULT_INVALID_BLUETOOTH_ADDRESS -> 13 // INVALID_BLUETOOTH_ADDRESS
-      Flic2ScanCallback.RESULT_GENUINE_CHECK_FAILED -> 14 // GENUINE_CHECK_FAILED
-      Flic2ScanCallback.RESULT_TOO_MANY_APPS -> 15 // TOO_MANY_APPS
-      Flic2ScanCallback.RESULT_COULD_NOT_SET_BLUETOOTH_NOTIFY -> 16 // COULD_NOT_SET_BLUETOOTH_NOTIFY
-      Flic2ScanCallback.RESULT_COULD_NOT_DISCOVER_BLUETOOTH_SERVICES -> 17 // COULD_NOT_DISCOVER_BLUETOOTH_SERVICES
-      Flic2ScanCallback.RESULT_BUTTON_DISCONNECTED_DURING_VERIFICATION -> 18 // BUTTON_DISCONNECTED_DURING_VERIFICATION
-      Flic2ScanCallback.RESULT_FAILED_TO_ESTABLISH -> 19 // FAILED_TO_ESTABLISH
-      Flic2ScanCallback.RESULT_CONNECTION_LIMIT_REACHED -> 20 // CONNECTION_LIMIT_REACHED
-      Flic2ScanCallback.RESULT_NOT_IN_PUBLIC_MODE -> 21 // NOT_IN_PUBLIC_MODE
-      else -> 3 // UNKNOWN
+      Flic2ScanCallback.RESULT_FAILED_ALREADY_RUNNING -> 1 // ALREADY_RUNNING
+      Flic2ScanCallback.RESULT_FAILED_BLUETOOTH_OFF -> 2 // BLUETOOTH_NOT_ACTIVATED
+      Flic2ScanCallback.RESULT_FAILED_SCAN_ERROR -> 3 // UNKNOWN
+      Flic2ScanCallback.RESULT_FAILED_NO_NEW_BUTTONS_FOUND -> 4 // NO_PUBLIC_BUTTON_DISCOVERED
+      Flic2ScanCallback.RESULT_FAILED_BUTTON_ALREADY_CONNECTED_TO_OTHER_DEVICE -> 5 // ALREADY_CONNECTED_TO_ANOTHER_DEVICE
+      Flic2ScanCallback.RESULT_FAILED_CONNECT_TIMED_OUT -> 6 // CONNECTION_TIMEOUT
+      Flic2ScanCallback.RESULT_FAILED_VERIFY_TIMED_OUT -> 7 // INVALID_VERIFIER
+      Flic2ScanCallback.RESULT_SYSTEM_PAIRING_DIALOG_NOT_ACCEPTED -> 9 // BLE_PAIRING_FAILED_USER_CANCELED
+      else -> 3 // UNKNOWN (for any unexpected codes)
     }
   }
 }
