@@ -162,7 +162,9 @@ const MyComponent = () => {
 
 ### 3. Complete Example
 
-This example shows a component that manages the UI for Flic2 buttons. **Note:** Flic2 should be initialized globally (see section 1) before this component is used. This component only handles UI-specific functionality:
+This example shows a component that manages the UI for Flic2 buttons. **Note:** Flic2 should be initialized globally (see section 1) before this component is used. This component only handles UI-specific functionality.
+
+**Important:** This is just an example demonstrating the library's API. Some parts (like `Alert.prompt` used in `renameButton`) are iOS-only and need platform-specific implementations for Android. Adapt the UI components to your needs and platform requirements.
 
 ```tsx
 import React, { useState, useEffect } from 'react';
@@ -260,6 +262,9 @@ const Flic2Example = () => {
   };
 
   const renameButton = (button: FlicButton) => {
+    // Note: Alert.prompt is iOS-only. On Android, use a TextInput in a Modal
+    // or a library like react-native-prompt-android for cross-platform support.
+    // This is just an example - implement appropriately for your platform needs.
     Alert.prompt(
       'Rename Button',
       'Enter a new name for the button',
