@@ -68,62 +68,101 @@ You'll need to request these permissions before scanning for buttons. Use a libr
 
 ## Basic Usage
 
-### 1. Initialize the Library
+### 1. Initialize the Library (Global Setup)
 
-First, initialize the Flic2 manager in your app. This should typically be done when your app starts:
-
-```tsx
-import Flic2 from 'react-native-flic2';
-
-// Initialize the Flic2 manager
-await Flic2.initialize();
-
-// Connect to all previously known buttons
-Flic2.connectAllKnownButtons();
-```
-
-### 2. Set Up Event Listeners
-
-Listen to events from buttons and the manager:
+**Important:** For background usage, initialize Flic2 at the global level (outside of React components), typically in your app's entry point (e.g., `index.js` or `App.js`). Initializing in a `useEffect` is too late for background functionality.
 
 ```tsx
+// index.js or App.js (global level, outside components)
 import Flic2, {
   ButtonEvent,
   ManagerStateChangeEvent,
+} from 'react-native-flic2';
+
+// Initialize the Flic2 manager when app starts
+(async () => {
+  try {
+    await Flic2.initialize();
+    console.log('Flic2 initialized');
+
+    // Connect to all previously known buttons
+    Flic2.connectAllKnownButtons();
+
+    // Set up global event listeners for background usage
+    Flic2.eventEmitter.on('buttonEvent', (event: ButtonEvent) => {
+      console.log('Button event:', event.event, event.button.name);
+
+      // Handle button events that need to work in background
+      if (event.event === 'click') {
+        // Your background logic here (e.g., send notification, update database)
+      }
+    });
+
+    Flic2.eventEmitter.on('managerStateChange', (event: ManagerStateChangeEvent) => {
+      console.log('Manager state:', event.stateName);
+    });
+  } catch (error) {
+    console.error('Failed to initialize Flic2:', error);
+  }
+})();
+```
+
+### 2. Set Up Component-Level Event Listeners (Optional)
+
+If you need to update UI based on button events, you can add additional listeners in your components using `useEffect`. These listeners are in addition to the global ones and are useful for UI-specific updates:
+
+```tsx
+import React, { useEffect } from 'react';
+import { Alert } from 'react-native';
+import Flic2, {
+  ButtonEvent,
   ScanStatusChangeEvent,
 } from 'react-native-flic2';
 
-// Listen for button events
-Flic2.eventEmitter.on('buttonEvent', (event: ButtonEvent) => {
-  console.log('Button event:', event.event, event.button.name);
+const MyComponent = () => {
+  useEffect(() => {
+    // UI-specific listener (only needed if you want to show UI updates)
+    const buttonSubscription = Flic2.eventEmitter.on(
+      'buttonEvent',
+      (event: ButtonEvent) => {
+        if (event.event === 'click' || event.event === 'doubleClick' || event.event === 'hold') {
+          // Show UI alert when component is mounted
+          Alert.alert(
+            event.button.nickname || event.button.name,
+            `${event.event} at ${new Date().toLocaleTimeString()}`
+          );
+        }
+      }
+    );
 
-  if (event.event === 'click') {
-    // Handle single click
-  } else if (event.event === 'doubleClick') {
-    // Handle double click
-  } else if (event.event === 'hold') {
-    // Handle hold
-  }
-});
+    const scanSubscription = Flic2.eventEmitter.on(
+      'scanStatusChange',
+      (event: ScanStatusChangeEvent) => {
+        // Update UI based on scan status
+        if (event.event === 'started') {
+          console.log('Scan started');
+        } else if (event.event === 'completion') {
+          console.log('Scan completed');
+        }
+      }
+    );
 
-// Listen for manager state changes
-Flic2.eventEmitter.on('managerStateChange', (event: ManagerStateChangeEvent) => {
-  console.log('Manager state:', event.stateName);
-});
+    // Cleanup subscriptions on unmount
+    return () => {
+      buttonSubscription.remove();
+      scanSubscription.remove();
+    };
+  }, []);
 
-// Listen for scan status changes
-Flic2.eventEmitter.on('scanStatusChange', (event: ScanStatusChangeEvent) => {
-  if (event.event === 'started') {
-    console.log('Scan started');
-  } else if (event.event === 'completion') {
-    console.log('Scan completed');
-  }
-});
+  // ... rest of component
+};
 ```
+
+**Note:** Global listeners (set up outside components) will continue to work even when components unmount, which is essential for background functionality. Component-level listeners are only active when the component is mounted.
 
 ### 3. Complete Example
 
-Here's a complete example component that demonstrates the main features:
+This example shows a component that manages the UI for Flic2 buttons. **Note:** Flic2 should be initialized globally (see section 1) before this component is used. This component only handles UI-specific functionality:
 
 ```tsx
 import React, { useState, useEffect } from 'react';
@@ -131,7 +170,6 @@ import { View, Text, Button, Alert, StyleSheet } from 'react-native';
 import Flic2, {
   ButtonEvent,
   FlicButton,
-  ManagerStateChangeEvent,
   ScanStatusChangeEvent,
 } from 'react-native-flic2';
 
@@ -140,30 +178,18 @@ const Flic2Example = () => {
   const [isScanning, setIsScanning] = useState(false);
 
   useEffect(() => {
-    // Initialize Flic2 when component mounts
-    const initFlic2 = async () => {
-      try {
-        await Flic2.initialize();
-        console.log('Flic2 initialized');
+    // Load existing buttons when component mounts
+    // (Flic2 should already be initialized globally)
+    loadButtons();
 
-        // Connect to all known buttons
-        Flic2.connectAllKnownButtons();
-
-        // Load existing buttons
-        loadButtons();
-      } catch (error) {
-        console.error('Failed to initialize Flic2:', error);
-      }
-    };
-
-    initFlic2();
-
-    // Set up event listeners
+    // Set up UI-specific event listeners
+    // Note: Global listeners should be set up outside components for background usage
     const buttonSubscription = Flic2.eventEmitter.on(
       'buttonEvent',
       (event: ButtonEvent) => {
         console.log('Button event:', event.event, event.button.name);
 
+        // Show UI alerts when component is mounted
         if (event.event === 'click' || event.event === 'doubleClick' || event.event === 'hold') {
           Alert.alert(
             event.button.nickname || event.button.name,
@@ -178,6 +204,7 @@ const Flic2Example = () => {
       (event: ScanStatusChangeEvent) => {
         console.log('Scan status:', event.event);
 
+        // Update UI state based on scan status
         if (event.event === 'started') {
           setIsScanning(true);
         } else if (event.event === 'completion') {
@@ -187,18 +214,10 @@ const Flic2Example = () => {
       }
     );
 
-    const managerSubscription = Flic2.eventEmitter.on(
-      'managerStateChange',
-      (event: ManagerStateChangeEvent) => {
-        console.log('Manager state:', event.stateName);
-      }
-    );
-
     // Cleanup subscriptions on unmount
     return () => {
       buttonSubscription.remove();
       scanSubscription.remove();
-      managerSubscription.remove();
     };
   }, []);
 
@@ -637,22 +656,27 @@ type FlicButton = {
 
 ### Connecting to Buttons on App Start
 
+Initialize Flic2 globally when your app starts (not in a component):
+
 ```tsx
-useEffect(() => {
-  const init = async () => {
-    await Flic2.initialize();
-    Flic2.connectAllKnownButtons();
-  };
-  init();
-}, []);
+// index.js or App.js (global level)
+import Flic2 from 'react-native-flic2';
+
+(async () => {
+  await Flic2.initialize();
+  Flic2.connectAllKnownButtons();
+})();
 ```
 
 ### Handling Button Clicks
 
+Set up button event listeners globally for background usage:
+
 ```tsx
+// Global level (e.g., index.js or App.js)
 Flic2.eventEmitter.on('buttonEvent', (event) => {
   if (event.event === 'click') {
-    // Handle single click
+    // Handle single click (works in background)
     console.log('Button clicked:', event.button.name);
   } else if (event.event === 'doubleClick') {
     // Handle double click
@@ -714,7 +738,8 @@ const scanForButtons = async () => {
 
 ### Events not firing
 
-- Make sure you've called `initialize()` before setting up event listeners
+- Make sure you've called `initialize()` globally (outside components) before setting up event listeners
+- For background usage, set up listeners at the global level, not in `useEffect`
 - Verify the button is connected and ready (`button.isReady === true`)
 - Check that the button's trigger mode supports the event you're listening for
 
