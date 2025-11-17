@@ -1,4 +1,4 @@
-package com.flic2
+package nl.xguard.flic2
 
 import android.content.ComponentName
 import android.content.Context
@@ -502,3 +502,4 @@ class Flic2Module(reactContext: ReactApplicationContext) :
     }
   }
 }
+

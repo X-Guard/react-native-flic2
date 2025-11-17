@@ -1,4 +1,4 @@
-package com.flic2
+package nl.xguard.flic2
 
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.WritableArray

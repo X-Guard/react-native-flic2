@@ -1,4 +1,4 @@
-package com.flic2
+package nl.xguard.flic2
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -29,7 +29,7 @@ class Flic2Service : Service() {
         private const val TAG = "Flic2Service"
         private const val DEFAULT_NOTIFICATION_ID = 123321
         private const val DEFAULT_CHANNEL_ID = "Notification_Channel_Flic2Service"
-        
+
         // Metadata keys for notification configuration
         private const val KEY_CHANNEL_NAME = "nl.xguard.flic2.notification_channel_name"
         private const val KEY_CHANNEL_DESCRIPTION = "nl.xguard.flic2.notification_channel_description"

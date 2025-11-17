@@ -136,7 +136,7 @@
     "type": "modules",
     "jsSrcsDir": "src",
     "android": {
-      "javaPackageName": "com.flic2"
+      "javaPackageName": "nl.xguard.flic2"
     }
   },
   "create-react-native-library": {

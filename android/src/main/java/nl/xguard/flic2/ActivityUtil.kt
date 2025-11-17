@@ -1,4 +1,4 @@
-package com.flic2
+package nl.xguard.flic2
 
 import android.app.ActivityManager
 import android.content.Context
