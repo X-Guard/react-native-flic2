@@ -65,7 +65,7 @@ export default [
       'lib/',
       'node_modules/',
       'android-lib-docs/',
-      'old-project-example/',
+      'old-implementation/',
     ],
   },
 ];
