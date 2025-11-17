@@ -46,22 +46,24 @@ export type ScanStatusChangeEvent = {
   result?: ScanResult;
 };
 
+export type ButtonEventName =
+  | 'discovered'
+  | 'connected'
+  | 'ready'
+  | 'disconnected'
+  | 'connectionFailed'
+  | 'buttonDown'
+  | 'buttonUp'
+  | 'click'
+  | 'doubleClick'
+  | 'hold'
+  | 'unpaired'
+  | 'batteryUpdate'
+  | 'nicknameUpdate';
+
 export type ButtonEvent = {
   uuid: string;
-  event:
-    | 'discovered'
-    | 'connected'
-    | 'ready'
-    | 'disconnected'
-    | 'connectionFailed'
-    | 'buttonDown'
-    | 'buttonUp'
-    | 'click'
-    | 'doubleClick'
-    | 'hold'
-    | 'unpaired'
-    | 'batteryUpdate'
-    | 'nicknameUpdate';
+  event: ButtonEventName;
   queued?: boolean;
   age?: number;
   nickname?: string;
