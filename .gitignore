@@ -1,6 +1,9 @@
 # npm pack test files
 react-native-flic2-*.tgz
 
+# old implementation example for cursor
+old-implementation/
+
 # OSX
 #
 .DS_Store

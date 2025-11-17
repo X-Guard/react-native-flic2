@@ -57,6 +57,8 @@ class Flic2Module(reactContext: ReactApplicationContext) :
         manager.buttons.forEach { button ->
           setupButtonListener(button)
         }
+        // Update foreground service state based on button count
+        updateForegroundServiceState(manager.buttons.size)
       }
 
       // Resolve the initialize promise if pending
@@ -104,11 +106,11 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
       val intent = Intent(reactApplicationContext, Flic2Service::class.java)
 
-      // Start service
-      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        reactApplicationContext.startForegroundService(intent)
-      } else {
-        reactApplicationContext.startService(intent)
+      // Check if service is already running
+      val isRunning = ActivityUtil.isServiceRunning(reactApplicationContext, Flic2Service::class.java)
+      if (!isRunning) {
+        // Start service
+        ActivityUtil.startForegroundService(reactApplicationContext, intent)
       }
 
       // Bind to service - promise will be resolved in onServiceConnected
@@ -188,6 +190,11 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
           setupButtonListener(button)
 
+          // Update foreground service state after adding button
+          flic2Service?.getManager()?.let { manager ->
+            updateForegroundServiceState(manager.buttons.size)
+          }
+
           // Emit discovered event as button event (like iOS)
           emitOnButtonEvent(Arguments.createMap().apply {
             putString("uuid", button.uuid)
@@ -258,6 +265,9 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
       // Forget button
       manager.forgetButton(button)
+
+      // Update foreground service state after removing button
+      updateForegroundServiceState(manager.buttons.size)
 
       promise.resolve(Arguments.createMap().apply {
         putBoolean("success", true)
@@ -414,6 +424,9 @@ class Flic2Module(reactContext: ReactApplicationContext) :
         manager.forgetButton(button)
       }
 
+      // Update foreground service state after removing all buttons
+      updateForegroundServiceState(manager.buttons.size)
+
       promise.resolve(Arguments.createMap().apply {
         putBoolean("success", true)
         putString("message", "All buttons forgotten")
@@ -460,6 +473,16 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
     // Store listener reference
     buttonListeners[button.uuid] = listener
+  }
+
+  private fun updateForegroundServiceState(buttonCount: Int) {
+    if (buttonCount > 0) {
+      // Start foreground service when buttons exist
+      flic2Service?.startForegroundService()
+    } else {
+      // Stop foreground service when no buttons
+      flic2Service?.stopForegroundService()
+    }
   }
 
   private fun mapScanResultToCode(result: Int): Int {

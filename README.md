@@ -66,6 +66,65 @@ The library automatically includes the necessary permissions in `AndroidManifest
 
 You'll need to request these permissions before scanning for buttons. Use a library like `react-native-permissions` or implement permission requests manually.
 
+#### Customizing the Foreground Service Notification (Android)
+
+The library runs a foreground service to keep Flic2 buttons connected in the background. You can customize the notification appearance by adding metadata to your app's `AndroidManifest.xml`:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Your existing application configuration -->
+
+        <!-- Customize Flic2 foreground service notification -->
+        <meta-data
+            android:name="nl.xguard.flic2.notification_title"
+            android:value="My Flic2 Service" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_text"
+            android:value="Flic2 buttons are active" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_channel_name"
+            android:value="Flic2 Notifications" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_channel_description"
+            android:value="Notifications for Flic2 button connections" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_id"
+            android:value="123321" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_channel_id"
+            android:value="my_custom_channel_id" />
+    </application>
+</manifest>
+```
+
+**Available Configuration Options:**
+
+- `nl.xguard.flic2.notification_title` - Notification title (default: "Flic 2")
+- `nl.xguard.flic2.notification_text` - Notification text (default: "Flic 2 service is running")
+- `nl.xguard.flic2.notification_icon` - Notification icon resource ID (default: system info icon)
+  - Use `@drawable/your_icon_name` or `@mipmap/your_icon_name` format
+- `nl.xguard.flic2.notification_channel_name` - Notification channel name (default: "Flic2Channel")
+- `nl.xguard.flic2.notification_channel_description` - Notification channel description (default: "Flic2Channel")
+- `nl.xguard.flic2.notification_id` - Notification ID integer (default: 123321)
+- `nl.xguard.flic2.notification_channel_id` - Notification channel ID string (default: "Notification_Channel_Flic2Service")
+
+**Example with Custom Icon:**
+
+1. Add your notification icon to `android/app/src/main/res/drawable/` (e.g., `ic_flic2_notification.png`)
+
+2. Add metadata to `AndroidManifest.xml`:
+```xml
+<meta-data
+    android:name="nl.xguard.flic2.notification_icon"
+    android:resource="@drawable/ic_flic2_notification" />
+```
+
+**Note:** The notification icon must be a white/transparent icon suitable for Android notifications. If you don't specify a custom icon, the system default info icon will be used.
+
 ## Basic Usage
 
 ### 1. Initialize the Library (Global Setup)
