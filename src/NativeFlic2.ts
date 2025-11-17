@@ -135,33 +135,33 @@ export interface Spec extends TurboModule {
   // Manager methods
   initialize(
     background: boolean
-  ): Promise<{ success: boolean; message: string }>;
+  ): Promise<{ success: true; message: string }>;
   getButtons(): Promise<FlicButton[]>;
-  scanForButtons(): Promise<{ success: boolean; message: string }>;
-  stopScan(): Promise<{ success: boolean; message: string }>;
-  forgetButton(uuid: string): Promise<{ success: boolean; message: string }>;
-  connectAllKnownButtons(): Promise<{ success: boolean; message: string }>;
-  disconnectAllKnownButtons(): Promise<{ success: boolean; message: string }>;
-  forgetAllButtons(): Promise<{ success: boolean; message: string }>;
+  scanForButtons(): Promise<{ success: true; message: string }>;
+  stopScan(): Promise<{ success: true; message: string }>;
+  forgetButton(uuid: string): Promise<{ success: true; message: string }>;
+  connectAllKnownButtons(): Promise<{ success: true; message: string }>;
+  disconnectAllKnownButtons(): Promise<{ success: true; message: string }>;
+  forgetAllButtons(): Promise<{ success: true; message: string }>;
   isScanning(): Promise<boolean>;
 
   // Button methods
-  connectButton(uuid: string): Promise<{ success: boolean; message: string }>;
+  connectButton(uuid: string): Promise<{ success: true; message: string; button: FlicButton }>;
   disconnectButton(
     uuid: string
-  ): Promise<{ success: boolean; message: string }>;
+  ): Promise<{ success: true; message: string; button: FlicButton }>;
   setTriggerMode(
     uuid: string,
     mode: TriggerModeType
-  ): Promise<{ success: boolean; message: string }>;
+  ): Promise<{ success: true; message: string; button: FlicButton }>;
   setLatencyMode(
     uuid: string,
     mode: LatencyModeType
-  ): Promise<{ success: boolean; message: string }>;
+  ): Promise<{ success: true; message: string; button: FlicButton }>;
   setNickname(
     uuid: string,
     nickname: string
-  ): Promise<{ success: boolean; message: string }>;
+  ): Promise<{ success: true; message: string; button: FlicButton }>;
 
   // Event emitters
   readonly onManagerStateChange: CodegenTypes.EventEmitter<ManagerStateChangeEvent>;

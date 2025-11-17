@@ -294,6 +294,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       promise.resolve(Arguments.createMap().apply {
         putBoolean("success", true)
         putString("message", "Connection initiated")
+        putMap("button", Flic2Converter.buttonToMap(button))
       })
     } catch (e: Exception) {
       Log.e(TAG, "Failed to connect button", e)
@@ -314,6 +315,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       promise.resolve(Arguments.createMap().apply {
         putBoolean("success", true)
         putString("message", "Disconnection initiated")
+        putMap("button", Flic2Converter.buttonToMap(button))
       })
     } catch (e: Exception) {
       Log.e(TAG, "Failed to disconnect button", e)
@@ -349,6 +351,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       promise.resolve(Arguments.createMap().apply {
         putBoolean("success", true)
         putString("message", "Nickname set")
+        putMap("button", Flic2Converter.buttonToMap(button))
       })
     } catch (e: Exception) {
       Log.e(TAG, "Failed to set nickname", e)

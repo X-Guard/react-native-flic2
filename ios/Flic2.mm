@@ -173,7 +173,7 @@
     }
 
     [button connect];
-    resolve(@{@"success": @YES, @"message": @"Connection initiated"});
+    resolve(@{@"success": @YES, @"message": @"Connection initiated", @"button": [self buttonToDictionary:button]});
 }
 
 - (void)disconnectButton:(NSString *)uuid
@@ -188,7 +188,7 @@
     }
 
     [button disconnect];
-    resolve(@{@"success": @YES, @"message": @"Disconnection initiated"});
+    resolve(@{@"success": @YES, @"message": @"Disconnection initiated", @"button": [self buttonToDictionary:button]});
 }
 
 - (void)setTriggerMode:(NSString *)uuid mode:(NSInteger)mode
@@ -203,7 +203,7 @@
     }
 
     button.triggerMode = (FLICButtonTriggerMode)mode;
-    resolve(@{@"success": @YES, @"message": @"Trigger mode set"});
+    resolve(@{@"success": @YES, @"message": @"Trigger mode set", @"button": [self buttonToDictionary:button]});
 }
 
 - (void)setLatencyMode:(NSString *)uuid mode:(NSInteger)mode
@@ -218,7 +218,7 @@
     }
 
     button.latencyMode = (FLICLatencyMode)mode;
-    resolve(@{@"success": @YES, @"message": @"Latency mode set"});
+    resolve(@{@"success": @YES, @"message": @"Latency mode set", @"button": [self buttonToDictionary:button]});
 }
 
 - (void)setNickname:(NSString *)uuid nickname:(NSString *)nickname
@@ -233,7 +233,7 @@
     }
 
     button.nickname = nickname;
-    resolve(@{@"success": @YES, @"message": @"Nickname set"});
+    resolve(@{@"success": @YES, @"message": @"Nickname set", @"button": [self buttonToDictionary:button]});
 }
 
 // MARK: - Helper Methods
