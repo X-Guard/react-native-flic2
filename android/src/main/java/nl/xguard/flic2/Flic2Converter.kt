@@ -31,8 +31,7 @@ object Flic2Converter {
             putInt("firmwareRevision", button.getFirmwareVersion())
 
             // Check if ready by comparing connection state
-            val isReady = connState == Flic2Button.CONNECTION_STATE_CONNECTED_READY
-            putBoolean("isReady", isReady)
+            putBoolean("isReady", connState == Flic2Button.CONNECTION_STATE_CONNECTED_READY)
 
             // Get battery level from BatteryLevel object
             val batteryLevel = button.getLastKnownBatteryLevel()
