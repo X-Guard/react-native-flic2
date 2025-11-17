@@ -12,8 +12,6 @@ class Flic2 {
 
   private isFlic2ManagerInitialized: boolean = false;
 
-  private sessionId: string;
-
   public eventEmitter: TypedEmitter<{
     buttonEvent: (event: ButtonEvent) => void;
     managerStateChange: (event: ManagerStateChangeEvent) => void;
@@ -28,11 +26,6 @@ class Flic2 {
    * @version 2.0.0
    */
   constructor() {
-
-    // generate a random session ID for the instance
-    this.sessionId = Math.random().toString(36).substring(2, 15);
-
-    console.log('Created new Flic2 instance with sessionId', this.sessionId);
 
     // create event emitter
     this.eventEmitter = new TypedEmitter<{
