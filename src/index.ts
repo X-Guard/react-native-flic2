@@ -16,7 +16,6 @@ class Flic2 {
     buttonEvent: (event: ButtonEvent) => void;
     managerStateChange: (event: ManagerStateChangeEvent) => void;
     scanStatusChange: (event: ScanStatusChangeEvent) => void;
-    managerInitialized: () => void;
   }>;
 
   /**
