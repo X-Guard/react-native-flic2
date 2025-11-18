@@ -48,8 +48,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
   private val serviceConnection = object : ServiceConnection {
     override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
       Log.d(TAG, "Service connected")
-      val binder = service as Flic2Service.Flic2ServiceBinder
-      flic2Service = binder.getService()
+      flic2Service = (service as Flic2Service.Flic2ServiceBinder).getService()
       serviceBound = true
 
       // Set up listeners for existing buttons
@@ -107,8 +106,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       val intent = Intent(reactApplicationContext, Flic2Service::class.java)
 
       // Check if service is already running
-      val isRunning = ActivityUtil.isServiceRunning(reactApplicationContext, Flic2Service::class.java)
-      if (!isRunning) {
+      if (!ActivityUtil.isServiceRunning(reactApplicationContext, Flic2Service::class.java)) {
         // Start service
         ActivityUtil.startForegroundService(reactApplicationContext, intent)
       }
@@ -182,8 +180,6 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       override fun onComplete(result: Int, subCode: Int, button: Flic2Button?) {
         Log.d(TAG, "Scan complete: result=$result, button=${button?.uuid}")
 
-        val resultCode = mapScanResultToCode(result)
-
         if (result == Flic2ScanCallback.RESULT_SUCCESS && button != null) {
           // Auto-connect (trigger mode not available in Android v1.1.0+)
           button.connect()
@@ -202,15 +198,14 @@ class Flic2Module(reactContext: ReactApplicationContext) :
             putMap("button", Flic2Converter.buttonToMap(button))
           })
         } else {
-          val errorCode = Flic2Converter.scanResultToString(result)
-          Log.e(TAG, "Scan failed with error code: $errorCode")
+          Log.e(TAG, "Scan failed with error code: ${Flic2Converter.scanResultToString(result)}")
         }
 
         // Emit scan completion with result code
         emitOnScanStatusChange(Arguments.createMap().apply {
           putString("event", "completion")
           putString("eventName", "completion")
-          putInt("result", resultCode)
+          putInt("result", mapScanResultToCode(result))
         })
       }
     })
@@ -448,8 +443,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
         return
       }
 
-      val scanning = (scanJob != null && scanJob?.isActive == true)
-      promise.resolve(scanning)
+      promise.resolve(scanJob != null && scanJob?.isActive == true)
     } catch (e: Exception) {
       Log.e(TAG, "Failed to check scanning status", e)
       promise.reject("IS_SCANNING_ERROR", "Failed to check scanning status: ${e.message}", e)

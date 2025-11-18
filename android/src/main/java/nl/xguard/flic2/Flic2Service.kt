@@ -101,8 +101,7 @@ class Flic2Service : Service() {
         if (!isServiceStarted && notification != null) {
             isServiceStarted = true
             try {
-                val notificationId = getNotificationId()
-                startForeground(notificationId, notification)
+                startForeground(getNotificationId(), notification)
             } catch (e: Exception) {
                 Log.w(TAG, "startForegroundService() exception", e)
             }
@@ -118,21 +117,16 @@ class Flic2Service : Service() {
 
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channelId = getChannelId()
-            val channelName = getChannelName()
-            val channelDescription = getChannelDescription()
-
             val channel = NotificationChannel(
-                channelId,
-                channelName,
+                getChannelId(),
+                getChannelName(),
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = channelDescription
+                description = getChannelDescription()
                 setShowBadge(false)
             }
 
-            val notificationManager = getSystemService(NotificationManager::class.java)
-            notificationManager.createNotificationChannel(channel)
+            getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
         }
     }
 
@@ -145,15 +139,10 @@ class Flic2Service : Service() {
             PendingIntent.FLAG_IMMUTABLE
         )
 
-        val channelId = getChannelId()
-        val title = getNotificationTitle()
-        val text = getNotificationText()
-        val icon = getNotificationIcon()
-
-        return NotificationCompat.Builder(this, channelId)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setSmallIcon(icon)
+        return NotificationCompat.Builder(this, getChannelId())
+            .setContentTitle(getNotificationTitle())
+            .setContentText(getNotificationText())
+            .setSmallIcon(getNotificationIcon())
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
