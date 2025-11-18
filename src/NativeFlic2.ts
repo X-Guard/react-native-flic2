@@ -135,33 +135,33 @@ export interface Spec extends TurboModule {
   // Manager methods
   initialize(
     background: boolean
-  ): Promise<{ success: true; message: string }>;
+  ): Promise<void>;
   getButtons(): Promise<FlicButton[]>;
-  scanForButtons(): Promise<{ success: true; message: string }>;
-  stopScan(): Promise<{ success: true; message: string }>;
-  forgetButton(uuid: string): Promise<{ success: true; message: string }>;
-  connectAllKnownButtons(): Promise<{ success: true; message: string }>;
-  disconnectAllKnownButtons(): Promise<{ success: true; message: string }>;
-  forgetAllButtons(): Promise<{ success: true; message: string }>;
+  scanForButtons(): Promise<void>;
+  stopScan(): Promise<void>;
+  forgetButton(uuid: string): Promise<void>;
+  connectAllKnownButtons(): Promise<void>;
+  disconnectAllKnownButtons(): Promise<void>;
+  forgetAllButtons(): Promise<void>;
   isScanning(): Promise<boolean>;
 
   // Button methods
-  connectButton(uuid: string): Promise<{ success: true; message: string; button: FlicButton }>;
+  connectButton(uuid: string): Promise<FlicButton>;
   disconnectButton(
     uuid: string
-  ): Promise<{ success: true; message: string; button: FlicButton }>;
+  ): Promise<FlicButton>;
   setTriggerMode(
     uuid: string,
-    mode: TriggerModeType
-  ): Promise<{ success: true; message: string; button: FlicButton }>;
+    mode: number
+  ): Promise<FlicButton>;
   setLatencyMode(
     uuid: string,
-    mode: LatencyModeType
-  ): Promise<{ success: true; message: string; button: FlicButton }>;
+    mode: number
+  ): Promise<FlicButton>;
   setNickname(
     uuid: string,
     nickname: string
-  ): Promise<{ success: true; message: string; button: FlicButton }>;
+  ): Promise<FlicButton>;
 
   // Event emitters
   readonly onManagerStateChange: CodegenTypes.EventEmitter<ManagerStateChangeEvent>;

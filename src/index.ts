@@ -49,7 +49,7 @@ class Flic2 {
    *
    * @returns A promise that resolves when the Flic2 manager is initialized.
    */
-  public async initialize(): Promise<boolean> {
+  public async initialize(): Promise<void> {
 
     // check if the Flic2 manager is already initialized
     if (this.isInitialized()) {
@@ -59,17 +59,9 @@ class Flic2 {
     }
 
     // initialize the Flic2 manager in background
-    const result = await NativeFlic2.initialize(true);
-
-    if (!result.success) {
-
-      throw new Error(result.message);
-
-    }
+    await NativeFlic2.initialize(true);
 
     this.onInitialized();
-
-    return true;
 
   }
 
@@ -78,7 +70,7 @@ class Flic2 {
    *
    * @returns A promise that resolves when the scan is started. Events will be emitted for the scan process.
    */
-  public startScan(): Promise<{ success: boolean; message: string }> {
+  public startScan(): Promise<void> {
 
     return NativeFlic2.scanForButtons();
 
@@ -89,7 +81,7 @@ class Flic2 {
    *
    * @returns A promise that resolves when the scan is stopped.
    */
-  public stopScan(): Promise<{ success: boolean; message: string }> {
+  public stopScan(): Promise<void> {
 
     return NativeFlic2.stopScan();
 
@@ -120,10 +112,7 @@ class Flic2 {
    *
    * @returns A promise that resolves when the all known buttons are connected.
    */
-  public connectAllKnownButtons(): Promise<{
-    success: boolean;
-    message: string;
-  }> {
+  public connectAllKnownButtons(): Promise<void> {
 
     return NativeFlic2.connectAllKnownButtons();
 
@@ -134,10 +123,7 @@ class Flic2 {
    *
    * @returns A promise that resolves when the all known buttons are disconnected.
    */
-  public disconnectAllKnownButtons(): Promise<{
-    success: boolean;
-    message: string;
-  }> {
+  public disconnectAllKnownButtons(): Promise<void> {
 
     return NativeFlic2.disconnectAllKnownButtons();
 
@@ -148,7 +134,7 @@ class Flic2 {
    *
    * @returns A promise that resolves when the all buttons are forgotten.
    */
-  public forgetAllButtons(): Promise<{ success: boolean; message: string }> {
+  public forgetAllButtons(): Promise<void> {
 
     return NativeFlic2.forgetAllButtons();
 
@@ -173,7 +159,7 @@ class Flic2 {
    */
   public forgetButton(
     uuid: string
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<void> {
 
     return NativeFlic2.forgetButton(uuid);
 
@@ -184,11 +170,11 @@ class Flic2 {
    * Connect a button.
    *
    * @param uuid - The UUID of the button to connect.
-   * @returns A promise that resolves when the button is connected.
+   * @returns A promise that resolves with the button when the connection is initiated.
    */
   public buttonConnect(
     uuid: string
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<FlicButton> {
 
     return NativeFlic2.connectButton(uuid);
 
@@ -198,11 +184,11 @@ class Flic2 {
    * Disconnect a button.
    *
    * @param uuid - The UUID of the button to disconnect.
-   * @returns A promise that resolves when the button is disconnected.
+   * @returns A promise that resolves with the button when the disconnection is initiated.
    */
   public buttonDisconnect(
     uuid: string
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<FlicButton> {
 
     return NativeFlic2.disconnectButton(uuid);
 
@@ -213,12 +199,12 @@ class Flic2 {
    *
    * @param uuid - The UUID of the button to set the trigger mode of.
    * @param mode - The trigger mode to set.
-   * @returns A promise that resolves when the trigger mode is set.
+   * @returns A promise that resolves with the button when the trigger mode is set.
    */
   public buttonSetTriggerMode(
     uuid: string,
     mode: TriggerModeType
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<FlicButton> {
 
     return NativeFlic2.setTriggerMode(uuid, mode);
 
@@ -229,12 +215,12 @@ class Flic2 {
    *
    * @param uuid - The UUID of the button to set the latency mode of.
    * @param mode - The latency mode to set.
-   * @returns A promise that resolves when the latency mode is set.
+   * @returns A promise that resolves with the button when the latency mode is set.
    */
   public buttonSetLatencyMode(
     uuid: string,
     mode: LatencyModeType
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<FlicButton> {
 
     return NativeFlic2.setLatencyMode(uuid, mode);
 
@@ -245,12 +231,12 @@ class Flic2 {
    *
    * @param uuid - The UUID of the button to set the nickname of.
    * @param nickname - The nickname to set.
-   * @returns A promise that resolves when the nickname is set.
+   * @returns A promise that resolves with the button when the nickname is set.
    */
   public buttonSetNickname(
     uuid: string,
     nickname: string
-  ): Promise<{ success: boolean; message: string }> {
+  ): Promise<FlicButton> {
 
     return NativeFlic2.setNickname(uuid, nickname);
 

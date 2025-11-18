@@ -18,7 +18,7 @@
     FLICManager *manager = [FLICManager configureWithDelegate:self buttonDelegate:self background:background];
 
     if (manager) {
-        resolve(@{@"success": @YES, @"message": @"Manager initialized successfully"});
+        resolve(nil);
     } else {
         reject(@"INIT_ERROR", @"Failed to initialize FLICManager", nil);
     }
@@ -114,7 +114,7 @@
     }];
 
     // Return immediately - scan results will come through events
-    resolve(@{@"success": @YES, @"message": @"Scan started"});
+    resolve(nil);
 }
 
 - (void)stopScan:(RCTPromiseResolveBlock)resolve
@@ -128,7 +128,7 @@
     NSLog(@"Stopping scan");
     [[FLICManager sharedManager] stopScan];
 
-    resolve(@{@"success": @YES, @"message": @"Scan stopped"});
+    resolve(nil);
 }
 
 - (void)forgetButton:(NSString *)uuid
@@ -154,7 +154,7 @@
         if (error) {
             reject(@"FORGET_ERROR", error.localizedDescription, error);
         } else {
-            resolve(@{@"success": @YES, @"message": @"Button forgotten"});
+            resolve(nil);
         }
     }];
 }
@@ -173,7 +173,7 @@
     }
 
     [button connect];
-    resolve(@{@"success": @YES, @"message": @"Connection initiated", @"button": [self buttonToDictionary:button]});
+    resolve([self buttonToDictionary:button]);
 }
 
 - (void)disconnectButton:(NSString *)uuid
@@ -188,7 +188,7 @@
     }
 
     [button disconnect];
-    resolve(@{@"success": @YES, @"message": @"Disconnection initiated", @"button": [self buttonToDictionary:button]});
+    resolve([self buttonToDictionary:button]);
 }
 
 - (void)setTriggerMode:(NSString *)uuid mode:(NSInteger)mode
@@ -203,7 +203,7 @@
     }
 
     button.triggerMode = (FLICButtonTriggerMode)mode;
-    resolve(@{@"success": @YES, @"message": @"Trigger mode set", @"button": [self buttonToDictionary:button]});
+    resolve([self buttonToDictionary:button]);
 }
 
 - (void)setLatencyMode:(NSString *)uuid mode:(NSInteger)mode
@@ -218,7 +218,7 @@
     }
 
     button.latencyMode = (FLICLatencyMode)mode;
-    resolve(@{@"success": @YES, @"message": @"Latency mode set", @"button": [self buttonToDictionary:button]});
+    resolve([self buttonToDictionary:button]);
 }
 
 - (void)setNickname:(NSString *)uuid nickname:(NSString *)nickname
@@ -233,7 +233,7 @@
     }
 
     button.nickname = nickname;
-    resolve(@{@"success": @YES, @"message": @"Nickname set", @"button": [self buttonToDictionary:button]});
+    resolve([self buttonToDictionary:button]);
 }
 
 // MARK: - Helper Methods
@@ -254,7 +254,7 @@
         [button connect];
     }
 
-    resolve(@{@"success": @YES, @"message": @"All buttons connection initiated"});
+    resolve(nil);
 }
 
 - (void)disconnectAllKnownButtons:(RCTPromiseResolveBlock)resolve
@@ -272,7 +272,7 @@
         [button disconnect];
     }
 
-    resolve(@{@"success": @YES, @"message": @"All buttons disconnection initiated"});
+    resolve(nil);
 }
 
 - (void)forgetAllButtons:(RCTPromiseResolveBlock)resolve
@@ -292,7 +292,7 @@
         }];
     }
 
-    resolve(@{@"success": @YES, @"message": @"All buttons forgotten"});
+    resolve(nil);
 }
 
 - (void)isScanning:(RCTPromiseResolveBlock)resolve

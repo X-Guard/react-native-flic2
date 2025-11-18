@@ -449,7 +449,7 @@ export default Flic2Example;
 
 ### Initialization
 
-#### `initialize(): Promise<boolean>`
+#### `initialize(): Promise<void>`
 
 Initialize the Flic2 manager. This must be called before using any other methods.
 
@@ -459,7 +459,7 @@ await Flic2.initialize();
 
 ### Scanning
 
-#### `startScan(): Promise<{ success: boolean; message: string }>`
+#### `startScan(): Promise<void>`
 
 Start scanning for new Flic2 buttons. The scan will emit `scanStatusChange` events.
 
@@ -467,7 +467,7 @@ Start scanning for new Flic2 buttons. The scan will emit `scanStatusChange` even
 await Flic2.startScan();
 ```
 
-#### `stopScan(): Promise<{ success: boolean; message: string }>`
+#### `stopScan(): Promise<void>`
 
 Stop an ongoing scan.
 
@@ -501,7 +501,7 @@ Get a specific button by UUID.
 const button = await Flic2.getButton('button-uuid');
 ```
 
-#### `connectAllKnownButtons(): Promise<{ success: boolean; message: string }>`
+#### `connectAllKnownButtons(): Promise<void>`
 
 Connect to all previously known buttons.
 
@@ -509,7 +509,7 @@ Connect to all previously known buttons.
 await Flic2.connectAllKnownButtons();
 ```
 
-#### `disconnectAllKnownButtons(): Promise<{ success: boolean; message: string }>`
+#### `disconnectAllKnownButtons(): Promise<void>`
 
 Disconnect all connected buttons.
 
@@ -517,7 +517,7 @@ Disconnect all connected buttons.
 await Flic2.disconnectAllKnownButtons();
 ```
 
-#### `forgetButton(uuid: string): Promise<{ success: boolean; message: string }>`
+#### `forgetButton(uuid: string): Promise<void>`
 
 Forget (unpair) a specific button.
 
@@ -525,7 +525,7 @@ Forget (unpair) a specific button.
 await Flic2.forgetButton('button-uuid');
 ```
 
-#### `forgetAllButtons(): Promise<{ success: boolean; message: string }>`
+#### `forgetAllButtons(): Promise<void>`
 
 Forget all buttons.
 
@@ -535,50 +535,54 @@ await Flic2.forgetAllButtons();
 
 ### Button Configuration
 
-#### `buttonConnect(uuid: string): Promise<{ success: boolean; message: string }>`
+#### `buttonConnect(uuid: string): Promise<FlicButton>`
 
-Connect to a specific button.
-
-```tsx
-await Flic2.buttonConnect('button-uuid');
-```
-
-#### `buttonDisconnect(uuid: string): Promise<{ success: boolean; message: string }>`
-
-Disconnect a specific button.
+Connect to a specific button. Returns the button object.
 
 ```tsx
-await Flic2.buttonDisconnect('button-uuid');
+const button = await Flic2.buttonConnect('button-uuid');
 ```
 
-#### `buttonSetNickname(uuid: string, nickname: string): Promise<{ success: boolean; message: string }>`
+#### `buttonDisconnect(uuid: string): Promise<FlicButton>`
 
-Set a custom nickname for a button.
+Disconnect a specific button. Returns the button object.
 
 ```tsx
-await Flic2.buttonSetNickname('button-uuid', 'My Button');
+const button = await Flic2.buttonDisconnect('button-uuid');
 ```
 
-#### `buttonSetTriggerMode(uuid: string, mode: TriggerModeType): Promise<{ success: boolean; message: string }>`
+#### `buttonSetNickname(uuid: string, nickname: string): Promise<FlicButton>`
 
-Set the trigger mode for a button. Modes:
+Set a custom nickname for a button. Returns the updated button object.
+
+```tsx
+const button = await Flic2.buttonSetNickname('button-uuid', 'My Button');
+```
+
+#### `buttonSetTriggerMode(uuid: string, mode: TriggerModeType): Promise<FlicButton>`
+
+Set the trigger mode for a button. Returns the updated button object. Modes:
 - `0`: Click and Hold
 - `1`: Click and Double Click
 - `2`: Click and Double Click and Hold
 - `3`: Click only
 
+**Note:** This method is only supported on iOS. On Android, it will reject with an error.
+
 ```tsx
-await Flic2.buttonSetTriggerMode('button-uuid', 3); // Click only
+const button = await Flic2.buttonSetTriggerMode('button-uuid', 3); // Click only
 ```
 
-#### `buttonSetLatencyMode(uuid: string, mode: LatencyModeType): Promise<{ success: boolean; message: string }>`
+#### `buttonSetLatencyMode(uuid: string, mode: LatencyModeType): Promise<FlicButton>`
 
-Set the latency mode for a button. Modes:
+Set the latency mode for a button. Returns the updated button object. Modes:
 - `0`: Normal latency
 - `1`: Low latency
 
+**Note:** This method is only supported on iOS. On Android, it will reject with an error.
+
 ```tsx
-await Flic2.buttonSetLatencyMode('button-uuid', 1); // Low latency
+const button = await Flic2.buttonSetLatencyMode('button-uuid', 1); // Low latency
 ```
 
 #### `getBatteryHealth(uuid: string): Promise<boolean>`

@@ -62,10 +62,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
       // Resolve the initialize promise if pending
       initializePromise?.let { promise ->
-        promise.resolve(Arguments.createMap().apply {
-          putBoolean("success", true)
-          putString("message", "Manager initialized successfully")
-        })
+        promise.resolve(null)
         initializePromise = null
       }
     }
@@ -211,10 +208,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
     })
 
     // Return immediately - scan results will come through events
-    promise.resolve(Arguments.createMap().apply {
-      putBoolean("success", true)
-      putString("message", "Scan started")
-    })
+    promise.resolve(null)
   }
 
   override fun stopScan(promise: Promise) {
@@ -228,10 +222,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       scanJob?.cancel()
       manager.stopScan()
 
-      promise.resolve(Arguments.createMap().apply {
-        putBoolean("success", true)
-        putString("message", "Scan stopped")
-      })
+      promise.resolve(null)
     } catch (e: Exception) {
       Log.e(TAG, "Failed to stop scan", e)
       promise.reject("STOP_SCAN_ERROR", "Failed to stop scan: ${e.message}", e)
@@ -264,10 +255,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       // Update foreground service state after removing button
       updateForegroundServiceState(manager.buttons.size)
 
-      promise.resolve(Arguments.createMap().apply {
-        putBoolean("success", true)
-        putString("message", "Button forgotten")
-      })
+      promise.resolve(null)
     } catch (e: Exception) {
       Log.e(TAG, "Failed to forget button", e)
       promise.reject("FORGET_ERROR", "Failed to forget button: ${e.message}", e)
@@ -286,11 +274,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
       button.connect()
 
-      promise.resolve(Arguments.createMap().apply {
-        putBoolean("success", true)
-        putString("message", "Connection initiated")
-        putMap("button", Flic2Converter.buttonToMap(button))
-      })
+      promise.resolve(Flic2Converter.buttonToMap(button))
     } catch (e: Exception) {
       Log.e(TAG, "Failed to connect button", e)
       promise.reject("CONNECT_ERROR", "Failed to connect: ${e.message}", e)
@@ -307,11 +291,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
       button.disconnectOrAbortPendingConnection()
 
-      promise.resolve(Arguments.createMap().apply {
-        putBoolean("success", true)
-        putString("message", "Disconnection initiated")
-        putMap("button", Flic2Converter.buttonToMap(button))
-      })
+      promise.resolve(Flic2Converter.buttonToMap(button))
     } catch (e: Exception) {
       Log.e(TAG, "Failed to disconnect button", e)
       promise.reject("DISCONNECT_ERROR", "Failed to disconnect: ${e.message}", e)
@@ -343,11 +323,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       // v1.1.0 uses setName() method instead of property
       button.setName(nickname)
 
-      promise.resolve(Arguments.createMap().apply {
-        putBoolean("success", true)
-        putString("message", "Nickname set")
-        putMap("button", Flic2Converter.buttonToMap(button))
-      })
+      promise.resolve(Flic2Converter.buttonToMap(button))
     } catch (e: Exception) {
       Log.e(TAG, "Failed to set nickname", e)
       promise.reject("SET_NICKNAME_ERROR", "Failed to set nickname: ${e.message}", e)
@@ -370,10 +346,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
         button.connect()
       }
 
-      promise.resolve(Arguments.createMap().apply {
-        putBoolean("success", true)
-        putString("message", "All buttons connection initiated")
-      })
+      promise.resolve(null)
     } catch (e: Exception) {
       Log.e(TAG, "Failed to connect all buttons", e)
       promise.reject("CONNECT_ALL_ERROR", "Failed to connect all buttons: ${e.message}", e)
@@ -395,10 +368,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
         button.disconnectOrAbortPendingConnection()
       }
 
-      promise.resolve(Arguments.createMap().apply {
-        putBoolean("success", true)
-        putString("message", "All buttons disconnection initiated")
-      })
+      promise.resolve(null)
     } catch (e: Exception) {
       Log.e(TAG, "Failed to disconnect all buttons", e)
       promise.reject("DISCONNECT_ALL_ERROR", "Failed to disconnect all buttons: ${e.message}", e)
@@ -425,10 +395,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       // Update foreground service state after removing all buttons
       updateForegroundServiceState(manager.buttons.size)
 
-      promise.resolve(Arguments.createMap().apply {
-        putBoolean("success", true)
-        putString("message", "All buttons forgotten")
-      })
+      promise.resolve(null)
     } catch (e: Exception) {
       Log.e(TAG, "Failed to forget all buttons", e)
       promise.reject("FORGET_ALL_ERROR", "Failed to forget all buttons: ${e.message}", e)
