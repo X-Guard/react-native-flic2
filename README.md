@@ -1,545 +1,822 @@
 # react-native-flic2
-[![npm version](https://img.shields.io/npm/v/react-native-flic2)](https://www.npmjs.com/package/react-native-flic2) ![NPM](https://img.shields.io/npm/l/react-native-flic2) ![npm](https://img.shields.io/npm/dm/react-native-flic2) ![GitHub issues](https://img.shields.io/github/issues-raw/X-Guard/react-native-flic2)
 
-This plugin enables you to connect to a Flic2 button made by Shortcut Labs.
+React Native library for integrating Flic2 buttons into your React Native application. This library provides a complete interface to discover, connect, and interact with Flic2 buttons on both iOS and Android platforms.
 
-This plugin is supported by the Flic2 SDKs
-- Android: https://github.com/50ButtonsEach/flic2lib-android
-- iOS: https://github.com/50ButtonsEach/flic2lib-ios
+## Features
 
-## Getting started
+- 🔍 Scan and discover Flic2 buttons
+- 🔗 Connect and manage multiple buttons
+- 📱 Receive button events (click, double click, hold)
+- 🔋 Monitor battery status
+- 🏷️ Set custom nicknames for buttons
+- ⚙️ Configure trigger and latency modes
+- 📡 Background connection support
 
-`$ npm install react-native-flic2 --save`
+> **⚠️ Important Notice**
+>
+> Parts of this project, including documentation and code examples, may have been generated with the assistance of AI tools and may contain errors. Please review all code and documentation carefully before use.
+>
+> This software is provided "AS IS" without warranty of any kind. Please refer to the [LICENSE](LICENSE) file for complete liability disclaimers. In no event shall the authors or copyright holders be liable for any claim, damages, or other liability arising from the use of this software.
 
-### Mostly automatic installation
+## Version Information
 
-`$ react-native link react-native-flic2`
+**This is a complete rewrite of react-native-flic2 (version 2.x.x).** This version requires React Native 0.81.x or higher. We do not provide a breaking changes list or migration guide. If you are upgrading from version 1.x.x, you should restart your implementation based on the examples and documentation provided in this README. The API and architecture have been completely redesigned.
 
-## Usage
-```javascript
-import Flic2 from 'react-native-flic2';
+If you need support for older React Native versions, please use version 1.x.x of this package instead.
 
-// Flic2 Module
-Flic.start();                            // Starts the module, fixes auto bluetooth permission question
-Flic2.isInitialized();                   // returns a boolean if the manager is initialized or not
-Flic2.startScan();                       // start a scan
-Flic2.stopScan();                        // stop a scan
-Flic2.startService();                    // enable background capabilities through a service on Android, ignored by iOS
-Flic2.addEventListener(event, fn);       // listen for events (manager & all buttons). Possible events are: managerInitialized, didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
-Flic2.connectAllKnownButtons();          // connect to known buttons
-Flic2.buttonConnect(uuid);               // connect to a button with this uuid
-Flic2.buttonForget(uuid);                // disconnect and forget the button
-Flic2.forgetAllButtons();                // disconnect and forget all known buttons
-Flic2.buttonDisconnect(uuid);            // disconnect a button with this uuid
-Flic2.disconnectAllKnownButtons();       // disconnect all known buttons
-Flic2.getButtons();                      // array of Flic2Button instances
-Flic2.getButton(uuid);                   // get a button by uuid, returns a Flic2Button instance
-Flic2.buttonSetMode(uuid, mode);         // change the button trigger mode by uuid. Use the constants to change the mode (see example below).
-Flic2.buttonSetName(uuid, name);         // change the nickname by uuid
+## Installation
 
-// Flic2Button instance definition
-Flic2Button.addEventListener(event, fn); // listen for button events for this particular button. Possible events are: didReceiveButtonDown, didReceiveButtonUp, didReceiveButtonClick, didReceiveButtonDoubleClick, didReceiveButtonHold
-Flic2Button.connect()                   // connect this button
-Flic2Button.disconnect();                // disconnect this button
-Flic2Button.forget();                    // removes the button completely
-Flic2Button.getUuid();                   // get the button uuid
-Flic2Button.getBluetoothAddress();       // get the button bluetooth address
-Flic2Button.getName();                   // get the button nickname
-Flic2Button.getBatteryLevelIsOk();       // get the battery state (true, false),  True = battery is ok, False = battery should be changed soon
-Flic2Button.getVoltage();                // get the estimated battery voltage
-Flic2Button.getPressCount();             // get button count since last reset
-Flic2Button.getFirmwareRevision();       // get current hardware version
-Flic2Button.getSerialNumber();           // get the serial number of the button
-Flic2Button.getIsReady();                // get the ready state of the button
-Flic2Button.getIsUnpaired();             // get the unpaired state of the button
-Flic2Button.setMode(mode);               // change the button trigger for this particular button. Use the constants to change the mode (see example below).
-Flic2Button.setName(name);               // sets the nickname of the button
-
-
-// Constants
-//
-// These are the possible result codes for the variable 'result' in the
-// event 'scanResult' (see example below)
-//
-// These constants are available through Flic2.constants
-SCAN_RESULT_SUCCESS                                                     = 0;
-SCAN_RESULT_ERROR_ALREADY_RUNNING                                       = 1;
-SCAN_RESULT_ERROR_BLUETOOTH_NOT_ACTIVATED                               = 2;
-SCAN_RESULT_ERROR_UNKNOWN                                               = 3;
-SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED                           = 4;
-SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE                   = 5;
-SCAN_RESULT_ERROR_CONNECTION_TIMEOUT                                    = 6;
-SCAN_RESULT_ERROR_INVALID_VERIFIER                                      = 7;
-SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_PREVIOUS_PAIRING_ALREADY_EXISTING  = 8;
-SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_USER_CANCELED                      = 9;
-SCAN_RESULT_ERROR_BLE_PAIRING_FAILED_UNKNOWN_REASON                     = 10;
-SCAN_RESULT_ERROR_APP_CREDENTIALS_DONT_MATCH                            = 11;
-SCAN_RESULT_ERROR_USER_CANCELED                                         = 12;
-SCAN_RESULT_ERROR_INVALID_BLUETOOTH_ADDRESS                             = 13;
-SCAN_RESULT_ERROR_GENUINE_CHECK_FAILED                                  = 14;
-SCAN_RESULT_ERROR_TOO_MANY_APPS                                         = 15;
-SCAN_RESULT_ERROR_COULD_NOT_SET_BLUETOOTH_NOTIFY                        = 16;
-SCAN_RESULT_ERROR_COULD_NOT_DISCOVER_BLUETOOTH_SERVICES                 = 17;
-SCAN_RESULT_ERROR_BUTTON_DISCONNECTED_DURING_VERIFICATION               = 18;
-SCAN_RESULT_ERROR_FAILED_TO_ESTABLISH                                   = 19;
-SCAN_RESULT_ERROR_CONNECTION_LIMIT_REACHED                              = 20;
-SCAN_RESULT_ERROR_NOT_IN_PUBLIC_MODE                                    = 21;
-
-// These constants can be used to change the mode of the buttons
-// These constants are available through Flic2.constants
-BUTTON_TRIGGER_MODE_CLICK_AND_HOLD                                      = 0; 
-BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK                              = 1; 
-BUTTON_TRIGGER_MODE_CLICK_AND_DOUBLE_CLICK_AND_HOLD                     = 2; 
-BUTTON_TRIGGER_MODE_CLICK                                               = 3; 
-
-// Scan result:
-Flic2.addEventListener('scanResult', ((int) result, (Flic2Button) button) => {
-
-  if (result === Flic2.constants.SCAN_RESULT_SUCCESS) {
-
-    doSomethingWithButton(button);
-
-  } else 
-  if(result === Flic2.constants.SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE) {
-
-    alert('This button is already connected to another device');
-
-  }
-  // ... etc
-
-});
-
-// Button events:
-// 
-// didReceiveButtonDown
-// didReceiveButtonUp
-// didReceiveButtonClick
-// didReceiveButtonDoubleClick
-// didReceiveButtonHold
-Flic2.addEventListener('didReceiveButtonHold', ((object) eventData) => {
-
-  // eventData:
-  // { int age, bool queued, Flic2Button button }
-
-});
-
+```sh
+npm install react-native-flic2
 ```
 
-## Android only
-Changing the title, text and icon of the service,
-Or the notification channel name and description.
-Place the following meta-data's inside the application tag of your manifest
+### iOS Setup
 
-```javascript
+1. **Install CocoaPods dependencies:**
+   ```sh
+   cd ios && pod install && cd ..
+   ```
+
+2. **Add Bluetooth permissions to `Info.plist`:**
+   Add the following keys to your `ios/YourApp/Info.plist`:
+   ```xml
+   <key>NSBluetoothPeripheralUsageDescription</key>
+   <string>This app needs Bluetooth to connect to Flic buttons</string>
+   <key>NSBluetoothAlwaysUsageDescription</key>
+   <string>This app needs Bluetooth to connect to Flic buttons in the background</string>
+   ```
+
+3. **Enable Background Modes:**
+   - Open your project in Xcode
+   - Select your app target
+   - Go to "Signing & Capabilities"
+   - Add "Background Modes" capability if not already added
+   - Check "Uses Bluetooth LE accessories"
+
+### Android Setup
+
+The library automatically includes the necessary permissions in `AndroidManifest.xml`. However, you need to request runtime permissions in your app:
+
+**For Android 12+ (API 31+):**
+- `BLUETOOTH_SCAN`
+- `BLUETOOTH_CONNECT`
+
+**For Android 11 and below:**
+- `ACCESS_FINE_LOCATION`
+
+You'll need to request these permissions before scanning for buttons. Use a library like `react-native-permissions` or implement permission requests manually.
+
+#### Customizing the Foreground Service Notification (Android)
+
+The library runs a foreground service to keep Flic2 buttons connected in the background. You can customize the notification appearance by adding metadata to your app's `AndroidManifest.xml`:
+
+```xml
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application>
-      <meta-data android:name="nl.xguard.flic2.notification_title" android:value="Flic 2 Button"/>
-      <meta-data android:name="nl.xguard.flic2.notification_text" android:value="Service active"/>
-      <meta-data android:name="nl.xguard.flic2.notification_icon" android:resource="@mipmap/xguard_adaptive_launcher"/>
-      <meta-data android:name="nl.xguard.flic2.notification_channel_name" android:value="Flic 2 Channel Name"/>
-      <meta-data android:name="nl.xguard.flic2.notification_channel_description" android:value="Flic 2 Channel Description"/>
+        <!-- Your existing application configuration -->
+
+        <!-- Customize Flic2 foreground service notification -->
+        <meta-data
+            android:name="nl.xguard.flic2.notification_title"
+            android:value="My Flic2 Service" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_text"
+            android:value="Flic2 buttons are active" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_icon"
+            android:resource="@drawable/ic_notification" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_channel_name"
+            android:value="Flic2 Notifications" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_channel_description"
+            android:value="Notifications for Flic2 button connections" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_id"
+            android:value="123321" />
+        <meta-data
+            android:name="nl.xguard.flic2.notification_channel_id"
+            android:value="my_custom_channel_id" />
     </application>
+</manifest>
 ```
 
-# Example component
-You can install and test this example at https://github.com/X-Guard/react-native-flic2-example
+**Available Configuration Options:**
 
-```javascript
-// react and react native imports
-import React, { Component } from 'react';
-import { View, FlatList, TouchableOpacity, Text, StyleSheet, StatusBar, Platform, Vibration } from 'react-native';
+- `nl.xguard.flic2.notification_title` - Notification title (default: "Flic 2")
+- `nl.xguard.flic2.notification_text` - Notification text (default: "Flic 2 service is running")
+- `nl.xguard.flic2.notification_icon` - Notification icon resource ID (default: system info icon)
+  - Use `@drawable/your_icon_name` or `@mipmap/your_icon_name` format
+- `nl.xguard.flic2.notification_channel_name` - Notification channel name (default: "Flic2Channel")
+- `nl.xguard.flic2.notification_channel_description` - Notification channel description (default: "Flic2Channel")
+- `nl.xguard.flic2.notification_id` - Notification ID integer (default: 123321)
+- `nl.xguard.flic2.notification_channel_id` - Notification channel ID string (default: "Notification_Channel_Flic2Service")
 
-// the Flic2 module
-import Flic2 from 'react-native-flic2';
+**Example with Custom Icon:**
 
-// icons
-import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faPause, faPlay, faTrash, faEdit, faBatteryQuarter, faBatteryFull } from '@fortawesome/free-solid-svg-icons';
+1. Add your notification icon to `android/app/src/main/res/drawable/` (e.g., `ic_flic2_notification.png`)
 
-// plugins to make it more fancy
-import prompt from 'react-native-prompt-android';
-import { request as requestPermission, PERMISSIONS } from 'react-native-permissions';
-import * as Animatable from 'react-native-animatable';
-import Toast from 'react-native-root-toast';
+2. Add metadata to `AndroidManifest.xml`:
+```xml
+<meta-data
+    android:name="nl.xguard.flic2.notification_icon"
+    android:resource="@drawable/ic_flic2_notification" />
+```
 
-export default class App extends Component {
+**Note:** The notification icon must be a white/transparent icon suitable for Android notifications. If you don't specify a custom icon, the system default info icon will be used.
 
-  constructor(props) {
+## Basic Usage
 
-    // man
-    super(props);
+### 1. Initialize the Library (Global Setup)
 
-    // init state
-    this.state = {
-      buttons: [],
-      scanning: false,
+**Important:** For background usage, initialize Flic2 at the global level (outside of React components), typically in your app's entry point (e.g., `index.js` or `App.js`). Initializing in a `useEffect` is too late for background functionality.
+
+```tsx
+// index.js or App.js (global level, outside components)
+import Flic2, {
+  ButtonEvent,
+  ManagerStateChangeEvent,
+} from 'react-native-flic2';
+
+// Initialize the Flic2 manager when app starts
+(async () => {
+  try {
+    await Flic2.initialize();
+    console.log('Flic2 initialized');
+
+    // Connect to all previously known buttons
+    Flic2.connectAllKnownButtons();
+
+    // Set up global event listeners for background usage
+    Flic2.eventEmitter.on('buttonEvent', (event: ButtonEvent) => {
+      console.log('Button event:', event.event, event.button.name);
+
+      // Handle button events that need to work in background
+      if (event.event === 'click') {
+        // Your background logic here (e.g., send notification, update database)
+      }
+    });
+
+    Flic2.eventEmitter.on('managerStateChange', (event: ManagerStateChangeEvent) => {
+      console.log('Manager state:', event.stateName);
+    });
+  } catch (error) {
+    console.error('Failed to initialize Flic2:', error);
+  }
+})();
+```
+
+### 2. Set Up Component-Level Event Listeners (Optional)
+
+If you need to update UI based on button events, you can add additional listeners in your components using `useEffect`. These listeners are in addition to the global ones and are useful for UI-specific updates:
+
+```tsx
+import React, { useEffect } from 'react';
+import { Alert } from 'react-native';
+import Flic2, {
+  ButtonEvent,
+  ScanStatusChangeEvent,
+} from 'react-native-flic2';
+
+const MyComponent = () => {
+  useEffect(() => {
+    // UI-specific listener (only needed if you want to show UI updates)
+    const buttonSubscription = Flic2.eventEmitter.on(
+      'buttonEvent',
+      (event: ButtonEvent) => {
+        if (event.event === 'click' || event.event === 'doubleClick' || event.event === 'hold') {
+          // Show UI alert when component is mounted
+          Alert.alert(
+            event.button.nickname || event.button.name,
+            `${event.event} at ${new Date().toLocaleTimeString()}`
+          );
+        }
+      }
+    );
+
+    const scanSubscription = Flic2.eventEmitter.on(
+      'scanStatusChange',
+      (event: ScanStatusChangeEvent) => {
+        // Update UI based on scan status
+        if (event.event === 'started') {
+          console.log('Scan started');
+        } else if (event.event === 'completion') {
+          console.log('Scan completed');
+        }
+      }
+    );
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      buttonSubscription.remove();
+      scanSubscription.remove();
     };
+  }, []);
 
-    // bindings
-    this.didReceiveButtonClickFunction = this.didReceiveButtonClick.bind(this);
-    this.onScanResultFunction = this.onScanResult.bind(this);
-    this.onInitializedFunction = this.onInitialized.bind(this);
+  // ... rest of component
+};
+```
 
-  }
+**Note:** Global listeners (set up outside components) will continue to work even when components unmount, which is essential for background functionality. Component-level listeners are only active when the component is mounted.
 
-  componentDidMount() {
+### 3. Complete Example
 
-    // start module
-    Flic2.start();
+This example shows a component that manages the UI for Flic2 buttons. **Note:** Flic2 should be initialized globally (see section 1) before this component is used. This component only handles UI-specific functionality.
 
-    if (typeof Flic2.isInitialized === 'function' && Flic2.isInitialized() === true) {
-      this.onInitialized();
-    } else {
-      Flic2.addListener('managerInitialized', this.onInitializedFunction);
+**Important:** This is just an example demonstrating the library's API. Some parts (like `Alert.prompt` used in `renameButton`) are iOS-only and need platform-specific implementations for Android. Adapt the UI components to your needs and platform requirements.
+
+```tsx
+import React, { useState, useEffect } from 'react';
+import { View, Text, Button, Alert, StyleSheet } from 'react-native';
+import Flic2, {
+  ButtonEvent,
+  FlicButton,
+  ScanStatusChangeEvent,
+} from 'react-native-flic2';
+
+const Flic2Example = () => {
+  const [buttons, setButtons] = useState<FlicButton[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
+
+  useEffect(() => {
+    // Load existing buttons when component mounts
+    // (Flic2 should already be initialized globally)
+    loadButtons();
+
+    // Set up UI-specific event listeners
+    // Note: Global listeners should be set up outside components for background usage
+    const buttonSubscription = Flic2.eventEmitter.on(
+      'buttonEvent',
+      (event: ButtonEvent) => {
+        console.log('Button event:', event.event, event.button.name);
+
+        // Show UI alerts when component is mounted
+        if (event.event === 'click' || event.event === 'doubleClick' || event.event === 'hold') {
+          Alert.alert(
+            event.button.nickname || event.button.name,
+            `${event.event} at ${new Date().toLocaleTimeString()}`
+          );
+        }
+      }
+    );
+
+    const scanSubscription = Flic2.eventEmitter.on(
+      'scanStatusChange',
+      (event: ScanStatusChangeEvent) => {
+        console.log('Scan status:', event.event);
+
+        // Update UI state based on scan status
+        if (event.event === 'started') {
+          setIsScanning(true);
+        } else if (event.event === 'completion') {
+          setIsScanning(false);
+          loadButtons(); // Refresh button list after scan
+        }
+      }
+    );
+
+    // Cleanup subscriptions on unmount
+    return () => {
+      buttonSubscription.remove();
+      scanSubscription.remove();
+    };
+  }, []);
+
+  const loadButtons = async () => {
+    try {
+      const buttonList = await Flic2.getButtons();
+      setButtons(buttonList);
+      console.log('Loaded buttons:', buttonList.length);
+    } catch (error) {
+      console.error('Failed to load buttons:', error);
     }
+  };
 
-    // listen bindings
-    Flic2.addListener('didReceiveButtonClick', this.didReceiveButtonClickFunction);
-    Flic2.addListener('scanResult', this.onScanResultFunction);
+  const startScan = async () => {
+    try {
+      // Check if already scanning
+      const scanning = await Flic2.isScanning();
+      if (scanning) {
+        console.log('Already scanning');
+        return;
+      }
 
-  }
+      // Request permissions here if needed (see Platform Setup)
 
-  componentWillUnmount() {
-
-    // remove bindings
-    Flic2.removeListener('buttonEvent', this.handleButtonEventFunction);
-    Flic2.removeListener('scanResult', this.onScanResultFunction);
-
-  }
-
-  onInitialized() {
-
-      // connect to all known buttons
-      Flic2.connectAllKnownButtons();
-
-      // get the buttons
-      this.getButtons();
-  }
-
-  async getButtons() {
-
-    // async calls for init
-    this.setState({
-      buttons: await Flic2.getButtons(),
-    });
-
-  }
-
-  async forgetAllButtons() {
-
-    await Flic2.forgetAllButtons();
-    this.getButtons();
-
-  }
-
-  async startScan() {
-
-    // check os
-    if (Platform.OS === 'android') {
-
-      // on android we need the permission ACCESS_FINE_LOCATION first
-      // we are just going to assume the permission is granted after calling this
-      // in your real application, please create an actual permission check here
-      await requestPermission(PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION);
-
+      await Flic2.startScan();
+      console.log('Scan started');
+    } catch (error) {
+      console.error('Failed to start scan:', error);
+      Alert.alert('Error', 'Failed to start scanning for buttons');
     }
+  };
 
-    // set to scanning
-    this.setState({
-      scanning: true,
-    });
+  const stopScan = async () => {
+    try {
+      await Flic2.stopScan();
+      console.log('Scan stopped');
+    } catch (error) {
+      console.error('Failed to stop scan:', error);
+    }
+  };
 
-    // go!
-    Flic2.startScan();
-
-  }
-
-  stopScan() {
-
-    this.setState({
-      scanning: false,
-    });
-
-    Flic2.stopScan();
-
-  }
-
-  connectButton(button) {
-
-    // connect it
-    button.connect(button);
-
-    // update our button list
-    this.getButtons();
-
-  }
-
-  disconnectButton(button) {
-
-    // disconnect it
-    button.disconnect(button);
-
-    // update our button list
-    this.getButtons();
-
-  }
-
-  forgetButton(button) {
-
-    // forget it
-    button.forget();
-
-    // update our button list
-    this.getButtons();
-
-  }
-
-  editButtonName(button) {
-
-    // use the prompt to change the name
-    prompt(
-      'Edit Flic nickname',
-      'Choose a name you will recognize',
+  const renameButton = (button: FlicButton) => {
+    // Note: Alert.prompt is iOS-only. On Android, use a TextInput in a Modal
+    // or a library like react-native-prompt-android for cross-platform support.
+    // This is just an example - implement appropriately for your platform needs.
+    Alert.prompt(
+      'Rename Button',
+      'Enter a new name for the button',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'OK',
-          onPress: value => {
-
-            // save
-            button.setName(value);
-
-            // get new buttons
-            this.getButtons();
-
+          text: 'Save',
+          onPress: async (value) => {
+            if (!value) return;
+            try {
+              await Flic2.buttonSetNickname(button.uuid, value);
+              loadButtons(); // Refresh button list
+            } catch (error) {
+              console.error('Failed to rename button:', error);
+            }
           },
         },
       ],
-      {
-          type: 'plain-text',
-          cancelable: true,
-          defaultValue: button.getName(),
-      }
+      'plain-text',
+      button.nickname
     );
+  };
 
-  }
+  const forgetButton = (button: FlicButton) => {
+    Alert.alert(
+      'Delete Button',
+      'Are you sure you want to delete this button?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await Flic2.forgetButton(button.uuid);
+              loadButtons(); // Refresh button list
+            } catch (error) {
+              console.error('Failed to forget button:', error);
+            }
+          },
+        },
+      ]
+    );
+  };
 
-  onScanResult(data) {
+  const showButtonOptions = (button: FlicButton) => {
+    Alert.alert(
+      'Button Options',
+      button.nickname || button.name,
+      [
+        { text: 'Rename', onPress: () => renameButton(button) },
+        { text: 'Delete', onPress: () => forgetButton(button) },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
 
-    if (data.event === 'completion') {
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Flic2 Example</Text>
 
-      this.setState({
-        scanning: false,
-      });
+      <Button
+        title={isScanning ? 'Stop Scanning' : 'Scan for Buttons'}
+        onPress={isScanning ? stopScan : startScan}
+      />
 
-      // check
-      if (data.error === false) {
+      <Button title="Refresh Buttons" onPress={loadButtons} />
 
-        alert('The button has been added');
-        this.getButtons();
+      <Text style={styles.count}>
+        Buttons: {buttons.length}
+      </Text>
 
-      } else {
-
-        if (data.result === Flic2.constants.SCAN_RESULT_ERROR_ALREADY_CONNECTED_TO_ANOTHER_DEVICE) {
-
-          alert('This button is already connected to another device');
-
-        } else
-        if (data.result === Flic2.constants.SCAN_RESULT_ERROR_NO_PUBLIC_BUTTON_DISCOVERED) {
-
-          alert('No buttons found');
-
-        } else {
-
-          alert(`Could not connect\n\nError code: ${data.result}`);
-
-        }
-      }
-    }
-  }
-
-  didReceiveButtonClick(eventData) {
-
-    console.log('Received click event', eventData);
-
-    // update list
-    this.getButtons();
-
-    // do something with the click like showing a notification
-    Toast.show(`Button ${eventData.button.getName()} has been pressed ${eventData.button.getPressCount()} times`);
-
-    // wobble
-    // we do this extensive check because when you develop the app with live reload, the _logoRef will break.
-    if (typeof this._logoRef !== 'undefined' && this._logoRef !== null && typeof this._logoRef.wobble === 'function') {
-
-      // wobble wobble
-      this._logoRef.wobble();
-
-    }
-
-    // vibrate
-    Vibration.vibrate(200);
-
-  }
-
-  getBatteryIcon(batteryPercentage) {
-
-    if (batteryPercentage === true) {
-      return faBatteryFull;
-    } else {
-      return faBatteryQuarter;
-    }
-
-  }
-
-
-  render() {
-
-    return (
-      <View style={style.container}>
-        <StatusBar barStyle="light-content" />
-
-        {/* eslint-disable-next-line */}
-        <Animatable.Image ref={ image => this._logoRef = image } style={style.logo} useNativeDriver={true} source={require('./images/flic-logo.png')} />
-
-        {/* Scan button */}
-        {this.state.scanning === false ?
-          <TouchableOpacity onPress={this.startScan.bind(this)}>
-            <View style={style.button}><Text style={style.buttonText}>Start scan</Text></View>
-          </TouchableOpacity>
-          :
-          <TouchableOpacity onPress={this.stopScan.bind(this)}>
-            <View style={style.button}><Text style={style.buttonText}>Scanning... (click to cancel)</Text></View>
-          </TouchableOpacity> }
-
-        <TouchableOpacity onPress={this.forgetAllButtons.bind(this)}>
-          <View style={style.button}><Text style={style.buttonText}>Forget all buttons</Text></View>
-        </TouchableOpacity>
-
-        <View style={style.buttonContainer}>
-
-          <Text style={style.heading}>Button list:</Text>
-
-          {this.state.buttons.length > 0 ?
-            <FlatList
-              data={this.state.buttons}
-              keyExtractor={item => item.uuid}
-              renderItem={row => {
-
-                // define button
-                const button = row.item;
-
-                // eslint-disable-next-line react-native/no-inline-styles
-                return <View style={[style.listItem, { borderColor: button.getIsReady() ? '#006e1a' : '#b00000'}]}>
-                  <FontAwesomeIcon style={style.icon} icon={this.getBatteryIcon(button.getBatteryLevelIsOk())} size={16} />
-                  <Text style={style.pressCount}>{button.getPressCount()}</Text>
-                  <Text style={style.listItemText}>{button.getName()}</Text>
-                  <View style={style.icons}>
-                    {button.getIsReady() === true ?
-                      <TouchableOpacity onPress={this.disconnectButton.bind(this, button)}><FontAwesomeIcon icon={faPause} size={16} /></TouchableOpacity>
-                      :
-                      <TouchableOpacity onPress={this.connectButton.bind(this, button)}><FontAwesomeIcon icon={faPlay} size={16} /></TouchableOpacity>
-                    }
-                    <TouchableOpacity onPress={this.forgetButton.bind(this, button)}><FontAwesomeIcon icon={faTrash} size={16} /></TouchableOpacity>
-                    <TouchableOpacity onPress={this.editButtonName.bind(this, button)}><FontAwesomeIcon icon={faEdit} size={16} /></TouchableOpacity>
-                  </View>
-                </View>;
-
-              }}
-            /> : <Text>There are no buttons paired to this app. Click 'start scan' and hold your flic button to add a new button.</Text>}
-
+      {buttons.map((button) => (
+        <View key={button.uuid} style={styles.buttonItem}>
+          <Text style={styles.buttonName}>
+            {button.nickname || button.name}
+          </Text>
+          <Text style={styles.buttonUuid}>{button.uuid}</Text>
+          <Button
+            title="Options"
+            onPress={() => showButtonOptions(button)}
+          />
         </View>
+      ))}
+    </View>
+  );
+};
 
-      </View>
-    );
-  }
-}
-
-
-// define stylesheet
-const style = StyleSheet.create({
-
-  // container
+const styles = StyleSheet.create({
   container: {
-    paddingTop: 20,
-    padding: 10,
-    backgroundColor: '#45454d',
     flex: 1,
-  },
-
-  // logo
-  logo: {
-    width: 100,
-    alignSelf: 'center',
-    resizeMode: 'contain',
-  },
-
-  // button
-  button: {
-    padding: 10,
-    borderRadius: 10,
-    backgroundColor: '#ff0089',
-    marginTop: 15,
-  },
-  buttonText: {
-    color: 'white',
-    textAlign: 'center',
-    fontSize: 20,
-  },
-
-  // button container
-  buttonContainer: {
-    padding: 10,
-    backgroundColor: 'rgba(255, 255, 255, 1)',
-    borderRadius: 10,
-    marginTop: 20,
-  },
-
-  // heading
-  heading: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 10,
-  },
-
-  // list item
-  listItem: {
     padding: 20,
-    paddingLeft: 15,
-    paddingRight: 15,
-    flex: 1,
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    borderRadius: 10,
-    marginBottom: 10,
-    backgroundColor: '#f3f9ff',
-    borderWidth: 2,
   },
-  listItemText: {
-    flex: 1,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
-  pressCount: {
-    width: 25,
-    color: 'rgba(40, 40, 40, 0.5)',
-    fontSize: 10,
+  count: {
+    fontSize: 18,
+    marginVertical: 10,
   },
-
-  // icons
-  icons: {
-    width: 70,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    alignSelf: 'flex-end',
+  buttonItem: {
+    padding: 10,
+    marginVertical: 5,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
   },
-  icon: {
-    marginRight: 7,
+  buttonName: {
+    fontSize: 16,
+    fontWeight: 'bold',
   },
-
+  buttonUuid: {
+    fontSize: 12,
+    color: '#666',
+  },
 });
 
-
+export default Flic2Example;
 ```
 
-## Collaborating
-We are happy to receive PRs! We have not published an NPM package before and are eager to learn!
+## API Reference
+
+### Initialization
+
+#### `initialize(): Promise<void>`
+
+Initialize the Flic2 manager. This must be called before using any other methods.
+
+```tsx
+await Flic2.initialize();
+```
+
+### Scanning
+
+#### `startScan(): Promise<void>`
+
+Start scanning for new Flic2 buttons. The scan will emit `scanStatusChange` events.
+
+```tsx
+await Flic2.startScan();
+```
+
+#### `stopScan(): Promise<void>`
+
+Stop an ongoing scan.
+
+```tsx
+await Flic2.stopScan();
+```
+
+#### `isScanning(): Promise<boolean>`
+
+Check if a scan is currently running.
+
+```tsx
+const scanning = await Flic2.isScanning();
+```
+
+### Button Management
+
+#### `getButtons(): Promise<FlicButton[]>`
+
+Get all known buttons.
+
+```tsx
+const buttons = await Flic2.getButtons();
+```
+
+#### `getButton(uuid: string): Promise<FlicButton | null>`
+
+Get a specific button by UUID.
+
+```tsx
+const button = await Flic2.getButton('button-uuid');
+```
+
+#### `connectAllKnownButtons(): Promise<void>`
+
+Connect to all previously known buttons.
+
+```tsx
+await Flic2.connectAllKnownButtons();
+```
+
+#### `disconnectAllKnownButtons(): Promise<void>`
+
+Disconnect all connected buttons.
+
+```tsx
+await Flic2.disconnectAllKnownButtons();
+```
+
+#### `forgetButton(uuid: string): Promise<void>`
+
+Forget (unpair) a specific button.
+
+```tsx
+await Flic2.forgetButton('button-uuid');
+```
+
+#### `forgetAllButtons(): Promise<void>`
+
+Forget all buttons.
+
+```tsx
+await Flic2.forgetAllButtons();
+```
+
+### Button Configuration
+
+#### `buttonConnect(uuid: string): Promise<FlicButton>`
+
+Connect to a specific button. Returns the button object.
+
+```tsx
+const button = await Flic2.buttonConnect('button-uuid');
+```
+
+#### `buttonDisconnect(uuid: string): Promise<FlicButton>`
+
+Disconnect a specific button. Returns the button object.
+
+```tsx
+const button = await Flic2.buttonDisconnect('button-uuid');
+```
+
+#### `buttonSetNickname(uuid: string, nickname: string): Promise<FlicButton>`
+
+Set a custom nickname for a button. Returns the updated button object.
+
+```tsx
+const button = await Flic2.buttonSetNickname('button-uuid', 'My Button');
+```
+
+#### `buttonSetTriggerMode(uuid: string, mode: TriggerModeType): Promise<FlicButton>`
+
+Set the trigger mode for a button. Returns the updated button object. Modes:
+- `0`: Click and Hold
+- `1`: Click and Double Click
+- `2`: Click and Double Click and Hold
+- `3`: Click only
+
+**Note:** This method is only supported on iOS. On Android, it will reject with an error.
+
+```tsx
+const button = await Flic2.buttonSetTriggerMode('button-uuid', 3); // Click only
+```
+
+#### `buttonSetLatencyMode(uuid: string, mode: LatencyModeType): Promise<FlicButton>`
+
+Set the latency mode for a button. Returns the updated button object. Modes:
+- `0`: Normal latency
+- `1`: Low latency
+
+**Note:** This method is only supported on iOS. On Android, it will reject with an error.
+
+```tsx
+const button = await Flic2.buttonSetLatencyMode('button-uuid', 1); // Low latency
+```
+
+#### `getBatteryHealth(uuid: string): Promise<boolean>`
+
+Get the battery health status of a button. Returns `true` if battery voltage is above 2.65V.
+
+```tsx
+const isHealthy = await Flic2.getBatteryHealth('button-uuid');
+```
+
+## Events
+
+The library uses an event emitter pattern to notify your app of button events and state changes.
+
+### `buttonEvent`
+
+Emitted when a button event occurs (click, double click, hold, connection, etc.).
+
+```tsx
+Flic2.eventEmitter.on('buttonEvent', (event: ButtonEvent) => {
+  console.log('Event:', event.event);
+  console.log('Button:', event.button.name);
+  console.log('UUID:', event.uuid);
+});
+```
+
+**Event Types:**
+- `'discovered'` - Button was discovered during scan
+- `'connected'` - Button connected successfully
+- `'ready'` - Button is ready to receive events
+- `'disconnected'` - Button disconnected
+- `'connectionFailed'` - Connection attempt failed
+- `'buttonDown'` - Button was pressed down
+- `'buttonUp'` - Button was released
+- `'click'` - Single click detected
+- `'doubleClick'` - Double click detected
+- `'hold'` - Button held down
+- `'unpaired'` - Button was unpaired
+- `'batteryUpdate'` - Battery status updated
+- `'nicknameUpdate'` - Nickname was updated
+
+**Event Object:**
+```tsx
+type ButtonEvent = {
+  uuid: string;
+  event: string;
+  queued?: boolean;
+  age?: number;
+  nickname?: string;
+  voltage?: number;
+  batteryVoltageOk?: boolean;
+  error?: {
+    code: number;
+    message: string;
+  };
+  button: FlicButton;
+};
+```
+
+### `managerStateChange`
+
+Emitted when the Flic2 manager state changes (Bluetooth state, etc.).
+
+```tsx
+Flic2.eventEmitter.on('managerStateChange', (event: ManagerStateChangeEvent) => {
+  console.log('State:', event.stateName);
+  console.log('State code:', event.state);
+});
+```
+
+**Event Object:**
+```tsx
+type ManagerStateChangeEvent = {
+  event: 'restored' | 'stateChanged';
+  state?: number;
+  stateName?: string;
+  message?: string;
+};
+```
+
+**State Names:**
+- `'unknown'`
+- `'resetting'`
+- `'unsupported'`
+- `'unauthorized'`
+- `'poweredOff'`
+- `'poweredOn'`
+
+### `scanStatusChange`
+
+Emitted when the scan status changes.
+
+```tsx
+Flic2.eventEmitter.on('scanStatusChange', (event: ScanStatusChangeEvent) => {
+  if (event.event === 'started') {
+    console.log('Scan started');
+  } else if (event.event === 'completion') {
+    console.log('Scan completed', event.result);
+  }
+});
+```
+
+**Event Object:**
+```tsx
+type ScanStatusChangeEvent = {
+  event: 'started' | 'completion';
+  eventName: 'started' | 'completion';
+  result?: ScanResult;
+};
+```
+
+## Types
+
+### `FlicButton`
+
+```tsx
+type FlicButton = {
+  uuid: string;
+  identifier: string;
+  name: string;
+  nickname: string;
+  bluetoothAddress: string;
+  serialNumber: string;
+  state: number;
+  stateName: string;
+  triggerMode: number; // iOS only, 0 on Android
+  triggerModeName: string; // iOS only, empty on Android
+  latencyMode: number; // iOS only, 0 on Android
+  latencyModeName: string; // iOS only, empty on Android
+  pressCount: number;
+  firmwareRevision: number;
+  isReady: boolean;
+  batteryVoltage: number;
+  isUnpaired: boolean;
+};
+```
+
+## Common Use Cases
+
+### Connecting to Buttons on App Start
+
+Initialize Flic2 globally when your app starts (not in a component):
+
+```tsx
+// index.js or App.js (global level)
+import Flic2 from 'react-native-flic2';
+
+(async () => {
+  await Flic2.initialize();
+  Flic2.connectAllKnownButtons();
+})();
+```
+
+### Handling Button Clicks
+
+Set up button event listeners globally for background usage:
+
+```tsx
+// Global level (e.g., index.js or App.js)
+Flic2.eventEmitter.on('buttonEvent', (event) => {
+  if (event.event === 'click') {
+    // Handle single click (works in background)
+    console.log('Button clicked:', event.button.name);
+  } else if (event.event === 'doubleClick') {
+    // Handle double click
+    console.log('Button double clicked:', event.button.name);
+  } else if (event.event === 'hold') {
+    // Handle hold
+    console.log('Button held:', event.button.name);
+  }
+});
+```
+
+### Monitoring Battery Status
+
+```tsx
+Flic2.eventEmitter.on('buttonEvent', (event) => {
+  if (event.event === 'batteryUpdate') {
+    const isHealthy = event.batteryVoltageOk;
+    console.log('Battery healthy:', isHealthy);
+    console.log('Battery voltage:', event.voltage);
+  }
+});
+```
+
+### Scanning for New Buttons
+
+```tsx
+const scanForButtons = async () => {
+  // Request permissions first (see Platform Setup)
+
+  Flic2.eventEmitter.on('scanStatusChange', (event) => {
+    if (event.event === 'completion') {
+      if (event.result === 0) { // ScanResult.SUCCESS
+        console.log('Button found and paired!');
+        loadButtons();
+      } else {
+        console.log('Scan failed:', event.result);
+      }
+    }
+  });
+
+  await Flic2.startScan();
+};
+```
+
+## Troubleshooting
+
+### Buttons not connecting
+
+- Ensure Bluetooth is enabled on the device
+- Check that you've requested the necessary permissions
+- Verify the button is in pairing mode (press and hold for 7 seconds)
+- Make sure the button isn't already connected to another device
+
+### Scan not starting
+
+- Verify runtime permissions are granted (especially location permission on Android)
+- Check that Bluetooth is enabled
+- Ensure you're not already scanning (check with `isScanning()`)
+
+### Events not firing
+
+- Make sure you've called `initialize()` globally (outside components) before setting up event listeners
+- For background usage, set up listeners at the global level, not in `useEffect`
+- Verify the button is connected and ready (`button.isReady === true`)
+- Check that the button's trigger mode supports the event you're listening for
+
+## Contributing
+
+- [Development workflow](CONTRIBUTING.md#development-workflow)
+- [Sending a pull request](CONTRIBUTING.md#sending-a-pull-request)
+- [Code of conduct](CODE_OF_CONDUCT.md)
+
+## License
+
+See [LICENSE](LICENSE)
