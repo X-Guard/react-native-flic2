@@ -47,7 +47,15 @@ class Flic2ButtonEventListener(
         val event = if (isDown) "buttonDown" else "buttonUp"
         emitEvent(createButtonEvent(button, event).apply {
             putBoolean("queued", wasQueued)
-            putDouble("age", System.currentTimeMillis() - timestamp.toDouble())
+            // Match old Android implementation and iOS:
+            // - Age is in seconds
+            // - Only meaningful for queued events; 0 for real-time events
+            val ageSeconds = if (wasQueued) {
+                (button.readyTimestamp - timestamp) / 1000.0
+            } else {
+                0.0
+            }
+            putDouble("age", ageSeconds)
         })
     }
 
@@ -94,7 +102,15 @@ class Flic2ButtonEventListener(
         }
         emitEvent(createButtonEvent(button, event).apply {
             putBoolean("queued", wasQueued)
-            putDouble("age", System.currentTimeMillis() - timestamp.toDouble())
+            // Match old Android implementation and iOS:
+            // - Age is in seconds
+            // - Only meaningful for queued events; 0 for real-time events
+            val ageSeconds = if (wasQueued) {
+                (button.readyTimestamp - timestamp) / 1000.0
+            } else {
+                0.0
+            }
+            putDouble("age", ageSeconds)
         })
     }
 
