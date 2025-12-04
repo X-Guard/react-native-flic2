@@ -51,7 +51,7 @@ class Flic2ButtonEventListener(
             // - Age is in seconds
             // - Only meaningful for queued events; 0 for real-time events
             val ageSeconds = if (wasQueued) {
-                (button.readyTimestamp - timestamp) / 1000.0
+                (button.getReadyTimestamp() - timestamp) / 1000.0
             } else {
                 0.0
             }
@@ -106,7 +106,7 @@ class Flic2ButtonEventListener(
             // - Age is in seconds
             // - Only meaningful for queued events; 0 for real-time events
             val ageSeconds = if (wasQueued) {
-                (button.readyTimestamp - timestamp) / 1000.0
+                (button.getReadyTimestamp() - timestamp) / 1000.0
             } else {
                 0.0
             }

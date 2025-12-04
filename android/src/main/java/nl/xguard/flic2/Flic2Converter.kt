@@ -16,9 +16,6 @@ object Flic2Converter {
             putString("bluetoothAddress", button.getBdAddr() ?: "")
             putString("serialNumber", button.getSerialNumber() ?: "")
 
-            // ready timestamp
-            putLong("readyTimestamp", button.getReadyTimestamp())
-
             // Use connection state constants instead of enum
             val connState = button.getConnectionState()
             putInt("state", connectionStateToInt(connState))
