@@ -86,6 +86,31 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
   override fun invalidate() {
     super.invalidate()
+
+    // Remove all button listeners before cleanup to prevent callbacks after teardown
+    try {
+      val manager = flic2Service?.getManager()
+      if (manager != null) {
+        buttonListeners.forEach { (uuid, listener) ->
+          try {
+            // Find the button and remove the listener
+            val button = manager.buttons.find { it.uuid == uuid }
+            if (button != null) {
+              button.removeListener(listener)
+              Log.d(TAG, "Removed listener for button during invalidate: $uuid")
+            }
+          } catch (e: Exception) {
+            Log.w(TAG, "Failed to remove listener for button during invalidate: $uuid", e)
+          }
+        }
+      }
+    } catch (e: Exception) {
+      Log.w(TAG, "Error during listener cleanup in invalidate", e)
+    }
+
+    // Clear listeners map
+    buttonListeners.clear()
+
     moduleScope.cancel()
     if (serviceBound) {
       reactApplicationContext.unbindService(serviceConnection)
@@ -246,7 +271,18 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       // Disconnect before forgetting like iOS
       button.disconnectOrAbortPendingConnection()
 
-      // Remove listener
+      // Explicitly remove listener from button before forgetting (matches old implementation)
+      val listener = buttonListeners[uuid]
+      if (listener != null) {
+        try {
+          button.removeListener(listener)
+          Log.d(TAG, "Removed listener for button: $uuid")
+        } catch (e: Exception) {
+          Log.w(TAG, "Failed to remove listener for button: $uuid", e)
+        }
+      }
+
+      // Remove listener from map
       buttonListeners.remove(uuid)
 
       // Forget button
@@ -387,8 +423,24 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       val buttons = manager.buttons.toList()
 
       buttons.forEach { button ->
+        // Explicitly remove listener from button before forgetting (matches old implementation)
+        val listener = buttonListeners[button.uuid]
+        if (listener != null) {
+          try {
+            button.removeListener(listener)
+            Log.d(TAG, "Removed listener for button: ${button.uuid}")
+          } catch (e: Exception) {
+            Log.w(TAG, "Failed to remove listener for button: ${button.uuid}", e)
+          }
+        }
+
+        // Remove listener from map
         buttonListeners.remove(button.uuid)
+
+        // Disconnect before forgetting
         button.disconnectOrAbortPendingConnection()
+
+        // Forget button
         manager.forgetButton(button)
       }
 
