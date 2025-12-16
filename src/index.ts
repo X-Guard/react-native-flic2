@@ -336,6 +336,13 @@ class Flic2 {
    */
   private onNativeManagerStateChange(event: ManagerStateChangeEvent): void {
 
+    // When manager is restored, mark it as initialized
+    if (event.event === 'restored' && !this.isFlic2ManagerInitialized) {
+
+      this.onInitialized();
+
+    }
+
     this.eventEmitter.emit('managerStateChange', event);
 
   }

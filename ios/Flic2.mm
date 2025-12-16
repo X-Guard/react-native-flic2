@@ -305,24 +305,43 @@
 // MARK: - FLICManagerDelegate
 
 - (void)managerDidRestoreState:(FLICManager *)manager {
-    self.managerRestored = YES;
-    NSLog(@"Manager state restored - ready for operations");
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self emitOnManagerStateChange:@{
-            @"event": @"restored",
-            @"message": @"Manager state restored"
-        }];
-    });
+    // Only emit restored event if we haven't already done so
+    if (!self.managerRestored) {
+        self.managerRestored = YES;
+        NSLog(@"Manager state restored - ready for operations");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self emitOnManagerStateChange:@{
+                @"event": @"restored",
+                @"message": @"Manager state restored"
+            }];
+        });
+    }
 }
 
 - (void)manager:(FLICManager *)manager didUpdateState:(FLICManagerState)state {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self emitOnManagerStateChange:@{
-            @"state": @(state),
-            @"stateName": [self managerStateToString:state],
-            @"event": @"stateChanged"
-        }];
-    });
+    // Emit restored event when manager becomes powered on (if not already restored)
+    // This ensures the event fires on every app launch, not just during state restoration
+    if (state == FLICManagerStatePoweredOn && !self.managerRestored) {
+        self.managerRestored = YES;
+        NSLog(@"Manager powered on - ready for operations");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self emitOnManagerStateChange:@{
+                @"event": @"restored",
+                @"state": @(state),
+                @"stateName": [self managerStateToString:state],
+                @"message": @"Manager ready"
+            }];
+        });
+    } else {
+        // Emit regular state change event
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self emitOnManagerStateChange:@{
+                @"state": @(state),
+                @"stateName": [self managerStateToString:state],
+                @"event": @"stateChanged"
+            }];
+        });
+    }
 }
 
 // MARK: - FLICButtonDelegate
