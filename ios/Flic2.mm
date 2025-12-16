@@ -329,7 +329,7 @@
             @"event": @"stateChanged"
         }];
     });
-    
+
     // Additionally emit restored event when manager becomes powered on (if not already restored)
     // This ensures the event fires on every app launch, not just during state restoration
     if (state == FLICManagerStatePoweredOn && !self.managerRestored) {
