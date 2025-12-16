@@ -312,6 +312,8 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [self emitOnManagerStateChange:@{
                 @"event": @"restored",
+                @"state": @(manager.state),
+                @"stateName": [self managerStateToString:manager.state],
                 @"message": @"Manager state restored"
             }];
         });
@@ -319,7 +321,16 @@
 }
 
 - (void)manager:(FLICManager *)manager didUpdateState:(FLICManagerState)state {
-    // Emit restored event when manager becomes powered on (if not already restored)
+    // Always emit stateChanged for every state change
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self emitOnManagerStateChange:@{
+            @"state": @(state),
+            @"stateName": [self managerStateToString:state],
+            @"event": @"stateChanged"
+        }];
+    });
+    
+    // Additionally emit restored event when manager becomes powered on (if not already restored)
     // This ensures the event fires on every app launch, not just during state restoration
     if (state == FLICManagerStatePoweredOn && !self.managerRestored) {
         self.managerRestored = YES;
@@ -330,15 +341,6 @@
                 @"state": @(state),
                 @"stateName": [self managerStateToString:state],
                 @"message": @"Manager ready"
-            }];
-        });
-    } else {
-        // Emit regular state change event
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [self emitOnManagerStateChange:@{
-                @"state": @(state),
-                @"stateName": [self managerStateToString:state],
-                @"event": @"stateChanged"
             }];
         });
     }
