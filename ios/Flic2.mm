@@ -32,11 +32,6 @@
         return;
     }
 
-    if (!self.managerRestored) {
-        reject(@"NOT_RESTORED", @"Manager not restored yet. Wait for managerDidRestoreState", nil);
-        return;
-    }
-
     NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
     NSMutableArray *buttonDicts = [[NSMutableArray alloc] init];
 
