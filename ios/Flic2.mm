@@ -32,11 +32,6 @@
         return;
     }
 
-    if (!self.managerRestored) {
-        reject(@"NOT_RESTORED", @"Manager not restored yet. Wait for managerDidRestoreState", nil);
-        return;
-    }
-
     NSArray<FLICButton *> *buttons = [[FLICManager sharedManager] buttons];
     NSMutableArray *buttonDicts = [[NSMutableArray alloc] init];
 
@@ -310,17 +305,23 @@
 // MARK: - FLICManagerDelegate
 
 - (void)managerDidRestoreState:(FLICManager *)manager {
-    self.managerRestored = YES;
-    NSLog(@"Manager state restored - ready for operations");
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [self emitOnManagerStateChange:@{
-            @"event": @"restored",
-            @"message": @"Manager state restored"
-        }];
-    });
+    // Only emit restored event if we haven't already done so
+    if (!self.managerRestored) {
+        self.managerRestored = YES;
+        NSLog(@"Manager state restored - ready for operations");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self emitOnManagerStateChange:@{
+                @"event": @"restored",
+                @"state": @(manager.state),
+                @"stateName": [self managerStateToString:manager.state],
+                @"message": @"Manager state restored"
+            }];
+        });
+    }
 }
 
 - (void)manager:(FLICManager *)manager didUpdateState:(FLICManagerState)state {
+    // Always emit stateChanged for every state change
     dispatch_async(dispatch_get_main_queue(), ^{
         [self emitOnManagerStateChange:@{
             @"state": @(state),
@@ -328,6 +329,21 @@
             @"event": @"stateChanged"
         }];
     });
+
+    // Additionally emit restored event when manager becomes powered on (if not already restored)
+    // This ensures the event fires on every app launch, not just during state restoration
+    if (state == FLICManagerStatePoweredOn && !self.managerRestored) {
+        self.managerRestored = YES;
+        NSLog(@"Manager powered on - ready for operations");
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [self emitOnManagerStateChange:@{
+                @"event": @"restored",
+                @"state": @(state),
+                @"stateName": [self managerStateToString:state],
+                @"message": @"Manager ready"
+            }];
+        });
+    }
 }
 
 // MARK: - FLICButtonDelegate
