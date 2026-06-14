@@ -37,11 +37,9 @@ npm install react-native-flic2
    cd ios && pod install && cd ..
    ```
 
-   **Simulator support (no real Flic support):**
-   This package ships `Flic2Device.podspec` (real `flic2lib`) and
-   `Flic2Simulator.podspec` (no-op stub). Consumers can map these per Xcode
-   configuration in their Podfile (for example `DebugSimulator` -> `Flic2Simulator`,
-   `Debug/Release` -> `Flic2Device`) and run plain `pod install` without env flags.
+   **Need simulator builds?**
+   See `Troubleshooting` -> `Running on iOS Simulator` for a full configuration
+   example and launch commands.
 
 2. **Add Bluetooth permissions to `Info.plist`:**
    Add the following keys to your `ios/YourApp/Info.plist`:
@@ -796,6 +794,52 @@ const scanForButtons = async () => {
 ```
 
 ## Troubleshooting
+
+### Running on iOS Simulator
+
+`flic2lib` is device-only. For simulator builds, use the no-op simulator pod and a
+dedicated simulator build configuration.
+
+1. Add a simulator configuration in Xcode (for example `DebugSimulator`) and a scheme that uses it.
+2. Map pods by configuration in your app `Podfile`:
+
+```ruby
+# Example
+project 'YourApp.xcodeproj', {
+  'Debug' => :debug,
+  'DebugSimulator' => :debug,
+  'Release' => :release,
+}
+
+target 'YourApp' do
+  # ... your existing use_react_native! setup
+
+  pod 'Flic2Device',
+    :path => '../node_modules/react-native-flic2',
+    :configurations => ['Debug', 'Release']
+
+  pod 'Flic2Simulator',
+    :path => '../node_modules/react-native-flic2',
+    :configurations => ['DebugSimulator']
+end
+```
+
+3. Install pods normally (no env flags):
+
+```sh
+cd ios && bundle exec pod install && cd ..
+```
+
+4. Launch simulator build (example):
+
+```sh
+npx react-native run-ios --scheme YourAppSimulator --mode DebugSimulator --simulator "iPhone 17"
+```
+
+Expected behavior on simulator:
+- App builds and launches.
+- Flic calls are no-op fallback behavior.
+- Real button communication works only on physical devices.
 
 ### Buttons not connecting
 
