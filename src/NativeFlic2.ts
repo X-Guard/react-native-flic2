@@ -169,4 +169,49 @@ export interface Spec extends TurboModule {
   readonly onButtonEvent: CodegenTypes.EventEmitter<ButtonEvent>;
 }
 
-export default TurboModuleRegistry.getEnforcing<Spec>('Flic2');
+const createFallbackButton = (uuid: string): FlicButton => ({
+  uuid,
+  identifier: uuid,
+  name: '',
+  nickname: '',
+  bluetoothAddress: '',
+  serialNumber: '',
+  state: 0,
+  stateName: 'disconnected',
+  triggerMode: 0,
+  triggerModeName: 'clickAndHold',
+  latencyMode: 0,
+  latencyModeName: 'normal',
+  pressCount: 0,
+  firmwareRevision: 0,
+  isReady: false,
+  batteryVoltage: 0,
+  isUnpaired: false,
+});
+
+const fallbackEventEmitter = (() => ({ remove: () => undefined })) as unknown as Spec['onManagerStateChange'];
+
+const fallbackModule = {
+  initialize: async (_background: boolean) => undefined,
+  getButtons: async () => [],
+  scanForButtons: async () => undefined,
+  stopScan: async () => undefined,
+  forgetButton: async (_uuid: string) => undefined,
+  connectAllKnownButtons: async () => undefined,
+  disconnectAllKnownButtons: async () => undefined,
+  forgetAllButtons: async () => undefined,
+  isScanning: async () => false,
+  connectButton: async (uuid: string) => createFallbackButton(uuid),
+  disconnectButton: async (uuid: string) => createFallbackButton(uuid),
+  setTriggerMode: async (uuid: string, _mode: number) => createFallbackButton(uuid),
+  setLatencyMode: async (uuid: string, _mode: number) => createFallbackButton(uuid),
+  setNickname: async (uuid: string, nickname: string) => ({
+    ...createFallbackButton(uuid),
+    nickname,
+  }),
+  onManagerStateChange: fallbackEventEmitter,
+  onScanStatusChange: fallbackEventEmitter as unknown as Spec['onScanStatusChange'],
+  onButtonEvent: fallbackEventEmitter as unknown as Spec['onButtonEvent'],
+} as Spec;
+
+export default TurboModuleRegistry.get<Spec>('Flic2') ?? fallbackModule;

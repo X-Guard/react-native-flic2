@@ -37,6 +37,12 @@ npm install react-native-flic2
    cd ios && pod install && cd ..
    ```
 
+   **Simulator support (no real Flic support):**
+   This package ships `Flic2Device.podspec` (real `flic2lib`) and
+   `Flic2Simulator.podspec` (no-op stub). Consumers can map these per Xcode
+   configuration in their Podfile (for example `DebugSimulator` -> `Flic2Simulator`,
+   `Debug/Release` -> `Flic2Device`) and run plain `pod install` without env flags.
+
 2. **Add Bluetooth permissions to `Info.plist`:**
    Add the following keys to your `ios/YourApp/Info.plist`:
    ```xml

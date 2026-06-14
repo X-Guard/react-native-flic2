@@ -186,7 +186,7 @@
     resolve([self buttonToDictionary:button]);
 }
 
-- (void)setTriggerMode:(NSString *)uuid mode:(NSInteger)mode
+- (void)setTriggerMode:(NSString *)uuid mode:(double)mode
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
@@ -197,11 +197,11 @@
         return;
     }
 
-    button.triggerMode = (FLICButtonTriggerMode)mode;
+    button.triggerMode = (FLICButtonTriggerMode)((NSInteger)mode);
     resolve([self buttonToDictionary:button]);
 }
 
-- (void)setLatencyMode:(NSString *)uuid mode:(NSInteger)mode
+- (void)setLatencyMode:(NSString *)uuid mode:(double)mode
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
@@ -212,7 +212,7 @@
         return;
     }
 
-    button.latencyMode = (FLICLatencyMode)mode;
+    button.latencyMode = (FLICLatencyMode)((NSInteger)mode);
     resolve([self buttonToDictionary:button]);
 }
 

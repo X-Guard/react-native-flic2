@@ -3,7 +3,7 @@ require "json"
 package = JSON.parse(File.read(File.join(__dir__, "package.json")))
 
 Pod::Spec.new do |s|
-  s.name         = "Flic2"
+  s.name         = "Flic2Simulator"
   s.version      = package["version"]
   s.summary      = package["description"]
   s.homepage     = package["homepage"]
@@ -15,18 +15,6 @@ Pod::Spec.new do |s|
 
   install_modules_dependencies(s)
 
-  # Keep the root spec codegen-only so consumers can opt into
-  # Device/Simulator implementations explicitly.
-  s.default_subspecs = []
-
-  s.subspec "Device" do |sp|
-    sp.source_files = "ios/Flic2.{h,mm}"
-    sp.private_header_files = "ios/Flic2.h"
-    sp.ios.vendored_frameworks = "ios/flic2lib.framework"
-  end
-
-  s.subspec "Simulator" do |sp|
-    sp.source_files = "ios/Flic2SimulatorStub.{h,mm}"
-    sp.private_header_files = "ios/Flic2SimulatorStub.h"
-  end
+  s.source_files = "ios/Flic2SimulatorStub.{h,mm}"
+  s.private_header_files = "ios/Flic2SimulatorStub.h"
 end
