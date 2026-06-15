@@ -41,6 +41,11 @@ npm install react-native-flic2
    See `Troubleshooting` -> `Running on iOS Simulator` for a full configuration
    example and launch commands.
 
+   **Important (iOS pod wiring):**
+   The autolinked root `Flic2` pod is codegen-only in the 2.x beta setup.
+   To get a real iOS runtime implementation, add `Flic2Device` in your Podfile
+   (and `Flic2Simulator` for simulator-specific configurations).
+
 2. **Add Bluetooth permissions to `Info.plist`:**
    Add the following keys to your `ios/YourApp/Info.plist`:
    ```xml
