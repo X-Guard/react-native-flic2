@@ -37,6 +37,14 @@ npm install react-native-flic2
    cd ios && pod install && cd ..
    ```
 
+   **Need simulator builds?**
+   See `Troubleshooting` -> `Running on iOS Simulator` for a full configuration
+   example and launch commands.
+
+   **Important (iOS simulator):**
+   For simulator installs, re-run `pod install` with
+   `FLIC2_IOS_SIMULATOR_STUB=1` (see Troubleshooting below).
+
 2. **Add Bluetooth permissions to `Info.plist`:**
    Add the following keys to your `ios/YourApp/Info.plist`:
    ```xml
@@ -790,6 +798,35 @@ const scanForButtons = async () => {
 ```
 
 ## Troubleshooting
+
+### Running on iOS Simulator
+
+`flic2lib` is device-only. For simulator builds, install pods with
+`FLIC2_IOS_SIMULATOR_STUB=1` so the no-op native stub is used.
+
+1. Install pods for normal/device builds:
+
+```sh
+cd ios && pod install && cd ..
+```
+
+2. Install pods for simulator builds:
+
+```sh
+cd ios && FLIC2_IOS_SIMULATOR_STUB=1 pod install && cd ..
+```
+
+3. Launch simulator build (example):
+
+```sh
+npx react-native run-ios --simulator "iPhone 17"
+```
+
+Expected behavior on simulator:
+- App builds and launches.
+- Flic calls run through the no-op native simulator stub when pods are installed with `FLIC2_IOS_SIMULATOR_STUB=1`.
+- The JS missing-native fallback path is only a safety net for misconfigured pod installs.
+- Real button communication works only on physical devices.
 
 ### Buttons not connecting
 

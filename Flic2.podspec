@@ -13,10 +13,14 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => min_ios_version_supported }
   s.source       = { :git => "https://github.com/X-Guard/react-native-flic2.git", :tag => "#{s.version}" }
 
-  s.source_files = "ios/**/*.{h,m,mm,cpp}"
-  s.private_header_files = "ios/**/*.h"
-
-  s.ios.vendored_frameworks = 'ios/flic2lib.framework'
+  if ENV["FLIC2_IOS_SIMULATOR_STUB"] == "1"
+    s.source_files = "ios/Flic2SimulatorStub.{h,mm}"
+    s.private_header_files = "ios/Flic2SimulatorStub.h"
+  else
+    s.source_files = "ios/Flic2.{h,mm}"
+    s.private_header_files = "ios/Flic2.h"
+    s.ios.vendored_frameworks = "ios/flic2lib.framework"
+  end
 
   install_modules_dependencies(s)
 end
