@@ -13,20 +13,14 @@ Pod::Spec.new do |s|
   s.platforms    = { :ios => min_ios_version_supported }
   s.source       = { :git => "https://github.com/X-Guard/react-native-flic2.git", :tag => "#{s.version}" }
 
+  if ENV["FLIC2_IOS_SIMULATOR_STUB"] == "1"
+    s.source_files = "ios/Flic2SimulatorStub.{h,mm}"
+    s.private_header_files = "ios/Flic2SimulatorStub.h"
+  else
+    s.source_files = "ios/Flic2.{h,mm}"
+    s.private_header_files = "ios/Flic2.h"
+    s.ios.vendored_frameworks = "ios/flic2lib.framework"
+  end
+
   install_modules_dependencies(s)
-
-  # Keep the root spec codegen-only so consumers can opt into
-  # Device/Simulator implementations explicitly.
-  s.default_subspecs = []
-
-  s.subspec "Device" do |sp|
-    sp.source_files = "ios/Flic2.{h,mm}"
-    sp.private_header_files = "ios/Flic2.h"
-    sp.ios.vendored_frameworks = "ios/flic2lib.framework"
-  end
-
-  s.subspec "Simulator" do |sp|
-    sp.source_files = "ios/Flic2SimulatorStub.{h,mm}"
-    sp.private_header_files = "ios/Flic2SimulatorStub.h"
-  end
 end
