@@ -221,7 +221,7 @@ if (__DEV__ && !nativeModule) {
   // eslint-disable-next-line no-console
   console.warn(
     '[react-native-flic2] Native module "Flic2" is missing; using no-op fallback. ' +
-      'On iOS simulator this can be expected with FLIC2_IOS_SIMULATOR_STUB=1.'
+      'If you are on iOS simulator, install pods with FLIC2_IOS_SIMULATOR_STUB=1 to use the native simulator stub.'
   );
 
 }
