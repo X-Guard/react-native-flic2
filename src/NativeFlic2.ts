@@ -214,4 +214,16 @@ const fallbackModule = {
   onButtonEvent: fallbackEventEmitter as unknown as Spec['onButtonEvent'],
 } as Spec;
 
-export default TurboModuleRegistry.get<Spec>('Flic2') ?? fallbackModule;
+const nativeModule = TurboModuleRegistry.get<Spec>('Flic2');
+
+if (__DEV__ && !nativeModule) {
+
+  // eslint-disable-next-line no-console
+  console.warn(
+    '[react-native-flic2] Native module "Flic2" is missing; using no-op fallback. ' +
+      'On iOS simulator this can be expected with FLIC2_IOS_SIMULATOR_STUB=1.'
+  );
+
+}
+
+export default nativeModule ?? fallbackModule;

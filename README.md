@@ -807,13 +807,13 @@ const scanForButtons = async () => {
 1. Install pods for normal/device builds:
 
 ```sh
-cd ios && bundle exec pod install && cd ..
+cd ios && pod install && cd ..
 ```
 
 2. Install pods for simulator builds:
 
 ```sh
-cd ios && FLIC2_IOS_SIMULATOR_STUB=1 bundle exec pod install && cd ..
+cd ios && FLIC2_IOS_SIMULATOR_STUB=1 pod install && cd ..
 ```
 
 3. Launch simulator build (example):
