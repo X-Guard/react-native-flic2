@@ -824,7 +824,8 @@ npx react-native run-ios --simulator "iPhone 17"
 
 Expected behavior on simulator:
 - App builds and launches.
-- Flic calls are no-op fallback behavior.
+- Flic calls run through the no-op native simulator stub when pods are installed with `FLIC2_IOS_SIMULATOR_STUB=1`.
+- The JS missing-native fallback path is only a safety net for misconfigured pod installs.
 - Real button communication works only on physical devices.
 
 ### Buttons not connecting

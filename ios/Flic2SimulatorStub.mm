@@ -1,6 +1,11 @@
 #import "Flic2SimulatorStub.h"
 #import <React/RCTBridgeModule.h>
 
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#endif
+
 @implementation Flic2
 
 - (void)initialize:(BOOL)background
@@ -132,3 +137,7 @@
 }
 
 @end
+
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
