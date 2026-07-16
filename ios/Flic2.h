@@ -8,5 +8,6 @@
 
 @property (nonatomic, assign) BOOL managerRestored;
 @property (nonatomic, copy, nullable) RCTPromiseResolveBlock initializeResolve;
+@property (nonatomic, copy, nullable) RCTPromiseRejectBlock initializeReject;
 
 @end

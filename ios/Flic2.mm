@@ -21,7 +21,34 @@ static BOOL Flic2ManagerDidRestoreOnce = NO;
     }
     RCTPromiseResolveBlock resolve = self.initializeResolve;
     self.initializeResolve = nil;
+    self.initializeReject = nil;
     resolve(nil);
+}
+
+- (void)rejectInitializeIfPending:(NSString *)code message:(NSString *)message
+{
+    if (!self.initializeReject) {
+        self.initializeResolve = nil;
+        return;
+    }
+    RCTPromiseRejectBlock reject = self.initializeReject;
+    self.initializeResolve = nil;
+    self.initializeReject = nil;
+    reject(code, message, nil);
+}
+
+- (void)reattachDelegatesToSharedManager
+{
+    FLICManager *manager = [FLICManager sharedManager];
+    if (!manager) {
+        return;
+    }
+    // Weak delegates die with the previous RN module instance on remount.
+    manager.delegate = self;
+    manager.buttonDelegate = self;
+    for (FLICButton *button in manager.buttons) {
+        button.delegate = self;
+    }
 }
 
 - (void)markManagerRestoredAndResolve
@@ -31,18 +58,27 @@ static BOOL Flic2ManagerDidRestoreOnce = NO;
     [self resolveInitializeIfPending];
 }
 
+- (void)invalidate
+{
+    [self rejectInitializeIfPending:@"MODULE_INVALIDATED" message:@"Flic2 native module was invalidated"];
+    [super invalidate];
+}
+
 - (void)initialize:(BOOL)background
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
     // Already restored on this instance — ready for API calls (including scan).
     if (self.managerRestored && [FLICManager sharedManager]) {
+        [self reattachDelegatesToSharedManager];
         resolve(nil);
         return;
     }
 
     // Process already restored (e.g. RN remount); restore callbacks will not re-fire.
+    // JS Flic2 is a singleton, but the native module instance is not — re-attach delegates.
     if (Flic2ManagerDidRestoreOnce && [FLICManager sharedManager]) {
+        [self reattachDelegatesToSharedManager];
         self.managerRestored = YES;
         resolve(nil);
         return;
@@ -70,6 +106,7 @@ static BOOL Flic2ManagerDidRestoreOnce = NO;
     }
 
     self.initializeResolve = resolve;
+    self.initializeReject = reject;
 }
 
 - (void)getButtons:(RCTPromiseResolveBlock)resolve

@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
@@ -60,8 +62,9 @@ class Flic2Module(reactContext: ReactApplicationContext) :
           promise.reject("INIT_ERROR", "Flic2Manager failed to initialize in service")
           initializePromise = null
         }
-        // Unbind on next loop so a later initialize() can bind again and retry.
-        moduleScope.launch {
+        // Unbind/stop on next loop so a later initialize() can restart the service.
+        // Use Handler (not moduleScope) so invalidate()'s scope.cancel cannot skip stopService.
+        Handler(Looper.getMainLooper()).post {
           resetServiceBinding()
         }
         return
@@ -148,11 +151,14 @@ class Flic2Module(reactContext: ReactApplicationContext) :
     // Clear listeners map
     buttonListeners.clear()
 
-    moduleScope.cancel()
-    if (serviceBound) {
-      reactApplicationContext.unbindService(serviceConnection)
-      serviceBound = false
+    initializePromise?.let { promise ->
+      promise.reject("MODULE_INVALIDATED", "Flic2 native module was invalidated")
+      initializePromise = null
     }
+
+    moduleScope.cancel()
+    // Unbind + stopService even if a pending reset was cancelled with the scope.
+    resetServiceBinding()
   }
 
   // MARK: - Manager Methods
