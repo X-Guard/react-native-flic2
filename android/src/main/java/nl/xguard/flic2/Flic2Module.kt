@@ -51,7 +51,7 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       flic2Service = (service as Flic2Service.Flic2ServiceBinder).getService()
       serviceBound = true
 
-      // ponytail: initialize() must only resolve when getManager() is non-null;
+      // initialize() must only resolve when getManager() is non-null;
       // service bind alone is not enough (Flic2Manager.init can fail in onCreate).
       val manager = flic2Service?.getManager()
       if (manager == null) {
@@ -59,6 +59,10 @@ class Flic2Module(reactContext: ReactApplicationContext) :
         initializePromise?.let { promise ->
           promise.reject("INIT_ERROR", "Flic2Manager failed to initialize in service")
           initializePromise = null
+        }
+        // Unbind on next loop so a later initialize() can bind again and retry.
+        moduleScope.launch {
+          resetServiceBinding()
         }
         return
       }
@@ -90,6 +94,18 @@ class Flic2Module(reactContext: ReactApplicationContext) :
         initializePromise = null
       }
     }
+  }
+
+  private fun resetServiceBinding() {
+    if (serviceBound) {
+      try {
+        reactApplicationContext.unbindService(serviceConnection)
+      } catch (e: Exception) {
+        Log.w(TAG, "Failed to unbind after manager init failure", e)
+      }
+    }
+    serviceBound = false
+    flic2Service = null
   }
 
   override fun getName(): String {
@@ -137,6 +153,18 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       // Already bound with a live manager — ready for API calls.
       if (serviceBound && flic2Service?.getManager() != null) {
         promise.resolve(null)
+        return
+      }
+
+      // Bound but manager missing: onServiceConnected will not fire again.
+      if (serviceBound && flic2Service?.getManager() == null) {
+        resetServiceBinding()
+        promise.reject("INIT_ERROR", "Flic2Manager failed to initialize in service")
+        return
+      }
+
+      if (initializePromise != null) {
+        promise.reject("INIT_IN_PROGRESS", "Initialize already in progress")
         return
       }
 

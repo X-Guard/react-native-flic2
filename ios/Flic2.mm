@@ -1,6 +1,10 @@
 #import "Flic2.h"
 #import <React/RCTBridgeModule.h>
 
+// FLICManager only fires managerDidRestoreState once per process. Track it so a
+// new RN module instance (hot reload / remount) can still resolve initialize().
+static BOOL Flic2ManagerDidRestoreOnce = NO;
+
 @implementation Flic2
 
 - (instancetype)init {
@@ -17,16 +21,29 @@
     }
     RCTPromiseResolveBlock resolve = self.initializeResolve;
     self.initializeResolve = nil;
-    self.initializeReject = nil;
     resolve(nil);
+}
+
+- (void)markManagerRestoredAndResolve
+{
+    self.managerRestored = YES;
+    Flic2ManagerDidRestoreOnce = YES;
+    [self resolveInitializeIfPending];
 }
 
 - (void)initialize:(BOOL)background
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    // Already restored — ready for API calls (including scan).
+    // Already restored on this instance — ready for API calls (including scan).
     if (self.managerRestored && [FLICManager sharedManager]) {
+        resolve(nil);
+        return;
+    }
+
+    // Process already restored (e.g. RN remount); restore callbacks will not re-fire.
+    if (Flic2ManagerDidRestoreOnce && [FLICManager sharedManager]) {
+        self.managerRestored = YES;
         resolve(nil);
         return;
     }
@@ -45,13 +62,14 @@
         return;
     }
 
-    if (self.managerRestored) {
+    if (self.managerRestored || Flic2ManagerDidRestoreOnce) {
+        self.managerRestored = YES;
+        Flic2ManagerDidRestoreOnce = YES;
         resolve(nil);
         return;
     }
 
     self.initializeResolve = resolve;
-    self.initializeReject = reject;
 }
 
 - (void)getButtons:(RCTPromiseResolveBlock)resolve
@@ -332,9 +350,8 @@
 - (void)managerDidRestoreState:(FLICManager *)manager {
     // Only emit restored event if we haven't already done so
     if (!self.managerRestored) {
-        self.managerRestored = YES;
         NSLog(@"Manager state restored - ready for operations");
-        [self resolveInitializeIfPending];
+        [self markManagerRestoredAndResolve];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self emitOnManagerStateChange:@{
                 @"event": @"restored",
@@ -359,9 +376,8 @@
     // Additionally emit restored event when manager becomes powered on (if not already restored)
     // This ensures the event fires on every app launch, not just during state restoration
     if (state == FLICManagerStatePoweredOn && !self.managerRestored) {
-        self.managerRestored = YES;
         NSLog(@"Manager powered on - ready for operations");
-        [self resolveInitializeIfPending];
+        [self markManagerRestoredAndResolve];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self emitOnManagerStateChange:@{
                 @"event": @"restored",
