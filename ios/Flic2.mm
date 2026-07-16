@@ -135,6 +135,13 @@ static BOOL Flic2ManagerDidRestoreOnce = NO;
         return;
     }
 
+    // Belt-and-suspenders: sharedManager exists after configure, before restore.
+    // Callers must await initialize(); reject clearly if they race it.
+    if (!self.managerRestored) {
+        reject(@"NOT_RESTORED", @"Manager not restored yet. Await Flic2.initialize()", nil);
+        return;
+    }
+
     NSLog(@"Starting scan");
 
     __weak Flic2 *weakSelf = self;
