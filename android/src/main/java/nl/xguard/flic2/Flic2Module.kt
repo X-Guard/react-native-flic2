@@ -106,6 +106,15 @@ class Flic2Module(reactContext: ReactApplicationContext) :
     }
     serviceBound = false
     flic2Service = null
+    // Stop the service so a later initialize() re-runs onCreate (and Flic2Manager.init).
+    // Unbind alone leaves a dead instance running with a null manager.
+    try {
+      reactApplicationContext.stopService(
+        Intent(reactApplicationContext, Flic2Service::class.java)
+      )
+    } catch (e: Exception) {
+      Log.w(TAG, "Failed to stop Flic2Service after manager init failure", e)
+    }
   }
 
   override fun getName(): String {
