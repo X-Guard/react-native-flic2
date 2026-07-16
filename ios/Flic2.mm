@@ -10,18 +10,48 @@
 
 // MARK: - FLICManager Methods
 
+- (void)resolveInitializeIfPending
+{
+    if (!self.initializeResolve) {
+        return;
+    }
+    RCTPromiseResolveBlock resolve = self.initializeResolve;
+    self.initializeResolve = nil;
+    self.initializeReject = nil;
+    resolve(nil);
+}
+
 - (void)initialize:(BOOL)background
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    // Configure the shared manager (this is the correct way)
+    // Already restored — ready for API calls (including scan).
+    if (self.managerRestored && [FLICManager sharedManager]) {
+        resolve(nil);
+        return;
+    }
+
+    if (self.initializeResolve) {
+        reject(@"INIT_IN_PROGRESS", @"Initialize already in progress", nil);
+        return;
+    }
+
+    // Configure the shared manager; resolve only after managerRestored
+    // (managerDidRestoreState / PoweredOn) so await initialize() is honest.
     FLICManager *manager = [FLICManager configureWithDelegate:self buttonDelegate:self background:background];
 
-    if (manager) {
-        resolve(nil);
-    } else {
+    if (!manager) {
         reject(@"INIT_ERROR", @"Failed to initialize FLICManager", nil);
+        return;
     }
+
+    if (self.managerRestored) {
+        resolve(nil);
+        return;
+    }
+
+    self.initializeResolve = resolve;
+    self.initializeReject = reject;
 }
 
 - (void)getButtons:(RCTPromiseResolveBlock)resolve
@@ -47,11 +77,6 @@
 {
     if (![FLICManager sharedManager]) {
         reject(@"NOT_INITIALIZED", @"Manager not initialized", nil);
-        return;
-    }
-
-    if (!self.managerRestored) {
-        reject(@"NOT_RESTORED", @"Manager not restored yet. Wait for managerDidRestoreState", nil);
         return;
     }
 
@@ -309,6 +334,7 @@
     if (!self.managerRestored) {
         self.managerRestored = YES;
         NSLog(@"Manager state restored - ready for operations");
+        [self resolveInitializeIfPending];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self emitOnManagerStateChange:@{
                 @"event": @"restored",
@@ -335,6 +361,7 @@
     if (state == FLICManagerStatePoweredOn && !self.managerRestored) {
         self.managerRestored = YES;
         NSLog(@"Manager powered on - ready for operations");
+        [self resolveInitializeIfPending];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self emitOnManagerStateChange:@{
                 @"event": @"restored",

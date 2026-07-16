@@ -47,18 +47,20 @@ class Flic2 {
   /**
    * Initialize the Flic2 manager.
    *
-   * @returns A promise that resolves when the Flic2 manager is initialized.
+   * Resolves when the native manager is ready for API calls
+   * (`getButtons`, `connectAllKnownButtons`, `startScan`, etc.).
+   * Idempotent: returns immediately if already initialized.
+   *
+   * @returns A promise that resolves when the Flic2 manager is ready.
    */
   public async initialize(): Promise<void> {
 
-    // check if the Flic2 manager is already initialized
     if (this.isInitialized()) {
 
-      throw new Error('Flic2 manager is already initialized');
+      return;
 
     }
 
-    // initialize the Flic2 manager in background
     await NativeFlic2.initialize(true);
 
     this.onInitialized();

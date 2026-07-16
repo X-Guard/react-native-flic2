@@ -51,20 +51,32 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       flic2Service = (service as Flic2Service.Flic2ServiceBinder).getService()
       serviceBound = true
 
-      // Set up listeners for existing buttons
-      flic2Service?.getManager()?.let { manager ->
-        manager.buttons.forEach { button ->
-          setupButtonListener(button)
+      // ponytail: initialize() must only resolve when getManager() is non-null;
+      // service bind alone is not enough (Flic2Manager.init can fail in onCreate).
+      val manager = flic2Service?.getManager()
+      if (manager == null) {
+        Log.e(TAG, "Service connected but Flic2Manager is null")
+        initializePromise?.let { promise ->
+          promise.reject("INIT_ERROR", "Flic2Manager failed to initialize in service")
+          initializePromise = null
         }
-        // Update foreground service state based on button count
-        updateForegroundServiceState(manager.buttons.size)
+        return
       }
 
-      // Resolve the initialize promise if pending
+      manager.buttons.forEach { button ->
+        setupButtonListener(button)
+      }
+      updateForegroundServiceState(manager.buttons.size)
+
       initializePromise?.let { promise ->
         promise.resolve(null)
         initializePromise = null
       }
+
+      emitOnManagerStateChange(Arguments.createMap().apply {
+        putString("event", "restored")
+        putString("message", "Manager ready")
+      })
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
@@ -122,7 +134,13 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
   override fun initialize(background: Boolean, promise: Promise) {
     try {
-      // Store the promise to resolve when service is connected
+      // Already bound with a live manager — ready for API calls.
+      if (serviceBound && flic2Service?.getManager() != null) {
+        promise.resolve(null)
+        return
+      }
+
+      // Store the promise to resolve when service is connected and manager is ready
       initializePromise = promise
 
       val intent = Intent(reactApplicationContext, Flic2Service::class.java)
