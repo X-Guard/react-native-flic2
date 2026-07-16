@@ -58,10 +58,10 @@ static BOOL Flic2ManagerDidRestoreOnce = NO;
     [self resolveInitializeIfPending];
 }
 
+// NativeFlic2SpecBase is NSObject — no invalidate. RN still calls this via respondsToSelector.
 - (void)invalidate
 {
     [self rejectInitializeIfPending:@"MODULE_INVALIDATED" message:@"Flic2 native module was invalidated"];
-    [super invalidate];
 }
 
 - (void)initialize:(BOOL)background
