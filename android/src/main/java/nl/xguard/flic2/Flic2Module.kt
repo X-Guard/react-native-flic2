@@ -5,7 +5,9 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.os.Build
+import android.os.Handler
 import android.os.IBinder
+import android.os.Looper
 import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
@@ -51,20 +53,37 @@ class Flic2Module(reactContext: ReactApplicationContext) :
       flic2Service = (service as Flic2Service.Flic2ServiceBinder).getService()
       serviceBound = true
 
-      // Set up listeners for existing buttons
-      flic2Service?.getManager()?.let { manager ->
-        manager.buttons.forEach { button ->
-          setupButtonListener(button)
+      // initialize() must only resolve when getManager() is non-null;
+      // service bind alone is not enough (Flic2Manager.init can fail in onCreate).
+      val manager = flic2Service?.getManager()
+      if (manager == null) {
+        Log.e(TAG, "Service connected but Flic2Manager is null")
+        initializePromise?.let { promise ->
+          promise.reject("INIT_ERROR", "Flic2Manager failed to initialize in service")
+          initializePromise = null
         }
-        // Update foreground service state based on button count
-        updateForegroundServiceState(manager.buttons.size)
+        // Unbind/stop on next loop so a later initialize() can restart the service.
+        // Use Handler (not moduleScope) so invalidate()'s scope.cancel cannot skip stopService.
+        Handler(Looper.getMainLooper()).post {
+          resetServiceBinding()
+        }
+        return
       }
 
-      // Resolve the initialize promise if pending
+      manager.buttons.forEach { button ->
+        setupButtonListener(button)
+      }
+      updateForegroundServiceState(manager.buttons.size)
+
       initializePromise?.let { promise ->
         promise.resolve(null)
         initializePromise = null
       }
+
+      emitOnManagerStateChange(Arguments.createMap().apply {
+        putString("event", "restored")
+        putString("message", "Manager ready")
+      })
     }
 
     override fun onServiceDisconnected(name: ComponentName?) {
@@ -77,6 +96,27 @@ class Flic2Module(reactContext: ReactApplicationContext) :
         promise.reject("SERVICE_DISCONNECTED", "Service disconnected unexpectedly")
         initializePromise = null
       }
+    }
+  }
+
+  private fun resetServiceBinding() {
+    if (serviceBound) {
+      try {
+        reactApplicationContext.unbindService(serviceConnection)
+      } catch (e: Exception) {
+        Log.w(TAG, "Failed to unbind after manager init failure", e)
+      }
+    }
+    serviceBound = false
+    flic2Service = null
+    // Stop the service so a later initialize() re-runs onCreate (and Flic2Manager.init).
+    // Unbind alone leaves a dead instance running with a null manager.
+    try {
+      reactApplicationContext.stopService(
+        Intent(reactApplicationContext, Flic2Service::class.java)
+      )
+    } catch (e: Exception) {
+      Log.w(TAG, "Failed to stop Flic2Service after manager init failure", e)
     }
   }
 
@@ -111,18 +151,39 @@ class Flic2Module(reactContext: ReactApplicationContext) :
     // Clear listeners map
     buttonListeners.clear()
 
-    moduleScope.cancel()
-    if (serviceBound) {
-      reactApplicationContext.unbindService(serviceConnection)
-      serviceBound = false
+    initializePromise?.let { promise ->
+      promise.reject("MODULE_INVALIDATED", "Flic2 native module was invalidated")
+      initializePromise = null
     }
+
+    moduleScope.cancel()
+    // Unbind + stopService even if a pending reset was cancelled with the scope.
+    resetServiceBinding()
   }
 
   // MARK: - Manager Methods
 
   override fun initialize(background: Boolean, promise: Promise) {
     try {
-      // Store the promise to resolve when service is connected
+      // Already bound with a live manager — ready for API calls.
+      if (serviceBound && flic2Service?.getManager() != null) {
+        promise.resolve(null)
+        return
+      }
+
+      // Bound but manager missing: onServiceConnected will not fire again.
+      if (serviceBound && flic2Service?.getManager() == null) {
+        resetServiceBinding()
+        promise.reject("INIT_ERROR", "Flic2Manager failed to initialize in service")
+        return
+      }
+
+      if (initializePromise != null) {
+        promise.reject("INIT_IN_PROGRESS", "Initialize already in progress")
+        return
+      }
+
+      // Store the promise to resolve when service is connected and manager is ready
       initializePromise = promise
 
       val intent = Intent(reactApplicationContext, Flic2Service::class.java)

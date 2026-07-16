@@ -1,6 +1,10 @@
 #import "Flic2.h"
 #import <React/RCTBridgeModule.h>
 
+// FLICManager only fires managerDidRestoreState once per process. Track it so a
+// new RN module instance (hot reload / remount) can still resolve initialize().
+static BOOL Flic2ManagerDidRestoreOnce = NO;
+
 @implementation Flic2
 
 - (instancetype)init {
@@ -10,18 +14,99 @@
 
 // MARK: - FLICManager Methods
 
+- (void)resolveInitializeIfPending
+{
+    if (!self.initializeResolve) {
+        return;
+    }
+    RCTPromiseResolveBlock resolve = self.initializeResolve;
+    self.initializeResolve = nil;
+    self.initializeReject = nil;
+    resolve(nil);
+}
+
+- (void)rejectInitializeIfPending:(NSString *)code message:(NSString *)message
+{
+    if (!self.initializeReject) {
+        self.initializeResolve = nil;
+        return;
+    }
+    RCTPromiseRejectBlock reject = self.initializeReject;
+    self.initializeResolve = nil;
+    self.initializeReject = nil;
+    reject(code, message, nil);
+}
+
+- (void)reattachDelegatesToSharedManager
+{
+    FLICManager *manager = [FLICManager sharedManager];
+    if (!manager) {
+        return;
+    }
+    // Weak delegates die with the previous RN module instance on remount.
+    manager.delegate = self;
+    manager.buttonDelegate = self;
+    for (FLICButton *button in manager.buttons) {
+        button.delegate = self;
+    }
+}
+
+- (void)markManagerRestoredAndResolve
+{
+    self.managerRestored = YES;
+    Flic2ManagerDidRestoreOnce = YES;
+    [self resolveInitializeIfPending];
+}
+
+- (void)invalidate
+{
+    [self rejectInitializeIfPending:@"MODULE_INVALIDATED" message:@"Flic2 native module was invalidated"];
+    [super invalidate];
+}
+
 - (void)initialize:(BOOL)background
     resolve:(RCTPromiseResolveBlock)resolve
     reject:(RCTPromiseRejectBlock)reject
 {
-    // Configure the shared manager (this is the correct way)
+    // Already restored on this instance — ready for API calls (including scan).
+    if (self.managerRestored && [FLICManager sharedManager]) {
+        [self reattachDelegatesToSharedManager];
+        resolve(nil);
+        return;
+    }
+
+    // Process already restored (e.g. RN remount); restore callbacks will not re-fire.
+    // JS Flic2 is a singleton, but the native module instance is not — re-attach delegates.
+    if (Flic2ManagerDidRestoreOnce && [FLICManager sharedManager]) {
+        [self reattachDelegatesToSharedManager];
+        self.managerRestored = YES;
+        resolve(nil);
+        return;
+    }
+
+    if (self.initializeResolve) {
+        reject(@"INIT_IN_PROGRESS", @"Initialize already in progress", nil);
+        return;
+    }
+
+    // Configure the shared manager; resolve only after managerRestored
+    // (managerDidRestoreState / PoweredOn) so await initialize() is honest.
     FLICManager *manager = [FLICManager configureWithDelegate:self buttonDelegate:self background:background];
 
-    if (manager) {
-        resolve(nil);
-    } else {
+    if (!manager) {
         reject(@"INIT_ERROR", @"Failed to initialize FLICManager", nil);
+        return;
     }
+
+    if (self.managerRestored || Flic2ManagerDidRestoreOnce) {
+        self.managerRestored = YES;
+        Flic2ManagerDidRestoreOnce = YES;
+        resolve(nil);
+        return;
+    }
+
+    self.initializeResolve = resolve;
+    self.initializeReject = reject;
 }
 
 - (void)getButtons:(RCTPromiseResolveBlock)resolve
@@ -50,8 +135,10 @@
         return;
     }
 
+    // Belt-and-suspenders: sharedManager exists after configure, before restore.
+    // Callers must await initialize(); reject clearly if they race it.
     if (!self.managerRestored) {
-        reject(@"NOT_RESTORED", @"Manager not restored yet. Wait for managerDidRestoreState", nil);
+        reject(@"NOT_RESTORED", @"Manager not restored yet. Await Flic2.initialize()", nil);
         return;
     }
 
@@ -307,8 +394,8 @@
 - (void)managerDidRestoreState:(FLICManager *)manager {
     // Only emit restored event if we haven't already done so
     if (!self.managerRestored) {
-        self.managerRestored = YES;
         NSLog(@"Manager state restored - ready for operations");
+        [self markManagerRestoredAndResolve];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self emitOnManagerStateChange:@{
                 @"event": @"restored",
@@ -333,8 +420,8 @@
     // Additionally emit restored event when manager becomes powered on (if not already restored)
     // This ensures the event fires on every app launch, not just during state restoration
     if (state == FLICManagerStatePoweredOn && !self.managerRestored) {
-        self.managerRestored = YES;
         NSLog(@"Manager powered on - ready for operations");
+        [self markManagerRestoredAndResolve];
         dispatch_async(dispatch_get_main_queue(), ^{
             [self emitOnManagerStateChange:@{
                 @"event": @"restored",

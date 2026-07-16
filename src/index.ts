@@ -12,6 +12,8 @@ class Flic2 {
 
   private isFlic2ManagerInitialized: boolean = false;
 
+  private initializePromise: Promise<void> | null = null;
+
   public eventEmitter: TypedEmitter<{
     buttonEvent: (event: ButtonEvent) => void;
     managerStateChange: (event: ManagerStateChangeEvent) => void;
@@ -47,21 +49,39 @@ class Flic2 {
   /**
    * Initialize the Flic2 manager.
    *
-   * @returns A promise that resolves when the Flic2 manager is initialized.
+   * Resolves when the native manager is ready for API calls
+   * (`getButtons`, `connectAllKnownButtons`, `startScan`, etc.).
+   * Idempotent: concurrent and repeat calls share one in-flight promise
+   * or return immediately once ready.
+   *
+   * @returns A promise that resolves when the Flic2 manager is ready.
    */
   public async initialize(): Promise<void> {
 
-    // check if the Flic2 manager is already initialized
     if (this.isInitialized()) {
 
-      throw new Error('Flic2 manager is already initialized');
+      return;
 
     }
 
-    // initialize the Flic2 manager in background
-    await NativeFlic2.initialize(true);
+    if (this.initializePromise) {
 
-    this.onInitialized();
+      return this.initializePromise;
+
+    }
+
+    this.initializePromise = (async () => {
+
+      await NativeFlic2.initialize(true);
+      this.onInitialized();
+
+    })().finally(() => {
+
+      this.initializePromise = null;
+
+    });
+
+    return this.initializePromise;
 
   }
 
