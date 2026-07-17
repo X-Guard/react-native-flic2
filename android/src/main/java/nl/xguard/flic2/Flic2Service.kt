@@ -255,7 +255,8 @@ class Flic2Service : Service() {
         }
     }
 
-    // BootUpReceiver for handling device boot
+    // Same pattern as 0.3.x / master: wake the process on boot / package replace.
+    // Application.onCreate has already run; FGS cold-start still needs a later initialize().
     class BootUpReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Log.d(TAG, "BootUpReceiver()")
@@ -263,7 +264,6 @@ class Flic2Service : Service() {
         }
     }
 
-    // UpdateReceiver for handling app updates
     class UpdateReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Log.d(TAG, "UpdateReceiver()")
