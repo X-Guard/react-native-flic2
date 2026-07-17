@@ -71,7 +71,8 @@ class Flic2 {
    * Resolves when the native manager is ready for API calls
    * (`getButtons`, `connectAllKnownButtons`, `startScan`, etc.).
    * Idempotent: concurrent and repeat calls share one in-flight promise
-   * or return immediately once ready.
+   * or return immediately once ready. Options apply only to the call that
+   * starts that promise; later concurrent callers inherit its behavior.
    *
    * On Android, always attempts native init first (bind-only when the Flic
    * service is already running — works headless/background). If a cold start
