@@ -1,5 +1,7 @@
 # react-native-flic2
 
+[![npm version](https://img.shields.io/npm/v/react-native-flic2.svg)](https://www.npmjs.com/package/react-native-flic2)
+
 React Native library for integrating Flic2 buttons into your React Native application. This library provides a complete interface to discover, connect, and interact with Flic2 buttons on both iOS and Android platforms.
 
 ## Features
