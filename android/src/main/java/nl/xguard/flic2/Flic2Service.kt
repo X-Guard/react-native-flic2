@@ -5,6 +5,7 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -254,5 +255,20 @@ class Flic2Service : Service() {
         }
     }
 
+    // Same pattern as 0.3.x / master: wake the process on boot / package replace.
+    // Application.onCreate has already run; FGS cold-start still needs a later initialize().
+    class BootUpReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "BootUpReceiver()")
+            // The Application class's onCreate has already been called at this point, which is what we want
+        }
+    }
+
+    class UpdateReceiver : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "UpdateReceiver()")
+            // The Application class's onCreate has already been called at this point, which is what we want
+        }
+    }
 }
 

@@ -139,7 +139,9 @@ The library runs a foreground service to keep Flic2 buttons connected in the bac
 
 **Important:** For background usage, initialize Flic2 at the global level (outside of React components), typically in your app's entry point (e.g., `index.js` or `App.js`). Initializing in a `useEffect` is too late for background functionality.
 
-On Android, `initialize()` is safe to call anytime: if `Flic2Service` is already running it binds without starting a new foreground service (works headless/background). A cold start that must launch the foreground service may be deferred until the app is `active`. Cold boot still needs a brief app foreground window if the process/service is not already up — that is app-owned (e.g. your own `BOOT_COMPLETED` receiver), not provided by this library.
+On Android, `initialize()` is safe to call anytime: if `Flic2Service` is already running it binds without starting a new foreground service (works headless/background). A cold start that must launch the foreground service may be deferred until the app is `active`.
+
+The library ships `BootUpReceiver` / `UpdateReceiver` (same process-wake pattern as 0.3.x): they ensure `Application.onCreate` has run after boot/update, but they do not start the Flic FGS themselves. If a cold FGS start needs a brief foreground Activity window, that remains app-owned.
 
 ```tsx
 // index.js or App.js (global level, outside components)
