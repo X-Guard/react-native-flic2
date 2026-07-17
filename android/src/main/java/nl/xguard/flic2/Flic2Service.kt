@@ -38,6 +38,23 @@ class Flic2Service : Service() {
         private const val NOTIFICATION_ICON_KEY = "nl.xguard.flic2.notification_icon"
         private const val NOTIFICATION_ID_KEY = "nl.xguard.flic2.notification_id"
         private const val CHANNEL_ID_KEY = "nl.xguard.flic2.notification_channel_id"
+
+        /**
+         * Official flic2lib-android starts the FGS from Application.onCreate after boot/update
+         * wake. We cannot hook the host Application, so receivers try startForegroundService here.
+         * Modern Android may still block this; JS initialize() / app UI cover that path.
+         */
+        private fun tryStartFromBootOrUpdate(context: Context) {
+            try {
+                val appContext = context.applicationContext
+                ActivityUtil.startForegroundService(
+                    appContext,
+                    Intent(appContext, Flic2Service::class.java)
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "Failed to start Flic2Service from boot/update receiver", e)
+            }
+        }
     }
 
     inner class Flic2ServiceBinder : Binder() {
@@ -255,19 +272,19 @@ class Flic2Service : Service() {
         }
     }
 
-    // Same pattern as 0.3.x / master: wake the process on boot / package replace.
-    // Application.onCreate has already run; FGS cold-start still needs a later initialize().
+    // Wake process on boot / package replace, then try to start Flic2Service (FGS).
+    // Application.onCreate has already run; JS initialize() is still required for the RN bridge.
     class BootUpReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Log.d(TAG, "BootUpReceiver()")
-            // The Application class's onCreate has already been called at this point, which is what we want
+            tryStartFromBootOrUpdate(context)
         }
     }
 
     class UpdateReceiver : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
             Log.d(TAG, "UpdateReceiver()")
-            // The Application class's onCreate has already been called at this point, which is what we want
+            tryStartFromBootOrUpdate(context)
         }
     }
 }

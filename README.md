@@ -141,7 +141,7 @@ The library runs a foreground service to keep Flic2 buttons connected in the bac
 
 On Android, `initialize()` is safe to call anytime: if `Flic2Service` is already running it binds without starting a new foreground service (works headless/background). A cold start that must launch the foreground service may be deferred until the app is `active`.
 
-The library ships `BootUpReceiver` / `UpdateReceiver` (same process-wake pattern as 0.3.x): they ensure `Application.onCreate` has run after boot/update, but they do not start the Flic FGS themselves. If a cold FGS start needs a brief foreground Activity window, that remains app-owned.
+The library ships `BootUpReceiver` / `UpdateReceiver` (same process-wake pattern as official flic2lib-android / 0.3.x). After boot or package replace they **try** to start `Flic2Service` via `startForegroundService`. That start may still be blocked on modern Android; a brief app foreground Activity window can still be required. JS `initialize()` remains required for the React Native bridge and event listeners.
 
 ```tsx
 // index.js or App.js (global level, outside components)
