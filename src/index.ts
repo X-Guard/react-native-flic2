@@ -428,13 +428,13 @@ class Flic2 {
 
           }
 
-          scheduleActiveRetry();
+          scheduleActiveRetry(error);
 
         }
 
       };
 
-      const scheduleActiveRetry = () => {
+      const scheduleActiveRetry = (lastError?: unknown) => {
 
         if (AppState.currentState !== 'active') {
 
@@ -444,7 +444,9 @@ class Flic2 {
 
         if (activeRetryCount >= ACTIVE_FGS_RETRY_MAX) {
 
-          // Budget spent this foreground session; wait for next active entry.
+          // Stay-active + still blocked: fail instead of hanging forever.
+          cleanup();
+          reject(lastError ?? new Error(FGS_START_BLOCKED));
           return;
 
         }
