@@ -1,3 +1,9 @@
+import {
+  AppState,
+  Platform,
+  type AppStateStatus,
+  type NativeEventSubscription,
+} from 'react-native';
 import { TypedEmitter } from './lib/typedEventEmitter';
 import NativeFlic2, {
   type ButtonEvent,
@@ -7,6 +13,19 @@ import NativeFlic2, {
   type ScanStatusChangeEvent,
   type TriggerModeType,
 } from './NativeFlic2';
+
+export type InitializeOptions = {
+  /**
+   * Android only. When a cold start needs a foreground service and Android
+   * blocks it while backgrounded, wait for `AppState` `active` and retry
+   * (default `true`). Set `false` to reject immediately with `FGS_START_BLOCKED`.
+   */
+  waitForForeground?: boolean;
+};
+
+const FGS_START_BLOCKED = 'FGS_START_BLOCKED';
+const ACTIVE_FGS_RETRY_MAX = 3;
+const ACTIVE_FGS_RETRY_DELAY_MS = 500;
 
 class Flic2 {
 
@@ -54,9 +73,15 @@ class Flic2 {
    * Idempotent: concurrent and repeat calls share one in-flight promise
    * or return immediately once ready.
    *
+   * On Android, always attempts native init first (bind-only when the Flic
+   * service is already running — works headless/background). If a cold start
+   * needs a foreground service and Android blocks it, waits for the app to
+   * become active and retries unless `waitForForeground: false`.
+   *
+   * @param options - Optional initialize behavior.
    * @returns A promise that resolves when the Flic2 manager is ready.
    */
-  public async initialize(): Promise<void> {
+  public async initialize(options?: InitializeOptions): Promise<void> {
 
     if (this.isInitialized()) {
 
@@ -70,9 +95,11 @@ class Flic2 {
 
     }
 
+    const waitForForeground = options?.waitForForeground !== false;
+
     this.initializePromise = (async () => {
 
-      await NativeFlic2.initialize(true);
+      await this.initializeNative(waitForForeground);
       this.onInitialized();
 
     })().finally(() => {
@@ -319,6 +346,160 @@ class Flic2 {
   private isBatteryVoltageOk(voltage: number): boolean {
 
     return voltage * 1000 > 2650;
+
+  }
+
+  private isFgsStartBlocked(error: unknown): boolean {
+
+    if (Platform.OS !== 'android') {
+
+      return false;
+
+    }
+
+    return typeof error === 'object'
+      && error !== null
+      && 'code' in error
+      && (error as { code: unknown }).code === FGS_START_BLOCKED;
+
+  }
+
+  private async initializeNative(waitForForeground: boolean): Promise<void> {
+
+    try {
+
+      await NativeFlic2.initialize(true);
+
+    } catch (error) {
+
+      if (!waitForForeground || !this.isFgsStartBlocked(error)) {
+
+        throw error;
+
+      }
+
+      await this.waitForForegroundAndRetryNativeInit();
+
+    }
+
+  }
+
+  /**
+   * After FGS_START_BLOCKED: wait for AppState active and retry native init.
+   * When already active, capped delayed retries cover the RN-active / FGS-race.
+   */
+  private waitForForegroundAndRetryNativeInit(): Promise<void> {
+
+    return new Promise((resolve, reject) => {
+
+      let activeRetryCount = 0;
+      let activeRetryTimeout: ReturnType<typeof setTimeout> | undefined;
+      let subscription: NativeEventSubscription | undefined;
+
+      const cleanup = () => {
+
+        subscription?.remove();
+        subscription = undefined;
+
+        if (activeRetryTimeout !== undefined) {
+
+          clearTimeout(activeRetryTimeout);
+          activeRetryTimeout = undefined;
+
+        }
+
+      };
+
+      const tryNativeInit = async () => {
+
+        try {
+
+          await NativeFlic2.initialize(true);
+          cleanup();
+          resolve();
+
+        } catch (error) {
+
+          if (!this.isFgsStartBlocked(error)) {
+
+            cleanup();
+            reject(error);
+            return;
+
+          }
+
+          scheduleActiveRetry();
+
+        }
+
+      };
+
+      const scheduleActiveRetry = () => {
+
+        if (AppState.currentState !== 'active') {
+
+          return;
+
+        }
+
+        if (activeRetryCount >= ACTIVE_FGS_RETRY_MAX) {
+
+          // Budget spent this foreground session; wait for next active entry.
+          return;
+
+        }
+
+        activeRetryCount += 1;
+
+        if (activeRetryTimeout !== undefined) {
+
+          clearTimeout(activeRetryTimeout);
+
+        }
+
+        activeRetryTimeout = setTimeout(() => {
+
+          activeRetryTimeout = undefined;
+
+          if (AppState.currentState === 'active') {
+
+            tryNativeInit().catch(() => undefined);
+
+          }
+
+        }, ACTIVE_FGS_RETRY_DELAY_MS);
+
+      };
+
+      const onAppStateChange = (nextAppState: AppStateStatus) => {
+
+        if (nextAppState !== 'active') {
+
+          if (activeRetryTimeout !== undefined) {
+
+            clearTimeout(activeRetryTimeout);
+            activeRetryTimeout = undefined;
+
+          }
+
+          activeRetryCount = 0;
+          return;
+
+        }
+
+        tryNativeInit().catch(() => undefined);
+
+      };
+
+      subscription = AppState.addEventListener('change', onAppStateChange);
+
+      if (AppState.currentState === 'active') {
+
+        scheduleActiveRetry();
+
+      }
+
+    });
 
   }
 

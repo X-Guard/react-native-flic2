@@ -139,6 +139,8 @@ The library runs a foreground service to keep Flic2 buttons connected in the bac
 
 **Important:** For background usage, initialize Flic2 at the global level (outside of React components), typically in your app's entry point (e.g., `index.js` or `App.js`). Initializing in a `useEffect` is too late for background functionality.
 
+On Android, `initialize()` is safe to call anytime: if `Flic2Service` is already running it binds without starting a new foreground service (works headless/background). A cold start that must launch the foreground service may be deferred until the app is `active`. Cold boot still needs a brief app foreground window if the process/service is not already up — that is app-owned (e.g. your own `BOOT_COMPLETED` receiver), not provided by this library.
+
 ```tsx
 // index.js or App.js (global level, outside components)
 import Flic2, {
@@ -457,12 +459,21 @@ export default Flic2Example;
 
 ### Initialization
 
-#### `initialize(): Promise<void>`
+#### `initialize(options?: InitializeOptions): Promise<void>`
 
 Initialize the Flic2 manager. This must be called before using any other methods.
 
+Resolves when the native manager is ready. Concurrent and repeat calls share one in-flight promise.
+
+**Android:** Always attempts native init first. If the Flic foreground service is already running, binds without starting a new FGS (works in background/headless). If a cold start needs `startForegroundService` and Android blocks it, waits for `AppState` `active` and retries (including short capped retries when RN reports active but FGS is still blocked). Pass `{ waitForForeground: false }` to reject immediately with code `FGS_START_BLOCKED` instead of waiting.
+
+**iOS:** Unchanged — waits until the manager is restored / powered on.
+
 ```tsx
 await Flic2.initialize();
+
+// Optional: fail fast when Android cannot start the FGS from the background
+await Flic2.initialize({ waitForForeground: false });
 ```
 
 ### Scanning

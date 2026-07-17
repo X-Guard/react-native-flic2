@@ -188,10 +188,26 @@ class Flic2Module(reactContext: ReactApplicationContext) :
 
       val intent = Intent(reactApplicationContext, Flic2Service::class.java)
 
-      // Check if service is already running
+      // Soft path: service already up → bind only (works headless / background).
+      // Cold start needs startForegroundService, which Android may block while backgrounded.
       if (!ActivityUtil.isServiceRunning(reactApplicationContext, Flic2Service::class.java)) {
-        // Start service
-        ActivityUtil.startForegroundService(reactApplicationContext, intent)
+        try {
+          ActivityUtil.startForegroundService(reactApplicationContext, intent)
+        } catch (e: Exception) {
+          initializePromise = null
+          if (ActivityUtil.isForegroundServiceStartBlocked(e)) {
+            Log.w(TAG, "Foreground service start blocked", e)
+            promise.reject(
+              "FGS_START_BLOCKED",
+              "Cannot start Flic2 foreground service while backgrounded",
+              e
+            )
+          } else {
+            Log.e(TAG, "Failed to start Flic2Service", e)
+            promise.reject("INIT_ERROR", "Failed to start Flic2 service: ${e.message}", e)
+          }
+          return
+        }
       }
 
       // Bind to service - promise will be resolved in onServiceConnected
@@ -208,7 +224,15 @@ class Flic2Module(reactContext: ReactApplicationContext) :
     } catch (e: Exception) {
       Log.e(TAG, "Failed to initialize", e)
       initializePromise = null
-      promise.reject("INIT_ERROR", "Failed to initialize: ${e.message}", e)
+      if (ActivityUtil.isForegroundServiceStartBlocked(e)) {
+        promise.reject(
+          "FGS_START_BLOCKED",
+          "Cannot start Flic2 foreground service while backgrounded",
+          e
+        )
+      } else {
+        promise.reject("INIT_ERROR", "Failed to initialize: ${e.message}", e)
+      }
     }
   }
 

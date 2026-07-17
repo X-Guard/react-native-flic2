@@ -5,7 +5,6 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -255,20 +254,5 @@ class Flic2Service : Service() {
         }
     }
 
-    // BootUpReceiver for handling device boot
-    class BootUpReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            Log.d(TAG, "BootUpReceiver()")
-            // The Application class's onCreate has already been called at this point, which is what we want
-        }
-    }
-
-    // UpdateReceiver for handling app updates
-    class UpdateReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            Log.d(TAG, "UpdateReceiver()")
-            // The Application class's onCreate has already been called at this point, which is what we want
-        }
-    }
 }
 
