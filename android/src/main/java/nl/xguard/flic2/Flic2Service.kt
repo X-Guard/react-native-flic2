@@ -65,6 +65,13 @@ class Flic2Service : Service() {
         super.onCreate()
         Log.d(TAG, "Service onCreate")
 
+        // Android requires startForeground() within ~5s of startForegroundService().
+        // Promote immediately before Flic2Manager.init(), which can block the main thread.
+        // Init stays synchronous in onCreate so bind/listeners still run after the manager is ready.
+        createNotificationChannel()
+        notification = createNotification()
+        startForegroundService()
+
         try {
             // Initialize Flic2Manager on main thread with Handler
             // v1.1.0 API: init() returns void, must call getInstance() after
@@ -77,10 +84,6 @@ class Flic2Service : Service() {
         } catch (e: Exception) {
             Log.e(TAG, "Failed to initialize Flic2Manager", e)
         }
-
-        // Create notification channel and notification in onCreate
-        createNotificationChannel()
-        notification = createNotification()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
